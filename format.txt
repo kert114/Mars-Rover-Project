@@ -1,0 +1,4 @@
+{A;x:val, y:val}
+{R;x:val, y:val}
+
+# from rover to server
