@@ -1,0 +1,72 @@
+server_name = '3.85.233.169' #"192.168.56.1"
+server_port = 12000
+server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server_socket.settimeout(0.01) #10ms timeout for receives, after which silent error is thrown
+connection = False
+send_msg = "None"
+send_msg_prev = "None"
+do_not_override = []
+
+def network ():
+	global recv_msg, send_msg, send_msg_prev, connection, high_scores, high_kills, do_not_override
+	if connection == False:
+		try:
+			try: server_socket.connect((server_name, server_port))
+			except:
+				pass
+			server_socket.send("~I'm the game".encode()) #Identifies which client is game
+			print("Connected")
+			connection = True
+		except:
+			pass
+	else: #connected
+		received = False
+		try:
+			recv_msg = server_socket.recv(1024).decode()
+			if recv_msg != "":
+				received = True
+		except:
+			pass
+		if received:
+			msgs = recv_msg.split('~')[1:]
+			for msg in msgs:		#Handles multiple messages in same TCP receive
+				if " connected" in msg: #New FPGA connected
+					ball_ID = int(msg.split(" connected")[0][-1])
+					balls[ball_ID] = Ball(ball_ID) #Spawn ball
+					connected_balls[ball_ID] = balls[ball_ID].ID #Connect ball
+					do_not_override.append(balls[ball_ID].ID)
+				elif " disconnected" in msg:
+					ball_ID = int(msg.split(" disconnected")[0][-1])
+					connected_balls[ball_ID] = None
+					balls[ball_ID] = None
+				else:
+					sender = msg.split(',')[0]
+					if sender == "s": #server messages
+						print(f"received {recv_msg}")
+		
+					else: #FPGA messages
+						try:
+							acc0 = msg.split(',')[1].split(":")[0]
+							balls[int(sender)].acc[0] = -hex_to_dec(acc0)
+							acc1 = msg.split(',')[1].split(":")[1]
+							balls[int(sender)].acc[1] = hex_to_dec(acc1)
+						except:
+							pass
+						
+						if "switch" in msg:
+							try:
+								val = hex_to_dec(recv_msg.split('=')[1].split(',')[0])
+								ball_sensitivities[int(sender)] = 5000 + val*10
+								balls[int(sender)].sensitivity = ball_sensitivities[int(sender)]
+								print(f"ball {int(sender)} sensitivity change to {balls[int(sender)].sensitivity}")
+							except:
+								pass
+		
+		if send_msg != send_msg_prev: #Check whether to send
+			try:
+				server_socket.send(send_msg.encode())
+				print(f"sent {send_msg}")
+				send_msg = "aaaaaaaaaaaaaaaaaa"
+			except:
+				pass
+		send_msg_prev = send_msg
