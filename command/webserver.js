@@ -1,62 +1,31 @@
+
+var express = require('express');
+var server = express();//server will now contain additional methods
+
 var http = require('http');
 let htmlContent = `
 <!DOCTYPE HTML>
 <html>
 <head>
-	<script type="text/javascript">
-	window.onload = function () {
 
-      var dps = [
-  
-      ];   //dataPoints. 
-
-      var chart = new CanvasJS.Chart("chartContainer",{
-        zoomEnabled: true,
-        panEnabled: true,
-        
-      	title :{
-      		text: "Mapping of Arena"
-      	},
-      	axisX: {						
-      		title: "X domain"
-      	},
-      	axisY: {						
-      		title: "Y Domain"
-      	},
-      	data: [{
-      		type: "scatter",
-      		dataPoints : dps
-      	}]
-      });
-
-      chart.render();	
-      var updateInterval = 1000;
-
-      var updateChart = function () {
-      	
-      	xVal = Math.floor((Math.random() * 100));
-      	yVal =Math.floor((Math.random() * 100));
-      	dps.push({x: xVal,y: yVal});
-      	
-      	chart.render();		
-
-	// update chart after specified time. 
-
-};
-
-setInterval(function(){updateChart()}, updateInterval); 
-}
-</script>
 <script type="text/javascript" src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+<script type="text/javascript" src="code.js"></script>
 </head>
+
 <body>
 	<div id="chartContainer" style="height: 300px; width: 100%;">
 	</div>
 </body>
+
+
 </html>
 `;
 
 
+server.get('/', function(req, res) {
+  res.sendFile('\\wsl$\Ubuntu-20.04\root\GSB2\command/code.js');
+ });
+ 
 var server = http.createServer(function(req, res){
  res.writeHead(200, {'Content-Type':'text/html'})
  res.end(htmlContent);

@@ -1,4 +1,10 @@
-{A;x:val, y:val}
-{R;x:val, y:val}
+
+From Control to command
+{o;x:val, y:val} # defines colour
+{t;x:val, y:val}
+{f;x:val, y:val}
+{r;x:val, y:val}
+{p;x:val, y:val} # power supply underground 
+
 
 # from rover to server
