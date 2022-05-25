@@ -14,3 +14,9 @@ then: git push
 
 you need to pull before you push: git pull
 if you get conflicts, then yeah. 
+
+
+
+Feel Free to add refrences for the report here: 
+Command:
+https://canvasjs.com/docs/charts/how-to/creating-dynamic-charts/
