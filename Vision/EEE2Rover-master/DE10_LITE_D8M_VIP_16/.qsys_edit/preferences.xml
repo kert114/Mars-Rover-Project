@@ -3,12 +3,12 @@
  <debug showDebugMenu="0" />
  <systemtable filter="All Interfaces">
   <columns>
-   <connections preferredWidth="47" />
+   <connections preferredWidth="63" />
    <irq preferredWidth="34" />
    <name preferredWidth="235" />
   </columns>
  </systemtable>
  <library
-   expandedCategories="Library/DSP,Library,Library/DSP/Video and Image Processing,Project" />
+   expandedCategories="Library/Memory Interfaces and Controllers,Library/Memory Interfaces and Controllers/SDRAM,Library,Project" />
  <window width="1938" height="1048" x="-9" y="-9" />
 </preferences>

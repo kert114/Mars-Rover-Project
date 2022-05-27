@@ -76,22 +76,32 @@ wire [7:0]   red_out, green_out, blue_out;
 wire         sop, eop, in_valid, out_ready;
 ////////////////////////////////////////////////////////////////////////
 
-// Conversion for HSL from RGB
-wire [7:0] redprime, greenprime, blueprime, max, min, hue, saturation, lightness, delta;
+// Conversion for HSV from RGB
+//wire [7:0] redprime, greenprime, blueprime;
+//wire [7:0] hue, saturation, lightness, delta;
+wire [7:0] hue, saturation, value, delta, max, min;
 
-assign redprime = red[7:0]/255;
-assign greenprime = green[7:0]/255;
-assign blueprime = blue[7:0]/255;
-assign max = redprime[7:0]>greenprime[7:0] ? redprime[7:0]>blueprime[7:0] ? redprime[7:0] : greenprime[7:0]>blueprime[7:0] ? greenprime[7:0] : blueprime[7:0];
-assign min = redprime[7:0]<greenprime[7:0] ? redprime[7:0]<blueprime[7:0] ? redprime[7:0] : greenprime[7:0]<blueprime[7:0] ? greenprime[7:0] : blueprime[7:0];
+//assign redprime = red[7:0]/255;
+//assign greenprime = green[7:0]/255;
+//assign blueprime = blue[7:0]/255;
+assign max = (red[7:0]>green[7:0]) ? ((red[7:0]>blue[7:0]) ? red[7:0] : blue[7:0]) : (green[7:0]>blue[7:0]) ? green[7:0] : blue[7:0];
+assign min = (red[7:0]<green[7:0]) ? ((red[7:0]<blue[7:0]) ? red[7:0] : blue[7:0]) : (green[7:0]<blue[7:0]) ? green[7:0] : blue[7:0];
 assign delta = (max[7:0]-min[7:0]);
-assign lightness = (max[7:0]+min[7:0])/2;
-assign saturation = delta[7:0]==8'h0 ? 8'h0 : 2*lightness[7:0]-1>8'h0 ? delta[7:0]/2*lightness[7:0] : delta[7:0]/(1-(2*lightness[7:0]-1));
-assign hue = delta[7:0]==8'h0 ? 0 : max[7:0]==redprime[7:0] ? 60*(greenprime[7:0] - blueprime[7:0])/delta[7:0] : max[7:0]==greenprime[7:0] ? 60*(((blueprime[7:0]-redprime[7:0])/delta[7:0])+2) : 60*(((redprime[7:0]-greenprime[7:0])/delta[7:0])+4);
+// This was converting to HSL - we want HSV instead so see the algorithm below
+//assign lightness = (max[7:0]+min[7:0])/2;
+//assign saturation = delta[7:0]==8'h0 ? 8'h0 : 2*lightness[7:0]-1>8'h0 ? delta[7:0]/2*lightness[7:0] : delta[7:0]/(1-(2*lightness[7:0]-1));
+//assign hue = delta[7:0]==8'h0 ? 0 : max[7:0]==red[7:0] ? 60*(green[7:0] - blue[7:0])/delta[7:0] : max[7:0]==green[7:0] ? 60*(((blue[7:0]-red[7:0])/delta[7:0])+2) : 60*(((red[7:0]-green[7:0])/delta[7:0])+4);
+
+// HSV
+
+assign hue = delta[7:0]==8'h0 ? 0 : max[7:0]==red[7:0] ? 60*(green[7:0] - blue[7:0])/delta[7:0] : max[7:0]==green[7:0] ? 60*(((blue[7:0]-red[7:0])/delta[7:0])+2) : 60*(((red[7:0]-green[7:0])/delta[7:0])+4);
+assign saturation = max==0 ? 8'h0 : 100*delta[7:0]/max;
+assign value = 100*max[7:0]/255;
 
 wire fuchsia_detect;
 
-assign fuchsia_detect = (hue>270 && hue <360) && (saturation>90) && (lightness>40 && lightness<56);
+// Rough Numbers for now
+assign fuchsia_detect = (hue>270 && hue <360) && (saturation>90) && (value>80 && value<120);
 
 // Detect red areas
 //wire red_detect;
@@ -105,7 +115,7 @@ assign fuchsia_detect = (hue>270 && hue <360) && (saturation>90) && (lightness>4
 wire [23:0] fuchsia_high;
 //wire [23:0] teal_high;
 assign grey = green[7:1] + red[7:2] + blue[7:2]; //Grey = green/2 + red/4 + blue/4
-assign fuchsia_high  =  fuchsia_detect ? {8'hf4, 8'h0, 8'ha1} : {grey, grey, grey};
+assign fuchsia_high  =  fuchsia_detect ? {8'hff, 8'h00, 8'hff} : {grey, grey, grey};
 //assign teal_high  =  teal_detect ? {8'h0, 8'h80, 8'h80} : {grey, grey, grey};
 
 // Show bounding box
