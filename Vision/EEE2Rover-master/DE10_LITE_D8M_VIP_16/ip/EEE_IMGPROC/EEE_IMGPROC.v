@@ -98,15 +98,16 @@ assign hue = delta[7:0]==8'h0 ? 0 : max[7:0]==red[7:0] ? 60*(green[7:0] - blue[7
 assign saturation = max==0 ? 8'h0 : 100*delta[7:0]/max;
 assign value = 100*max[7:0]/255;
 
+
 // Detect coloured areas
 wire red_detect;
-assign red_detect = (hue>=0 && hue <20) && (saturation>55 && saturation <80) && (value>30 && value<75);
+assign red_detect = (hue>=0 && hue <20) && (saturation>55 && saturation <75) && (value>30 && value<95);
 wire teal_detect;
-assign teal_detect = (hue>100 && hue <160) && (saturation>23/* && saturation<68*/) && (value>15 && value<77);
+assign teal_detect = (hue>100 && hue <155) && (saturation>25 && saturation<65) && (value>30 && value<70);
 wire fuchsia_detect;
-assign fuchsia_detect = (hue>280 && hue <=340) && (saturation>25) && (value>=75);
+assign fuchsia_detect = (hue>265 && hue <=340) && (saturation>20 && saturation<95) && (value>=35 && value<95);
 wire orange_detect;
-assign orange_detect = (hue>=30 && hue<=70) && (saturation>55) && (value>=27);
+assign orange_detect = (hue>=30 && hue<=70) && (saturation>55 && saturation<90) && (value>=40 && value<95);
 
 // Find boundary of cursor box
 
@@ -120,6 +121,7 @@ assign red_high  =  red_detect ? {8'hff, 8'h00, 8'h00} : {grey, grey, grey};
 assign fuchsia_high  =  fuchsia_detect ? {8'hff, 8'h00, 8'hff} : {grey, grey, grey};
 assign teal_high  =  teal_detect ? {8'h0, 8'h80, 8'h80} : {grey, grey, grey};
 assign orange_high  =  orange_detect ? {8'hff, 8'h80, 8'h0} : {grey, grey, grey};
+
 
 // Show bounding box
 wire [23:0] new_image;
