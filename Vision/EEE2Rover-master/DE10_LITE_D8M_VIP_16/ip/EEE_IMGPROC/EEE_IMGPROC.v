@@ -98,33 +98,34 @@ assign hue = delta[7:0]==8'h0 ? 0 : max[7:0]==red[7:0] ? 60*(green[7:0] - blue[7
 assign saturation = max==0 ? 8'h0 : 100*delta[7:0]/max;
 assign value = 100*max[7:0]/255;
 
-//wire fuchsia_detect;
-
-// Rough Numbers for now
-//assign fuchsia_detect = (hue>270 && hue <360) && (saturation>90) && (value>80 && value<120);
-
-// Detect red areas
+// Detect coloured areas
 wire red_detect;
-assign red_detect = ((hue>=0 && hue <37) || (hue<=360 && hue > 333)) && (saturation>55) && (value>55);
+assign red_detect = (hue>=0 && hue <20) && (saturation>55 && saturation <80) && (value>30 && value<75);
 wire teal_detect;
-assign teal_detect = (hue>=80 && hue <200) && (saturation>50) && (value>20 && value<95);
+assign teal_detect = (hue>100 && hue <160) && (saturation>23/* && saturation<68*/) && (value>15 && value<77);
+wire fuchsia_detect;
+assign fuchsia_detect = (hue>280 && hue <=340) && (saturation>25) && (value>=75);
+wire orange_detect;
+assign orange_detect = (hue>=30 && hue<=70) && (saturation>55) && (value>=27);
 
 // Find boundary of cursor box
 
 // Highlight detected areas
-//wire [23:0] fuchsia_high;
+wire [23:0] fuchsia_high;
 wire [23:0] red_high;
 wire [23:0] teal_high;
+wire [23:0] orange_high;
 assign grey = green[7:1] + red[7:2] + blue[7:2]; //Grey = green/2 + red/4 + blue/4
 assign red_high  =  red_detect ? {8'hff, 8'h00, 8'h00} : {grey, grey, grey};
-//assign fuchsia_high  =  fuchsia_detect ? {8'hff, 8'h00, 8'hff} : {grey, grey, grey};
+assign fuchsia_high  =  fuchsia_detect ? {8'hff, 8'h00, 8'hff} : {grey, grey, grey};
 assign teal_high  =  teal_detect ? {8'h0, 8'h80, 8'h80} : {grey, grey, grey};
+assign orange_high  =  orange_detect ? {8'hff, 8'h80, 8'h0} : {grey, grey, grey};
 
 // Show bounding box
 wire [23:0] new_image;
 wire bb_active;
 assign bb_active = (x == left) | (x == right) | (y == top) | (y == bottom);
-assign new_image = bb_active ? bb_col : red_detect ? red_high : teal_high;
+assign new_image = bb_active ? bb_col : red_detect ? red_high : teal_detect ? teal_high : fuchsia_detect ? fuchsia_high : orange_high;
 
 // Switch output pixels depending on mode switch
 // Don't modify the start-of-packet word - it's a packet discriptor
@@ -172,18 +173,24 @@ always@(posedge clk) begin
 		if (y < y_min) y_min <= y;
 		y_max <= y;
 	end
+	if (fuchsia_detect & in_valid) begin	//Update bounds when the pixel is fuchsia
+		if (x < x_min) x_min <= x;
+		if (x > x_max) x_max <= x;
+		if (y < y_min) y_min <= y;
+		y_max <= y;
+	end
+	if (orange_detect & in_valid) begin	//Update bounds when the pixel is fuchsia
+		if (x < x_min) x_min <= x;
+		if (x > x_max) x_max <= x;
+		if (y < y_min) y_min <= y;
+		y_max <= y;
+	end
 	if (sop & in_valid) begin	//Reset bounds on start of packet
 		x_min <= IMAGE_W-11'h1;
 		x_max <= 0;
 		y_min <= IMAGE_H-11'h1;
 		y_max <= 0;
 	end
-//	if (fuchsia_detect & in_valid) begin	//Update bounds when the pixel is fuchsia
-//		if (x < x_min) x_min <= x;
-//		if (x > x_max) x_max <= x;
-//		if (y < y_min) y_min <= y;
-//		y_max <= y;
-//	end
 //	if (sop & in_valid) begin	//Reset bounds on start of packet
 //		x_min <= IMAGE_W-11'h1;
 //		x_max <= 0;
@@ -231,6 +238,7 @@ wire msg_buf_empty;
 `define RED_BOX_MSG_ID "RBB"
 `define FUCHSIA_BOX_MSG_ID "FBB"
 `define TEAL_BOX_MSG_ID "TBB"
+`define ORANGE_BOX_MSG_ID "OBB"
 
 always@(*) begin	//Write words to FIFO as state machine advances
 	case(msg_state)
@@ -244,6 +252,14 @@ always@(*) begin	//Write words to FIFO as state machine advances
 		end
 		2'b01 && teal_detect: begin
 			msg_buf_in = `TEAL_BOX_MSG_ID;	//Message ID
+			msg_buf_wr = 1'b1;
+		end
+		2'b01 && fuchsia_detect: begin
+			msg_buf_in = `FUCHSIA_BOX_MSG_ID;	//Message ID
+			msg_buf_wr = 1'b1;
+		end
+		2'b01 && orange_detect: begin
+			msg_buf_in = `ORANGE_BOX_MSG_ID;	//Message ID
 			msg_buf_wr = 1'b1;
 		end
 		2'b10: begin
