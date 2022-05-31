@@ -102,9 +102,9 @@ assign value = 100*max[7:0]/255;
 wire red_detect;
 assign red_detect = (hue>=0 && hue <20) && (saturation>55 && saturation <80) && (value>30 && value<75);
 wire teal_detect;
-assign teal_detect = (hue>100 && hue <155) && (saturation>20 && saturation<70) && (value>6 && value<77);
+assign teal_detect = (hue>100 && hue <160) && (saturation>23/* && saturation<68*/) && (value>15 && value<77);
 wire fuchsia_detect;
-assign fuchsia_detect = ((hue>320 && hue <=359) || hue < 8) && (saturation>80) && (value>=75);
+assign fuchsia_detect = (hue>280 && hue <=340) && (saturation>25) && (value>=75);
 wire orange_detect;
 assign orange_detect = (hue>=30 && hue<=70) && (saturation>55) && (value>=27);
 
