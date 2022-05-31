@@ -100,13 +100,13 @@ assign value = 100*max[7:0]/255;
 
 // Detect coloured areas
 wire red_detect;
-assign red_detect = ((hue>0 && hue <20) || (hue>356 && hue <360)) && (saturation>50) && (value>60 );//&& value<75);
+assign red_detect = (hue>=0 && hue <20) && (saturation>55 && saturation <80) && (value>30 && value<75);
 wire teal_detect;
-assign teal_detect = (hue>100 && hue <155) && (saturation>22 && saturation<74) && (value>6 && value<47);
+assign teal_detect = (hue>100 && hue <155) && (saturation>20 && saturation<70) && (value>6 && value<77);
 wire fuchsia_detect;
-assign fuchsia_detect = (hue>320 && hue <=360) && (saturation>50) && (value>=35);
+assign fuchsia_detect = ((hue>320 && hue <=359) || hue < 8) && (saturation>80) && (value>=75);
 wire orange_detect;
-assign orange_detect = (hue>=30 && hue<=50) && (saturation>55) && (value>=75);
+assign orange_detect = (hue>=30 && hue<=70) && (saturation>55) && (value>=27);
 
 // Find boundary of cursor box
 
