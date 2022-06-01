@@ -36,30 +36,30 @@ input	clk;
 input	reset_n;
 
 // mm slave
-input							s_chipselect;
-input							s_read;
-input							s_write;
+input				s_chipselect;
+input				s_read;
+input				s_write;
 output	reg	[31:0]	s_readdata;
-input	[31:0]				s_writedata;
-input	[2:0]					s_address;
+input	[31:0]		s_writedata;
+input	[2:0]		s_address;
 
 
 // streaming sink
-input	[23:0]            	sink_data;
-input								sink_valid;
-output							sink_ready;
-input								sink_sop;
-input								sink_eop;
+input	[23:0]     	sink_data;
+input				sink_valid;
+output				sink_ready;
+input				sink_sop;
+input				sink_eop;
 
 // streaming source
-output	[23:0]			  	   source_data;
-output								source_valid;
-input									source_ready;
-output								source_sop;
-output								source_eop;
+output	[23:0]		source_data;
+output				source_valid;
+input				source_ready;
+output				source_sop;
+output				source_eop;
 
 // conduit export
-input                         mode;
+input               mode;
 
 ////////////////////////////////////////////////////////////////////////
 //
@@ -99,69 +99,65 @@ assign saturation = max==0 ? 8'h0 : 100*delta[7:0]/max;
 assign value = 100*max[7:0]/255;
 
 
-
-// Detect red areas
+// Detect coloured areas
 wire red_detect;
-assign red_detect = (hue>0 && hue<20) && (saturation>80) && (value>80 && value<120);
-
-//Detect teal areas
+assign red_detect = (hue>=0 && hue <20) && (saturation>55 && saturation <75) && (value>30 );//&& value<75);
 wire teal_detect;
-assign teal_detect = (hue>150 && hue<200) && (saturation>80) && (value>30 && value<80);
-
-//Detect fuchsia areas
+assign teal_detect = (hue>100 && hue <155) && (saturation>20 && saturation<70) && (value>6 && value<77);
 wire fuchsia_detect;
-assign fuchsia_detect = (hue>280 && hue<330) && (saturation>80) && (value>80 && value<120);
-
-
-//Detect orange areas
+assign fuchsia_detect = (hue>280 && hue <=359) && (saturation>20) && (value>=30);
 wire orange_detect;
-assign orange_detect = (hue>30 && hue<50) && (saturation>80) && (value>80 && value<120);
+assign orange_detect = (hue>=30 && hue<=70) && (saturation>55) && (value>=40);
 
 // Find boundary of cursor box
 
 // Highlight detected areas
-wire [23:0] red_high;
 wire [23:0] fuchsia_high;
+wire [23:0] red_high;
 wire [23:0] teal_high;
 wire [23:0] orange_high;
-
 assign grey = green[7:1] + red[7:2] + blue[7:2]; //Grey = green/2 + red/4 + blue/4
 assign red_high  =  red_detect ? {8'hff, 8'h00, 8'h00} : {grey, grey, grey};
 assign fuchsia_high  =  fuchsia_detect ? {8'hff, 8'h00, 8'hff} : {grey, grey, grey};
-assign teal_high  =  teal_detect ? {8'h00, 8'h80, 8'h80} : {grey, grey, grey};
-assign orange_high  =  orange_detect ? {8'hff, 8'ha5, 8'h00} : {grey, grey, grey};
+assign teal_high  =  teal_detect ? {8'h0, 8'h80, 8'h80} : {grey, grey, grey};
+assign orange_high  =  orange_detect ? {8'hff, 8'h80, 8'h0} : {grey, grey, grey};
+//// Detect coloured areas
+//wire red_detect;
+//assign red_detect = (hue>=0 && hue <20) && (saturation>55 && saturation <80) && (value>30 && value<75);
+//wire teal_detect;
+//assign teal_detect = (hue>100 && hue <155) && (saturation>20 && saturation<70) && (value>6 && value<77);
+//wire fuchsia_detect;
+//assign fuchsia_detect = ((hue>320 && hue <=359) || hue < 8) && (saturation>80) && (value>=75);
+//wire orange_detect;
+//assign orange_detect = (hue>=30 && hue<=70) && (saturation>55) && (value>=27);
+//
+//// Find boundary of cursor box
+//
+//// Highlight detected areas
+//wire [23:0] red_high;
+//wire [23:0] fuchsia_high;
+//wire [23:0] teal_high;
+//wire [23:0] orange_high;
+//
+//assign grey = green[7:1] + red[7:2] + blue[7:2]; //Grey = green/2 + red/4 + blue/4
+//assign red_high  =  red_detect ? {8'hff, 8'h00, 8'h00} : {grey, grey, grey};
+//assign fuchsia_high  =  fuchsia_detect ? {8'hff, 8'h00, 8'hff} : {grey, grey, grey};
+//assign teal_high  =  teal_detect ? {8'h00, 8'h80, 8'h80} : {grey, grey, grey};
+//assign orange_high  =  orange_detect ? {8'hff, 8'ha5, 8'h00} : {grey, grey, grey};
 
-// Show red bounding box
-wire [23:0] r_new_image;
-wire r_bb_active;
-assign r_bb_active = (x == r_left) | (x == r_right);
-assign r_new_image = r_bb_active ? {24'hff0000} : red_high;
-
-// Show fuchsia bounding box
-wire [23:0] f_new_image;
-wire f_bb_active;
-assign f_bb_active = (x == f_left) | (x == f_right);
-assign f_new_image = f_bb_active ? {24'hff00ff} : fuchsia_high;
-
-// Show teal bounding box
-wire [23:0] t_new_image;
-wire t_bb_active;
-assign t_bb_active = (x == t_left) | (x == t_right);
-assign t_new_image = t_bb_active ? {24'h008080} : teal_high;
-
-// Show orange bounding box
-wire [23:0] o_new_image;
-wire o_bb_active;
-assign o_bb_active = (x == o_left) | (x == o_right);
-assign o_new_image = o_bb_active ? {24'hffa500} : orange_high;
+// Show bounding box
+wire [23:0] new_image;
+wire bb_active;
+assign bb_active = (x == r_left) | (x == r_right) | (x == f_left) | (x == f_right) | (x == t_left) | (x == t_right) | (x == o_left) | (x == o_right) ;
+assign new_image = bb_active ? bb_col : red_detect ? red_high : teal_detect ? teal_high : fuchsia_detect ? fuchsia_high : orange_high;
 
 // Switch output pixels depending on mode switch
 // Don't modify the start-of-packet word - it's a packet discriptor
 // Don't modify data in non-video packets
-assign {red_out, green_out, blue_out} = (mode & ~sop & packet_video) ? r_new_image : {red,green,blue};
+assign {red_out, green_out, blue_out} = (mode & ~sop & packet_video) ? new_image : {red,green,blue};
 
 //Count valid pixels to tget the image coordinates. Reset and detect packet type on Start of Packet.
-reg [10:0] x, y;
+reg [10:0] x;
 reg packet_video;
 always@(posedge clk) begin
 	if (sop) begin
@@ -182,7 +178,7 @@ end
 
 
 //Find first and last red pixels
-reg [10:0] r_x_min, r_y_min, r_x_max, r_y_max;
+reg [10:0] r_x_min, r_x_max;
 always@(posedge clk) begin
 	if (red_detect & in_valid) begin	//Update bounds when the pixel is red
 		if (x < r_x_min) r_x_min <= x;
@@ -197,7 +193,7 @@ always@(posedge clk) begin
 end
 
 //Find first and last fuchsia pixels
-reg [10:0] f_x_min, f_y_min, f_x_max, f_y_max;
+reg [10:0] f_x_min, f_x_max;
 always@(posedge clk) begin
 	if (fuchsia_detect & in_valid) begin	//Update bounds when the pixel is red
 		if (x < f_x_min) f_x_min <= x;
@@ -213,7 +209,7 @@ end
 
 
 //Find first and last teal pixels
-reg [10:0] t_x_min, t_y_min, t_x_max, t_y_max;
+reg [10:0] t_x_min, t_x_max;
 always@(posedge clk) begin
 	if (teal_detect & in_valid) begin	//Update bounds when the pixel is red
 		if (x < t_x_min) t_x_min <= x;
@@ -229,7 +225,7 @@ end
 
 
 //Find first and last orange pixels
-reg [10:0] o_x_min, o_y_min, o_x_max, o_y_max;
+reg [10:0] o_x_min, o_x_max;
 always@(posedge clk) begin
 	if (orange_detect & in_valid) begin	//Update bounds when the pixel is red
 		if (x < o_x_min) o_x_min <= x;
@@ -262,7 +258,7 @@ always@(posedge clk) begin
 		
 		t_left <= t_x_min;
 		t_right <= t_x_max;
-		
+
 		o_left <= o_x_min;
 		o_right <= o_x_max;
 		
@@ -270,57 +266,25 @@ always@(posedge clk) begin
 		//Start message writer FSM once every MSG_INTERVAL frames, if there is room in the FIFO
 		frame_count <= frame_count - 1;
 		
-		if (frame_count == 0 && r_msg_buf_size < MESSAGE_BUF_MAX - 3) begin
-			msg_state <= 2'b01;
-			frame_count <= MSG_INTERVAL-1;
-		end
-		if (frame_count == 0 && f_msg_buf_size < MESSAGE_BUF_MAX - 3) begin
-			msg_state <= 2'b01;
-			frame_count <= MSG_INTERVAL-1;
-		end
-		if (frame_count == 0 && t_msg_buf_size < MESSAGE_BUF_MAX - 3) begin
-			msg_state <= 2'b01;
-			frame_count <= MSG_INTERVAL-1;
-		end
-		if (frame_count == 0 && o_msg_buf_size < MESSAGE_BUF_MAX - 3) begin
+		if (frame_count == 0 && msg_buf_size < MESSAGE_BUF_MAX - 3) begin
 			msg_state <= 2'b01;
 			frame_count <= MSG_INTERVAL-1;
 		end
 	end
 	
 	//Cycle through message writer states once started
-	if (msg_state != 2'b00) msg_state <= msg_state + 2'b01;
+	if (msg_state != 2'b00) msg_state <= msg_state + 4'b0001;
 
 end
 	
 //Generate output messages for CPU
-reg [31:0] r_msg_buf_in; 
-wire [31:0] r_msg_buf_out;
-reg r_msg_buf_wr;
-wire r_msg_buf_rd, r_msg_buf_flush;
-wire [7:0] r_msg_buf_size;
-wire r_msg_buf_empty;
+reg [31:0] msg_buf_in; 
+wire [31:0] msg_buf_out;
+reg msg_buf_wr;
+wire msg_buf_rd, msg_buf_flush;
+wire [7:0] msg_buf_size;
+wire msg_buf_empty;
 
-reg [31:0] f_msg_buf_in; 
-wire [31:0] f_msg_buf_out;
-reg f_msg_buf_wr;
-wire f_msg_buf_rd, f_msg_buf_flush;
-wire [7:0] f_msg_buf_size;
-wire f_msg_buf_empty;
-
-reg [31:0] t_msg_buf_in; 
-wire [31:0] t_msg_buf_out;
-reg t_msg_buf_wr;
-wire t_msg_buf_rd, t_msg_buf_flush;
-wire [7:0] t_msg_buf_size;
-wire t_msg_buf_empty;
-
-reg [31:0] o_msg_buf_in; 
-wire [31:0] o_msg_buf_out;
-reg o_msg_buf_wr;
-wire o_msg_buf_rd, o_msg_buf_flush;
-wire [7:0] o_msg_buf_size;
-wire o_msg_buf_empty;
 
 `define RED_BOX_MSG_ID "RBB"
 `define FUCHSIA_BOX_MSG_ID "FBB"
@@ -330,102 +294,76 @@ wire o_msg_buf_empty;
 always@(*) begin	//Write words to FIFO as state machine advances
 	case(msg_state)
 		2'b00: begin
-			r_msg_buf_in = 32'b0;
-			r_msg_buf_wr = 1'b0;
-			f_msg_buf_in = 32'b0;
-			f_msg_buf_wr = 1'b0;
-			t_msg_buf_in = 32'b0;
-			t_msg_buf_wr = 1'b0;
-			o_msg_buf_in = 32'b0;
-			o_msg_buf_wr = 1'b0;
+			msg_buf_in = 32'b0;
+			msg_buf_wr = 1'b0;
+			
 		end
 		2'b01 && red_detect: begin
-			r_msg_buf_in = `RED_BOX_MSG_ID;	//Message ID red
-			r_msg_buf_wr = 1'b1;
+			msg_buf_in = `RED_BOX_MSG_ID;	//Message ID red
+			msg_buf_wr = 1'b1;
 		end
 		2'b01 && teal_detect: begin
-			t_msg_buf_in = `TEAL_BOX_MSG_ID;	//Message ID teal
-			t_msg_buf_wr = 1'b1;
+			msg_buf_in = `TEAL_BOX_MSG_ID;	//Message ID teal
+			msg_buf_wr = 1'b1;
 		end
 		2'b01 && fuchsia_detect: begin
-			f_msg_buf_in = `FUCHSIA_BOX_MSG_ID;	//Message ID fuchsia
-			f_msg_buf_wr = 1'b1;
+			msg_buf_in = `FUCHSIA_BOX_MSG_ID;	//Message ID fuchsia
+			msg_buf_wr = 1'b1;
 		end
 		2'b01 && orange_detect: begin
-			o_msg_buf_in = `ORANGE_BOX_MSG_ID;	//Message ID orange
-			o_msg_buf_wr = 1'b1;
+			msg_buf_in = `ORANGE_BOX_MSG_ID;	//Message ID orange
+			msg_buf_wr = 1'b1;
 		end
 		//red
-		2'b10: begin
-			r_msg_buf_in = {5'b0, r_x_min};	//Top left coordinate red
-			r_msg_buf_wr = 1'b1;
-			f_msg_buf_in = {5'b0, f_x_min};	//Top left coordinate fuchsia
-			f_msg_buf_wr = 1'b1;
-			t_msg_buf_in = {5'b0, t_x_min};	//Top left coordinate teal
-			t_msg_buf_wr = 1'b1;
-			o_msg_buf_in = {5'b0, o_x_min};	//Top left coordinate orange
-			o_msg_buf_wr = 1'b1;
+		2'b10 && red_detect: begin
+			msg_buf_in = {5'b0, r_x_min};	//Top left coordinate red
+			msg_buf_wr = 1'b1;
 		end
-		2'b11: begin
-			r_msg_buf_in = {5'b0, r_x_max}; //Bottom right coordinate red
-			r_msg_buf_wr = 1'b1;
-			f_msg_buf_in = {5'b0, f_x_max}; //Bottom right coordinate fuchsia
-			f_msg_buf_wr = 1'b1;
-			t_msg_buf_in = {5'b0, t_x_max}; //Bottom right coordinate teal
-			t_msg_buf_wr = 1'b1;
-			o_msg_buf_in = {5'b0, o_x_max}; //Bottom right coordinate orange
-			o_msg_buf_wr = 1'b1;
+		2'b11 && red_detect: begin	
+			msg_buf_in = {5'b0, r_x_max}; //Bottom right coordinate red
+			msg_buf_wr = 1'b1;
+		end
+		//fuchsia
+		2'b10 && fuchsia_detect: begin
+			msg_buf_in = {5'b0, f_x_min};	//Top left coordinate fuchsia
+			msg_buf_wr = 1'b1;
+		end
+		2'b11 && fuchsia_detect: begin
+			msg_buf_in = {5'b0, f_x_max}; //Bottom right coordinate fuchsia
+			msg_buf_wr = 1'b1;
+		end
+		//teal
+		2'b10 && teal_detect: begin
+			msg_buf_in = {5'b0, t_x_min};	//Top left coordinate teal
+			msg_buf_wr = 1'b1;
+		end
+		2'b11 && teal_detect: begin
+			msg_buf_in = {5'b0, t_x_max}; //Bottom right coordinate teal
+			msg_buf_wr = 1'b1;
+		end
+		//orange
+		2'b10 && orange_detect: begin
+			msg_buf_in = {5'b0, o_x_min};	//Top left coordinate orange
+			msg_buf_wr = 1'b1;
+		end
+		2'b11 && orange_detect: begin
+			msg_buf_in = {5'b0, o_x_max}; //Bottom right coordinate orange
+			msg_buf_wr = 1'b1;
 		end
 	endcase
 end
 
 
-//Output message FIFO red
-MSG_FIFO	MSG_FIFO_inst_r (
+//Output message FIFO
+MSG_FIFO	MSG_FIFO_inst (
 	.clock (clk),
-	.data (r_msg_buf_in),
-	.rdreq (r_msg_buf_rd),
-	.sclr (~reset_n | r_msg_buf_flush),
-	.wrreq (r_msg_buf_wr),
-	.q (r_msg_buf_out),
-	.usedw (r_msg_buf_size),
-	.empty (r_msg_buf_empty)
-	);
-
-//Output message FIFO fuchsia
-MSG_FIFO	MSG_FIFO_inst_f (
-	.clock (clk),
-	.data (f_msg_buf_in),
-	.rdreq (f_msg_buf_rd),
-	.sclr (~reset_n | f_msg_buf_flush),
-	.wrreq (f_msg_buf_wr),
-	.q (f_msg_buf_out),
-	.usedw (f_msg_buf_size),
-	.empty (f_msg_buf_empty)
-	);
-
-	//Output message FIFO teal
-MSG_FIFO	MSG_FIFO_inst_t (
-	.clock (clk),
-	.data (t_msg_buf_in),
-	.rdreq (t_msg_buf_rd),
-	.sclr (~reset_n | t_msg_buf_flush),
-	.wrreq (t_msg_buf_wr),
-	.q (t_msg_buf_out),
-	.usedw (t_msg_buf_size),
-	.empty (t_msg_buf_empty)
-	);
-	
-//Output message FIFO orange
-MSG_FIFO	MSG_FIFO_inst_o (
-	.clock (clk),
-	.data (o_msg_buf_in),
-	.rdreq (o_msg_buf_rd),
-	.sclr (~reset_n | o_msg_buf_flush),
-	.wrreq (o_msg_buf_wr),
-	.q (o_msg_buf_out),
-	.usedw (o_msg_buf_size),
-	.empty (o_msg_buf_empty)
+	.data (msg_buf_in),
+	.rdreq (msg_buf_rd),
+	.sclr (~reset_n | msg_buf_flush),
+	.wrreq (msg_buf_wr),
+	.q (msg_buf_out),
+	.usedw (msg_buf_size),
+	.empty (msg_buf_empty)
 	);
 
 
@@ -493,10 +431,7 @@ end
 
 
 //Flush the message buffer if 1 is written to status register bit 4
-assign r_msg_buf_flush = (s_chipselect & s_write & (s_address == `REG_STATUS) & s_writedata[4]);
-assign f_msg_buf_flush = (s_chipselect & s_write & (s_address == `REG_STATUS) & s_writedata[4]);
-assign t_msg_buf_flush = (s_chipselect & s_write & (s_address == `REG_STATUS) & s_writedata[4]);
-assign o_msg_buf_flush = (s_chipselect & s_write & (s_address == `REG_STATUS) & s_writedata[4]);
+assign msg_buf_flush = (s_chipselect & s_write & (s_address == `REG_STATUS) & s_writedata[4]);
 
 
 // Process reads
@@ -511,8 +446,8 @@ begin
 	end
 	
 	else if (s_chipselect & s_read) begin
-		if   (s_address == `REG_STATUS) s_readdata <= {16'b0,r_msg_buf_size,reg_status};
-		if   (s_address == `READ_MSG) s_readdata <= {r_msg_buf_out};
+		if   (s_address == `REG_STATUS) s_readdata <= {16'b0,msg_buf_size,reg_status};
+		if   (s_address == `READ_MSG) s_readdata <= {msg_buf_out};
 		if   (s_address == `READ_ID) s_readdata <= 32'h1234EEE2;
 		if   (s_address == `REG_BBCOL) s_readdata <= {8'h0, bb_col};
 	end
@@ -521,10 +456,7 @@ begin
 end
 
 //Fetch next word from message buffer after read from READ_MSG
-assign r_msg_buf_rd = s_chipselect & s_read & ~read_d & ~r_msg_buf_empty & (s_address == `READ_MSG);
-assign f_msg_buf_rd = s_chipselect & s_read & ~read_d & ~f_msg_buf_empty & (s_address == `READ_MSG);
-assign t_msg_buf_rd = s_chipselect & s_read & ~read_d & ~t_msg_buf_empty & (s_address == `READ_MSG);
-assign o_msg_buf_rd = s_chipselect & s_read & ~read_d & ~o_msg_buf_empty & (s_address == `READ_MSG);
+assign msg_buf_rd = s_chipselect & s_read & ~read_d & ~msg_buf_empty & (s_address == `READ_MSG);
 						
 
 
