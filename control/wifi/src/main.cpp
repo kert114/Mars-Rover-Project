@@ -21,6 +21,22 @@ IPAddress secondaryDNS(8,8,4,4);
 
 MFRC522 mfrc522(SS_PIN,RST_PIN);
 
+const char* ssid ="Yusuf";
+const char* password = "peepeepoopoo";
+
+void initWiFi(){
+  WiFi.mode(WIFI_STA);  WiFi.begin(ssid,password);
+  Serial.print("connecting to WiFi ..");
+  while (WiFi.status()!=WL_CONNECTED){
+    Serial.print('.');
+    delay(1000);
+  
+  }
+  Serial.println(ssid);
+  Serial.println();
+  Serial.println("local ip is:");
+  Serial.println(WiFi.localIP());
+}
 
 void setup() {
   Serial.begin(115200);
@@ -29,37 +45,13 @@ void setup() {
   if(!WiFi.config(local_IP,gateway,subnet,primaryDNS,secondaryDNS)){
     Serial.println("STA Failed to configure");
   }
-}
-
-void initWiFi(){
-  WiFi.mode(WIFI_STA);  WiFi.begin("Yusuf","peeepeepoopoo");
-  Serial.print("connecting to WiFi ..");
-  while (WiFi.status()!=WL_CONNECTED){
-    Serial.print('.');
-    delay(1000);
-  
-  }
-  Serial.println(WiFi.localIP());
+  initWiFi();
+  Serial.print("RRSI: ");
+  Serial.println(WiFi.RSSI());
 }
 
 void loop() {
 
-/*
-if(mfrc522.PICC_IsNewCardPresent())
-{
-  if(mfrc522.PICC_ReadCardSerial())
-  {
-    idcard = "";
-    for(byte i=0; i<mfrc522.uid.size;i++){
-        idcard +=(mfrc522.uid.uidByte[i]<0x10)? "0":"")
-        + String(mfrc522.uid.uidByte[i],HEX);
-    }
-  Serial.println("tag rfid :" + idcard);
-
-  mfrc522.PICC_HaltA();
-  mfrc522.PCD_StopCrypto1();
-  }
-} */
 
 unsigned long previousMillis=0;
 unsigned long interval = 30000;
@@ -68,7 +60,7 @@ if((WiFi.status() !=WL_CONNECTED)&& (currentMillis - previousMillis >=interval))
   Serial.print(millis());
   Serial.println("Reconnecting to Wifi....");
   WiFi.disconnect();
-  WiFi.reconnect();
+  initWiFi();
   previousMillis=currentMillis;
 }
 

@@ -1,10 +1,10 @@
 
 From Control to command
-{o;x:val, y:val} # defines colour
-{t;x:val, y:val}
-{f;x:val, y:val}
-{r;x:val, y:val}
-{p;x:val, y:val} # power supply underground 
-
-
+o;xval,yval     # orange
+t;xval,yval    #teal
+f;xval,yval     #fuschia
+r;xval,yval     #redx`x
+p;xval,yval     # power supply underground 
+n;xval,yval    
+radar;xval,yval    
 # from rover to server
