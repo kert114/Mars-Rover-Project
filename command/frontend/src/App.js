@@ -7,11 +7,15 @@ import Home from './components/Home';
 import Map from './components/map';
 import Drive from './components/Drive'
 import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
+import React from 'react';
 
 
 function App() {
+  //setInterval(function(){"http://localhost:3000/drive".reload(true);}, 1000);
+  //window.location.reload(true);
   return (
     <Router>
+      
       <div className="App">
           <Nav />
           <Routes> 
