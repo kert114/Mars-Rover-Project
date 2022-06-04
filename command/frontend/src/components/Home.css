@@ -1,0 +1,80 @@
+h1 {
+    animation-name: example;
+    animation-duration:  4s;
+    position: relative;
+    animation-iteration-count: infinite;
+    font-size: 40px;
+    text-align: center;
+}
+p1{
+    font-family: Tahoma, Verdana, sans-serif;
+    size: 20px;
+    color: rgb(9, 9, 9);
+    text-align: center;
+    margin: auto;
+}
+.bottomleft {
+    position: absolute;
+    bottom: 8px;
+    left: 16px;
+    font-size: 18px;
+}
+
+@keyframes example {
+    0%   {color: red;}
+    10%  {color: orange;}
+    20%  {color: yellow;}
+    50% {color: rgb(132, 17, 132);}
+    75%  {color: rgb(190, 23, 145);}
+    100%  {color: rgb(221, 53, 15);}
+}
+.flier {
+	pointer-events: none;
+}
+.flier > * {
+    animation: whoosh 50s linear infinite;
+    pointer-events: none !important;
+	top: 0;
+	left: 0;
+	transform: translateX(-120%) translateY(-120%) rotateZ(0);
+	position: fixed;
+	animation-delay: 1s;
+	z-index: 999999;
+
+    background-image: url("../rover2.png");
+    background-repeat: no-repeat;
+
+  }
+@keyframes whoosh{
+    98.001%, 0% {
+        display: block;
+    transform: translateX(-200%) translateY(3000%)
+    }
+
+    15% {
+    transform: translateX(100vw) translateY(3000%) 
+    }
+
+    15.001%, 18% {
+    transform: translateX(100vw) translateY(3000%) 
+    }
+    40% {
+    transform: translateX(-200%) translateY(3000%) 
+    }
+
+    40.001%, 43% {
+    transform: translateX(-200%) translateY(3000%)
+    }
+
+    65% {
+    transform: translateX(100vw) translateY(3000%)
+    }
+
+    65.001%, 68% {
+    transform: translateX(20vw) translateY(3000%)
+    }
+
+    95% {
+    transform: translateX(10vw) translateY(3000%)
+    }
+}
