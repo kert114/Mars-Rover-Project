@@ -3319,7 +3319,7 @@ int main() {
    21858:	00880004 	movi	r2,8192
    2185c:	e0bffb15 	stw	r2,-20(fp)
 	alt_u16 gain = GAIN_INIT;
-   21860:	00818004 	movi	r2,1536
+   21860:	00802004 	movi	r2,128
    21864:	e0bffc0d 	sth	r2,-16(fp)
 
 	OV8865SetExposure(exposureTime);
