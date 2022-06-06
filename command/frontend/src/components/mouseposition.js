@@ -1,12 +1,21 @@
 import React, { useState, useEffect } from 'react';
 
-function GetkeyPress (){
-    useEffect (()=>{
-        document.addEventListener('keydown', detectKeydown, true)
-    },[])
-    const detectKeydown = (e) => {
-        console.log("clicked key " , e.key);
-    }
-}
+const PositionMouse=()=>{
 
-export default GetkeyPress;   
+    const [position, setPosition]=  useState([
+        {x: null, y: null}
+    ])
+    const onMouseMove=(event)=>{
+        setPosition({
+        x:event.clientX, 
+        y:event.clientY
+        });
+    };
+    
+    useEffect(()=>{
+        window.addEventListener("mousemove", onMouseMove);
+    return()=> window.removeEventListener("mousemove",onMouseMove);},[]);
+    return position;
+};
+
+export default PositionMouse;
