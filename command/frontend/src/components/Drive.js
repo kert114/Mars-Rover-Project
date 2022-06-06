@@ -7,7 +7,7 @@ import Socket from './socket';
 
 function Drive() {
 
-    const [automated, setDrivingMethod] = useState(false);
+    const [automated, ManualMethod] = useState(false);
 
     function sendAngle() {
         if(automated) {
@@ -18,8 +18,6 @@ function Drive() {
             } else {
                 var enteredAngle = document.getElementById('angle').value;
                 Socket.emit("Angle", enteredAngle);
-                // eslint-disable-next-line
-              //  alert('Angle sent.' + ' Angle: ' + enteredAngle + ' degrees');
             }
         }
     }
@@ -33,14 +31,12 @@ function Drive() {
             } else {
                 var enteredDistance = document.getElementById('distance').value;
                 Socket.emit("Distance", enteredDistance);
-                // eslint-disable-next-line
-           //     alert('Distance sent.' + 'Distance: ' + enteredDistance + ' mm');
             }
         }
     }
 
     function automationMode() {
-        setDrivingMethod(true);
+        ManualMethod(true);
         Socket.emit("Command", "automation");
         alert("The rover will start investigating!");
     }
@@ -50,7 +46,7 @@ function Drive() {
     }
     function stop() {
         Socket.emit("Command", "stop");
-        setDrivingMethod(false);
+        ManualMethod(false);
         alert("Automated mode exited");
     }
 
