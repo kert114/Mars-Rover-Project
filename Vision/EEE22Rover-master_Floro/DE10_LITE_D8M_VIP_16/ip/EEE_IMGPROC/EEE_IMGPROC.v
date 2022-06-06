@@ -91,21 +91,21 @@ assign value = 100*max[7:0]/255;
 
 // Detect coloured areas
 wire red_detect;
-assign red_detect = (hue>=0 && hue <30) && (saturation>55) && (value>30);
+assign red_detect = (hue>=0 && hue <20) && (saturation>60) && (value>50);
 wire teal_detect;
-assign teal_detect = (hue>100 && hue <155) && (saturation>20 && saturation<70) && (value>6 && value<77);
+assign teal_detect = (hue>112 && hue <172) && (saturation>30) && (value<77);
 wire fuchsia_detect;
-assign fuchsia_detect = ((hue>320 && hue <=359) || hue < 8) && (saturation>80) && (value>=75);
+assign fuchsia_detect = (hue>350 || (hue>4 && hue<25 )) && (saturation>40 && saturation<85) && (value>=70);
 wire orange_detect;
-assign orange_detect = (hue>=30 && hue<=70) && (saturation>55) && (value>=27);
+assign orange_detect = (hue>=26 && hue<=60) && (saturation>52) && (value>=75);
 
 // Find boundary of cursor box
 
 //stores values of detected previous pixels
-reg r1, r2, r3, r4, r5, r6;// r7, r8;
-reg f1, f2, f3, f4, f5, f6;// f7, f8; 
-reg t1, t2, t3, t4, t5, t6;// t7, t8;
-reg o1, o2, o3, o4, o5, o6;// o7, o8;
+reg r1, r2, r3, r4, r5, r6, r7, r8;
+reg f1, f2, f3, f4, f5, f6, f7, f8; 
+reg t1, t2, t3, t4, t5, t6, t7, t8;
+reg o1, o2, o3, o4, o5, o6, o7, o8;
 
 initial begin
 	r1<=0;
@@ -114,8 +114,8 @@ initial begin
 	r4<=0;
 	r5<=0;
 	r6<=0;
-	//r7<=0;
-	//r8<=0;
+	r7<=0;
+	r8<=0;
 
 	f1<=0;
 	f2<=0;
@@ -123,8 +123,8 @@ initial begin
 	f4<=0;
 	f5<=0;
 	f6<=0;
-	//f7<=0;
-	//f8<=0;
+	f7<=0;
+	f8<=0;
 
 	t1<=0;
 	t2<=0;
@@ -132,8 +132,8 @@ initial begin
 	t4<=0;
 	t5<=0;
 	t6<=0;
-	//t7<=0;
-	//t8<=0;
+	t7<=0;
+	t8<=0;
 
 	o1<=0;
 	o2<=0;
@@ -141,62 +141,9 @@ initial begin
 	o4<=0;
 	o5<=0;
 	o6<=0;
-	//o7<=0;
-	//o8<=0;
+	o7<=0;
+	o8<=0;
 end
-
-//find median of 9 consecutive pixels
-/*function  median;
-    input p1;
-    input p2;
-    input p3;
-
-    begin
-    if(p1>=p3 && p1<=p2) begin // 3 1 2
-		median=p1;
-	end
-	else if(p1>=p2 && p1<=p3) begin  // 2 1 3 
-		median=p1;
-	end
-	else if(p2>=p1 && p2<=p3) begin  // 1 2 3 
-		median=p2;
-	end
-	else if(p2>=p3 && p2<=p1) begin // 3 2 1 
-		median=p2;
-	end
-	else if(p3>=p1 && p3<=p2) begin  // 1 3 2
-		median=p3;
-	end
-	else if(p3>=p2 && p3<=p1) begin // 2 3 1
-		median=p3;
-	end
-		
-    end
-
-endfunction
-
-function median9;
-	input p1;
-	input p2;
-	input p3;
-	input p4;
-	input p5;
-	input p6;
-	input p7;
-	input p8;
-	input p9;
-	reg temp1;
-	reg temp2;
-	reg temp3;
-	
-	temp1 = median(p1, p2, p3);
-	temp2 = median(p4, p5, p6);
-	temp3 = median(p7, p8, p9);
-
-	median9 = median(temp1, temp2, temp3); //nested median finding, error prone but should detect most cases correctly 
-
-
-endfunction*/
 
 //since values are either only 1 or 0, just add the values together, if it's <5 then the median is 1 else the median is 0
 
@@ -208,13 +155,13 @@ function median;
 	input p5;
 	input p6;
 	input p7;
-	//input p8;
-	//input p9;
+	input p8;
+	input p9;
 	reg [8:0] px;
 
-	px=p1+p2+p3+p4+p5+p6+p7;//+p8+p9;
+	px=p1+p2+p3+p4+p5+p6+p7+p8+p9;
 
-	if (px>=4) begin
+	if (px>=5) begin
 		median=1;
 	end
 	else begin
@@ -225,8 +172,9 @@ endfunction
 
 wire red_median, fuchsia_median, teal_median, orange_median;
 always @(negedge clk) begin
-	//r8=r7;
-	//r7=r6;
+	
+	r8=r7;
+	r7=r6;
 	r6=r5;
 	r5=r4;
 	r4=r3;
@@ -234,8 +182,8 @@ always @(negedge clk) begin
 	r2=r1;
 	r1=(red_detect);
 
-	//f8=f7;
-	//f7=f6;
+	f8=f7;
+	f7=f6;
 	f6=f5;
 	f5=f4;
 	f4=f3;
@@ -243,8 +191,8 @@ always @(negedge clk) begin
 	f2=f1;
 	f1=(fuchsia_detect);
 
-	//t8=t7;
-	//t7=t6;
+	t8=t7;
+	t7=t6;
 	t6=t5;
 	t5=t4;
 	t4=t3;
@@ -252,8 +200,8 @@ always @(negedge clk) begin
 	t2=t1;
 	t1=(teal_detect);
 
-	//o8=o7;
-	//o7=o6;
+	o8=o7;
+	o7=o6;
 	o6=o5;
 	o5=o4;
 	o4=o3;
@@ -262,22 +210,26 @@ always @(negedge clk) begin
 	o1=(orange_detect);
 end
 
-assign red_median = median(red_detect, r1, r2, r3, r4, r5, r6);// r7, r8);
-assign fuchsia_median = median(fuchsia_detect, f1, f2, f3, f4, f5, f6);// f7, f8);
-assign teal_median = median(teal_detect, t1, t2, t3, t4, t5, t6);// t7, t8);
-assign orange_median = median(orange_detect, o1, o2, o3, o4, o5, o6);// o7, o8);
+assign red_median = median(red_detect, r1, r2, r3, r4, r5, r6, r7, r8);
+assign fuchsia_median = median(fuchsia_detect, f1, f2, f3, f4, f5, f6, f7, f8);
+assign teal_median = median(teal_detect, t1, t2, t3, t4, t5, t6, t7, t8);
+assign orange_median = median(orange_detect, o1, o2, o3, o4, o5, o6, o7, o8);
 
 // Highlight detected areas
-wire [23:0] red_high;
+/*wire [23:0] red_high;
 wire [23:0] fuchsia_high;
 wire [23:0] teal_high;
-wire [23:0] orange_high;
+wire [23:0] orange_high;*/
+wire [23:0] colour_high;
 
 assign grey = green[7:1] + red[7:2] + blue[7:2]; //Grey = green/2 + red/4 + blue/4
-assign red_high  =  (red_median & red_detect) ? {8'hff, 8'h00, 8'h00} : {grey, grey, grey};
-assign fuchsia_high  =  (fuchsia_median & fuchsia_detect) ? {8'hff, 8'h00, 8'hff} : {grey, grey, grey};
-assign teal_high  =  (teal_median & teal_detect) ? {8'h00, 8'h80, 8'h80} : {grey, grey, grey};
-assign orange_high  =  (orange_median & orange_detect) ? {8'hff, 8'ha5, 8'h00} : {grey, grey, grey};
+/*assign red_high  =  (red_median && red_detect) ? {8'hff, 8'h00, 8'h00} : {grey, grey, grey};
+assign fuchsia_high  =  (fuchsia_median && fuchsia_detect) ? {8'hff, 8'h00, 8'hff} : {grey, grey, grey};
+assign teal_high  =  (teal_median && teal_detect) ? {8'h00, 8'h80, 8'h80} : {grey, grey, grey};
+assign orange_high  =  (orange_median && orange_detect) ? {8'hff, 8'ha5, 8'h00} : {grey, grey, grey};*/
+
+assign colour_high  =  (red_median && red_detect && r1 && r2 && r3) ? {8'hff, 8'h00, 8'h00} :  (fuchsia_median && fuchsia_detect && f1 && f2 && f3) ? {8'hff, 8'h00, 8'hff} : 
+(teal_median && teal_detect && t1 && t2 && t3) ? {8'h00, 8'h80, 8'h80} :  (orange_median && orange_detect && o1 && o2 && o3) ? {8'hff, 8'ha5, 8'h00} : {grey, grey, grey};
 
 // Show bounding box
 wire [23:0] new_image;
@@ -286,8 +238,8 @@ assign bb_active_red = (x == r_left) | (x == r_right);
 assign bb_active_fuchsia =(x == f_left) | (x == f_right);
 assign bb_active_teal = (x == t_left) | (x == t_right);
 assign bb_active_orange = (x == o_left) | (x == o_right) ;
-assign new_image = bb_active_red ? red_high : bb_active_teal ? teal_high : 
-bb_active_fuchsia ? fuchsia_high : bb_active_orange ? orange_high : {grey, grey, grey};
+assign new_image = bb_active_red ?{8'hff, 8'h00, 8'h00} : bb_active_teal ? {8'h00, 8'h80, 8'h80} : 
+bb_active_fuchsia ? {8'hff, 8'h00, 8'hff} : bb_active_orange ? {8'hff, 8'ha5, 8'h00} : colour_high;
 
 
 // Switch output pixels depending on mode switch
@@ -320,25 +272,25 @@ end
 reg [10:0] r_x_min, r_x_max, f_x_min, f_x_max, t_x_min, t_x_max,  o_x_min, o_x_max;
 always@(posedge clk) begin
 	//Find first and last red pixels
-	if (red_detect & red_median & in_valid & y>280) begin	//Update bounds when the pixel is red
+	if (red_detect && red_median && r1 && r2 && r3 && in_valid && y>120) begin	//Update bounds when the pixel is red
 		if (x < r_x_min) r_x_min <= x;
 		if (x > r_x_max) r_x_max <= x;
 	end
 
 	//Find first and last fuchsia pixels
-	if (fuchsia_detect & fuchsia_median & in_valid & y>280) begin	//Update bounds when the pixel is fuchsia
+	if (fuchsia_detect && fuchsia_median && f1 && f2 && f3 && in_valid && y>120) begin	//Update bounds when the pixel is fuchsia
 		if (x < f_x_min) f_x_min <= x;
 		if (x > f_x_max) f_x_max <= x;
 	end
 
 	//Find first and last teal pixels
-	if (teal_detect & teal_median & in_valid & y>280) begin	//Update bounds when the pixel is teal
+	if (teal_detect && teal_median && t1 && t2 && t3 && in_valid && y>120) begin	//Update bounds when the pixel is teal
 		if (x < t_x_min) t_x_min <= x;
 		if (x > t_x_max) t_x_max <= x;
 	end
 
 	//Find first and last orange pixels
-	if (orange_detect & orange_median & in_valid & y>280) begin	//Update bounds when the pixel is red
+	if (orange_detect && orange_median && o1 && o2 && o3 && in_valid && y>120) begin	//Update bounds when the pixel is red
 		if (x < o_x_min) o_x_min <= x;
 		if (x > o_x_max) o_x_max <= x;
 	end
