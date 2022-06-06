@@ -1,0 +1,77 @@
+
+.angleLabel {
+    position: absolute;
+    left: 745px;
+    top: 210px;
+}
+.angleBox {
+    position: absolute;
+    left: 810px;
+    top: 210px;
+}
+
+.distanceLabel {
+    position: absolute;
+    left: 700px;
+    top: 310px;
+}
+.distanceBox {
+    position: absolute;
+    left: 810px;
+    top: 310px;
+}
+
+.sendAngle {
+    position: absolute;
+    left: 1000px;
+    top: 200px;
+}
+
+.sendDistance {
+    position: absolute;
+    left: 1000px;
+    top: 300px;
+}
+
+.header {
+    color: rgb(0, 0, 0);
+    font-size: 30px;
+}
+
+.automated {
+    position: absolute;
+    left: 200px;
+    top: 150px;
+}
+
+.manual {
+    position: absolute;
+    left: 800px; /*370*/
+    top: 150px;
+}
+
+
+.automationMode {
+    position: absolute;
+    left: 220px;
+    top: 210px;
+}
+
+.returntobase {
+    position: absolute;
+    left: 235px;
+    top: 280px;
+}
+
+.stop {
+    position: absolute;
+    left: 275px;
+    top: 350px;
+}
+
+
+.viewmap {
+    position: absolute;
+    left: 550px;
+    top: 250px;
+}
