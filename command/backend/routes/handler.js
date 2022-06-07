@@ -1,13 +1,9 @@
 const express = require('express');
-const router = express.Router();
+const router = express.Router();// the mpules you need to use. 
 
-router.get('/tweets', (req, res) => {
+router.get('/control', (req, res) => { //takes the request and the response. 
+    //if anyone goes to the tweets page, they wll get back a json response. 
     const str = [
-        {
-            "name": "Codr Kai",
-            "msg": "This is my first tweet!",
-            "username": "codrkai"
-        },
         {
             "name": "Samantha Kai",
             "msg": "React JS is so simple!",
@@ -22,8 +18,8 @@ router.get('/tweets', (req, res) => {
     res.end(JSON.stringify(str));
 });
 
-router.post('/addTweet', (req, res) => {
-    res.end('NA');
+router.post('/control', (req, res) => {
+    res.end('NA'); // not implemented yet.  
 });
 
 module.exports = router;

@@ -6,7 +6,7 @@ import Nav from './components/Nav';
 import Home from './components/Home';
 import Map from './components/map';
 import Drive from './components/Drive'
-import Tweet from './components/Tweets';
+import Control from './components/Control';
 import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
 import React from 'react';
 
@@ -23,7 +23,7 @@ function App() {
             <Route path="/" exact element={<Home/>} />
             <Route path="/map" exact element={<Map/>}/>
             <Route path='/drive' exact element={<Drive/>}/>
-            <Route path="/tweets" exact component={<Tweet/>} />
+            <Route path="/Control" exact component={<Control/>} />
            
           </Routes>
       </div>
