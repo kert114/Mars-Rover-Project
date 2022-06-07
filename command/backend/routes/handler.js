@@ -1,24 +1,17 @@
 const express = require('express');
-const router = express.Router();// the mpules you need to use. 
+const router = express.Router();// the mpules you need to use.
+let json = require('../data.json');
+var object = JSON.stringify(json);
 
+var xValue;
+var yValue;
 router.get('/control', (req, res) => { //takes the request and the response. 
     //if anyone goes to the tweets page, they wll get back a json response. 
-    const str = [
-        {
-            "name": "Samantha Kai",
-            "msg": "React JS is so simple!",
-            "username": "samanthakai"
-        },
-        {
-            "name": "John K",
-            "msg": "Sweep the leg!",
-            "username": "johnk"
-        }
-    ];
-    res.end(JSON.stringify(str));
+    
+    res.end(JSON.stringify(json));
 });
 
-router.post('/control', (req, res) => {
+router.post('/Newcontrol', (req, res) => {
     res.end('NA'); // not implemented yet.  
 });
 
