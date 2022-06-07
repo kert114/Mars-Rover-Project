@@ -1,9 +1,6 @@
 import React, {useEffect, useState} from 'react';// before the tweet was hard coded, now it is pulling an 
 // displaying to the front end. 
 import {Link} from 'react-router-dom'
-import Map from './map';
-
-
 
 
 import './Control.css';
@@ -31,9 +28,10 @@ function Control() {
                     <div class="card-deck">
                         <div class="card">
                             <div class="card-body p-1">
-                                <h6 class="card-title">{item.name}</h6>
-                                <p class="card-text">{item.msg}</p>
-                                <p class="card-text"><i>by {item.username}</i></p>
+                                <h6 class="card-title">{item.id}</h6>
+                                <p class="card-text">{item.object}</p>
+                                <p class="card-text"><i> {item.xVal}</i></p>
+                                <p class="card-text"><i> {item.yVal}</i></p>
                             </div>
                         </div>
                     </div>

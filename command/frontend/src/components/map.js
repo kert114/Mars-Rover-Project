@@ -9,7 +9,6 @@ var Component = React.Component;
 //Axios for get request
 let json = require('../data.json');
 console.log(json, 'data.json');
-//setInterval(function(){"http://localhost/query.php".reload(true);}, 100);
 
 
 var xValue;
