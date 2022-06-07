@@ -18,7 +18,7 @@
 #define CHA 0
 #define ENA 21 //19 // this pin must be PWM enabled pin if Arduino board is used
 #define IN1 22 //18
-#define IN2 2 //5
+#define IN2 14 //5
 // motor 2 settings
 #define IN3 17
 #define IN4 16
