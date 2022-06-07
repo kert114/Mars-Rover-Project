@@ -6,13 +6,13 @@ const Example = (props) => {
     if (event.key === 'ArrowLeft') {
       moveLeft();
     } 
-    else if (event.key === 'ArrowRight'){
-      moveRight();
+    if (event.key === 'ArrowRight'){
+      send string "L"
     }
-    else if (event.key === 'Arrow'){
+    if (event.key === 'Arrow'){
         moveRight();
       }
-    else if (event.key === 'ArrowRight'){
+    if (event.key === 'ArrowRight'){
     moveRight();
     }
   });

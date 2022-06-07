@@ -7,8 +7,8 @@ var xValue;
 var yValue;
 router.get('/control', (req, res) => { //takes the request and the response. 
     //if anyone goes to the tweets page, they wll get back a json response. 
-    
-    res.end(JSON.stringify(json));
+    console.log(object);
+    res.end(object);
 });
 
 router.post('/Newcontrol', (req, res) => {
