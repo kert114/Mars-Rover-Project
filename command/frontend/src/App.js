@@ -23,8 +23,7 @@ function App() {
             <Route path="/" exact element={<Home/>} />
             <Route path="/map" exact element={<Map/>}/>
             <Route path='/drive' exact element={<Drive/>}/>
-            <Route path="/Control" exact component={<Control/>} />
-           
+            <Route path='/Control' exact element={<Control/>}/>
           </Routes>
       </div>
     </Router>

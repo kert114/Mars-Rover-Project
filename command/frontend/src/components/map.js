@@ -24,7 +24,6 @@ var dps = [];   //dataPoints.
 
 
 export default class Map extends Component {
-	
 	constructor() {
 		super();
 		this.updateChart = this.updateChart.bind(this);
@@ -33,54 +32,12 @@ export default class Map extends Component {
 	componentDidMount() {
 		setInterval(this.updateChart, 1000);
 	}
-	// method 1
-	/*const [database, datatoprocess] = useState([])
-	useEffect(()=> {
-		const fetchData = async () =>{
-			const result = await fetch("http:localhost:3000/query.php")
-			const jsonResult = await result.json();
-			datatoprocess(jsonResult)
-		}
-		fetchData()
-	}, [])
-	*/     // method 2 
+     // method 2 
 	updateChart() { // going to change later on. 
-		//var yVal = Math.floor((Math.random()*100) + 1)
-        //var xVal = Math.floor((Math.random()*100) + 1)
 		for (let i=0;i<length; i++){
 			xValue = parseFloat(json[i].xVal);
 			yValue = parseFloat(json[i].yVal);
-		/*	const getObstaclesx=()=>{
-				axios.get('http://localhost:8000')
-				.then(response=>{
-					x_val = response.data[i].xValue;
-				})
-				.catch(err => {
-					console.log(err);
-				})
-				
-			}
-			const getObstaclesy=()=>{
-				axios.get('http://localhost:8000')
-				.then(response=>{
-					y_val = response.data.yValue;
-				})
-				.catch(err => {
-					console.log(err);
-				})
-				
-			}
-			const send_len_dps=()=>{
-				axios.get('http://localhost:8000')
-				.then(response=>{
-					length = response.data.length;
-				})
-				.catch(err => {
-					console.log(err);
-				})
-				
-			}
-*/
+		
 
 			if(dps.length !== length && dps.length<length){
 				dps.push({x: xValue ,y: yValue});
