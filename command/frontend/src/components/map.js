@@ -1,8 +1,7 @@
 import {CanvasJSChart} from 'canvasjs-react-charts'
-import React from 'react'; // ES6 js
+import React, { useEffect } from 'react'; // ES6 js
 //bootstrap
 import 'bootstrap/dist/css/bootstrap.min.css';
-import Data from '../data.json';
 import axios from 'axios';
 import { data } from 'jquery';
 var Component = React.Component;
@@ -10,7 +9,6 @@ var Component = React.Component;
 //Axios for get request
 let json = require('../data.json');
 console.log(json, 'data.json');
-//setInterval(function(){"http://localhost/query.php".reload(true);}, 100);
 
 
 var xValue;
@@ -18,11 +16,12 @@ var yValue;
 var length;
 length = Object.keys(json).length;
 
-
-
-console.log(length);
-
+//var x_val;
+//va/r y_val;
+//var length;
 var dps = [];   //dataPoints.
+
+
 
 export default class Map extends Component {
 	
@@ -34,16 +33,59 @@ export default class Map extends Component {
 	componentDidMount() {
 		setInterval(this.updateChart, 1000);
 	}
+	// method 1
+	/*const [database, datatoprocess] = useState([])
+	useEffect(()=> {
+		const fetchData = async () =>{
+			const result = await fetch("http:localhost:3000/query.php")
+			const jsonResult = await result.json();
+			datatoprocess(jsonResult)
+		}
+		fetchData()
+	}, [])
+	*/     // method 2 
 	updateChart() { // going to change later on. 
 		//var yVal = Math.floor((Math.random()*100) + 1)
         //var xVal = Math.floor((Math.random()*100) + 1)
 		for (let i=0;i<length; i++){
 			xValue = parseFloat(json[i].xVal);
 			yValue = parseFloat(json[i].yVal);
+		/*	const getObstaclesx=()=>{
+				axios.get('http://localhost:8000')
+				.then(response=>{
+					x_val = response.data[i].xValue;
+				})
+				.catch(err => {
+					console.log(err);
+				})
+				
+			}
+			const getObstaclesy=()=>{
+				axios.get('http://localhost:8000')
+				.then(response=>{
+					y_val = response.data.yValue;
+				})
+				.catch(err => {
+					console.log(err);
+				})
+				
+			}
+			const send_len_dps=()=>{
+				axios.get('http://localhost:8000')
+				.then(response=>{
+					length = response.data.length;
+				})
+				.catch(err => {
+					console.log(err);
+				})
+				
+			}
+*/
+
 			if(dps.length !== length && dps.length<length){
 				dps.push({x: xValue ,y: yValue});
-				console.log(xValue);
-				console.log(yValue);
+				//console.log(x_val);
+				//console.log(y_val);
 			}
 			console.log("length", length);
 			console.log("length of dps " , dps.length );

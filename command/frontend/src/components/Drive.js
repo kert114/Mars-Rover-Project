@@ -1,176 +1,99 @@
-import React, { useState} from 'react';
-//import RotateLeftIcon from '@material-ui/icons/RotateLeft';
-//import RotateRightIcon from '@material-ui/icons/RotateRight';
-import axios from 'axios';
-import { useLocation } from 'react-router-dom';
-import GetkeyPress from './mouseposition';
+import React, {useState, Component} from 'react';
+import './Drive.css';
+import {Link} from 'react-router-dom';
+import {Button} from './button';
+import Socket from './socket';
 
-function Map(){
 
-   
-    const position=GetkeyPress();
+function Drive() {
 
-    const handleClick=(event)=>{ 
-        if (event.type === "mousedown") {
-            event.preventDefault();
-        console.log("Message sent: " + JSON.stringify({ 'direction':'L' }));
-        axios.post('http://localhost:3000/drive', { 'direction':'L' } )
-            .then(response=>{
-                console.log(JSON.stringify(response.data));
-            })
-            .catch(err => {
-                console.log("Received error: " + err);
-            })
+    const [automated, ManualMethod] = useState(false);
+
+    function sendAngle() {
+        if(automated) {
+            alert("Automated mode activated");
         } else {
-            event.preventDefault();
-        console.log("Message sent: " + JSON.stringify({ 'direction':'S' }));
-        axios.post('http://localhost:3000/drive', { 'direction':'S' } )
-            .then(response=>{
-                console.log(JSON.stringify(response.data));
-            })
-            .catch(err => {
-                console.log("Received error: " + err);
-            });
-        }
-    }
-    const handleClick2=(event)=>{
-        if (event.type === "mousedown") {
-            event.preventDefault();
-        console.log("Message sent: " + JSON.stringify({ 'direction':'F' }));
-        axios.post('http://localhost:3000/drive', { 'direction':'F' })
-            .then(response=>{
-                console.log(JSON.stringify(response.data));
-            })
-            .catch(err => {
-                console.log("Received error: " + err);
-            })
-        } else {
-            event.preventDefault();
-        console.log("Message sent: " + JSON.stringify({ 'direction':'S' }));
-        axios.post('http://localhost:3000/drive', { 'direction':'S' } )
-            .then(response=>{
-                console.log(JSON.stringify(response.data));
-            })
-            .catch(err => {
-                console.log("Received error: " + err);
-            });
-        }
-    }
-    const handleClick3=(event)=>{
-        if (event.type === "mousedown") {
-            event.preventDefault();
-        console.log("Message sent: " + JSON.stringify({ 'direction':'B' }));
-        axios.post('http://localhost:3000/drive', { 'direction':'B' } )
-            .then(response=>{
-                console.log(JSON.stringify(response.data));
-            })
-            .catch(err => {
-                console.log("Received error: " + err);
-            })
-        } else {
-            event.preventDefault();
-        console.log("Message sent: " + JSON.stringify({ 'direction':'S' }));
-        axios.post('http://localhost:3000/drive', { 'direction':'S' } )
-            .then(response=>{
-                console.log(JSON.stringify(response.data));
-            })
-            .catch(err => {
-                console.log("Received error: " + err);
-            });
-        }
-    }
-    const handleClick4=(event)=>{
-        if (event.type === "mousedown") {
-            event.preventDefault();
-        console.log("Message sent: " + JSON.stringify({ 'direction':'R' }));
-        axios.post('http://localhost:3000/drive', { 'direction':'R' } )
-            .then(response=>{
-                console.log(JSON.stringify(response.data));
-            })
-            .catch(err => {
-                console.log("Received error: " + err);
-            })
-        } else {
-            event.preventDefault();
-        console.log("Message sent: " + JSON.stringify({ 'direction':'S' }));
-        axios.post('http://localhost:3000/drive', { 'direction':'S' } )
-            .then(response=>{
-                console.log(JSON.stringify(response.data));
-            })
-            .catch(err => {
-                console.log("Received error: " + err);
-            });
+            if(document.getElementById('angle').value === '') {
+            } else {
+                var enteredAngle = document.getElementById('angle').value;
+                Socket.emit("Angle", enteredAngle);
+            }
         }
     }
 
-    const sendDest=(event)=>{
-        event.preventDefault();
-        let params={
-            coordinateX: x_real,
-            coordinateY: y_real
+    function sendDistance() {
+        if(automated) {
+            alert("Automated mode activated");
+        } else {
+            if(document.getElementById('distance').value === '') {
+                alert('please enter distance');
+            } else {
+                var enteredDistance = document.getElementById('distance').value;
+                Socket.emit("Distance", enteredDistance);
+            }
         }
-        console.log("Message sent: " + JSON.stringify(params));
-        axios.post('http://localhost:3000/drive', params) // not sure 
-            .then(response=>{
-                console.log("Received message: " + JSON.stringify(response.data));
-                //points is array of coordinates x and y for optimal path
-                for( var i in response.data.points){
-                    var x_disp= Math.floor(825+(response.data.points[i].x)*300/1000);
-                    var y_disp=Math.floor(420-(response.data.points[i].y)*300/1000);
-                    
-                    document.getElementById("PAF").innerHTML= "Point "+ i + ": [" + response.data.points[i].x + ";" + response.data.points[i].y + "] " +"to get to destination <br/>";  
-                    document.getElementById(i).style.left= x_disp + "px"; //x axis update
-                    document.getElementById(i).style.top= y_disp + "px";  
-                    document.getElementById(i).style.display="block"; 
-                    <LineTo from={i} to={i+1}/>
-               }   
-            })
-            .catch(err => {
-                console.log("Received error: " + err);
-            })
-           }
-    
-     var x_real = Math.round((position.x-850)/300*1000);
-     var y_real = -Math.round((position.y-445)/300*1000);
-    
-    return(
-        <nav className="div">
-            <img src={grid} alt="map" className="grid" onClick={sendDest}/>
-            <img src={ground} alt="ground" className="ground"/>
-            <h1 className="header"> Remote Control </h1> 
-            <Typography component="div" className={classes.typography1}>
-            <Grid component="label" container alignItems="center" spacing={1}>
-             <Grid item>Off</Grid>
-             <Grid item>
-            <AntSwitch onChange={RemoteControl} />
-            </Grid>
-            <Grid item>On</Grid>
-            </Grid>
-            </Typography>
-            <div className="div">
-            <button className="leftrotate" onMouseDown={handleClick} onMouseUp={handleClick} >
-           <RotateLeftIcon/>
-            </button> 
-            <button className="uparrow"  onMouseDown={handleClick2} onMouseUp={handleClick2}  >
-           <i class="fas fa-angle-up"></i>
-            </button> 
-            <button className="downarrow"  onMouseDown={handleClick3} onMouseUp={handleClick3}   >
-           <i class="fas fa-angle-down"></i>
-            </button> 
-            <button className="rightrotate" onMouseDown={handleClick4} onMouseUp={handleClick4} >
-           <RotateRightIcon/>
-            </button>
-            <img src={circle} alt="circle" style={{marginLeft:"163px", marginTop:"31px", width:"175px", height:"175px"}}/>
-            <h4 style={{marginLeft: "10px", marginTop: "100px", position:"absolute"}}>
-                Click on position
-            </h4>
-            <div style={{marginLeft: "10px", marginTop: "140px", position: "absolute"}} > 
-            [{x_real}:{y_real}]
+    }
+
+    function automationMode() {
+        ManualMethod(true);
+        Socket.emit("Command", "automation");
+        alert("The rover will start investigating!");
+    }
+    function goback() {
+        Socket.emit("Command", "back");
+        alert("The rover will head back to the base.");
+    }
+    function stop() {
+        Socket.emit("Command", "stop");
+        ManualMethod(false);
+        alert("Automated mode exited");
+    }
+
+    return (
+        <div className='command-container'>
+            <h1>Drive Commands</h1>
+            <h4 className="automated header">Automated Driving</h4>
+            <h4 className="manual header">Manual Driving</h4>
+            <div className='command-btns'>
+                <div className='automationMode'>
+                    <Button name="button" className='btns' buttonStyle='btn-outline' buttonSize='btn--medium' onClick={automationMode}>
+                        automationMode!
+                    </Button>
+                </div>
+                <div className='returntobase'>
+                    <Button name="button" className='btns' buttonStyle='btn-outline' buttonSize='btn--medium' onClick={goback}>
+                        Return to base
+                    </Button>
+                </div>
+                <div className='stop'>
+                    <Button name="button" className='btns' buttonStyle='btn-outline' buttonSize='btn--medium' onClick={stop}>
+                        Stop
+                    </Button>
+                </div>
+                <div className='viewmap'>
+                    <Link to='/map'>
+                        <Button name="button" className='btns' buttonStyle='btn-outline' buttonSize='btn--medium'>
+                            View the map
+                        </Button>
+                    </Link>
+                </div>
+                <label for='angle' name='angle' className='angleLabel'><b> Angle (°): </b></label>
+                <input type='number' id='angle' name='angle' className='angleBox'/>
+                <label for='distance' name='distance' className='distanceLabel'> <b>Distance (mm): </b></label>
+                <input type='number' id='distance' name='distance' className='distanceBox'/>
+                <div className='sendAngle'>
+                    <Button name="button" className='btns' buttonStyle='btn-outline' buttonSize='btn--medium' onClick={sendAngle}>
+                        Send
+                    </Button>
+                </div>
+                <div className='sendDistance'>
+                    <Button name="button" className='btns' buttonStyle='btn-outline' buttonSize='btn--medium' onClick={sendDistance}>
+                        Send
+                    </Button>
+                </div>
             </div>
-            <div id="PAF" style={{marginLeft: "10px", marginTop: "170px", position: "absolute"}}></div>
-            </div>
-         </nav>
+        </div>
     );
-}
+};
 
-export default Map;
+export default Drive;
