@@ -18,11 +18,11 @@
 #define CHA 0
 #define ENA 21 //19 // this pin must be PWM enabled pin if Arduino board is used
 #define IN1 22 //18
-#define IN2 2 //5
+#define IN2 14 //5
 // motor 2 settings
 #define IN3 17
 #define IN4 16
-#define ENB 4// this pin must be PWM enabled pin if Arduino board is used
+#define ENB 4 // this pin must be PWM enabled pin if Arduino board is used
 #define CHB 1
 const int CCW = 2; // do not change
 const int CW  = 1; // do not change
@@ -326,8 +326,8 @@ total_y1 = total_y1 + distance_y;
 total_x = total_x1/157;
 total_y = total_y1/157;
 
-angle = find_angle(total_x-temp_x, total_y-temp_y);
-Serial.println("Angle might be: " + String(angle));
+// angle = find_angle(total_x-temp_x, total_y-temp_y);
+// Serial.println("Angle might be: " + String(angle));
 
 Serial.print('\n');
 
@@ -342,13 +342,13 @@ temp_x = total_x;
 temp_y = total_y;
 for(int i=0; i<=100; i++)
   {
-    robot.rotate(motor1, i, CW);// turn motor1 with i% speed in CW direction (whatever is i)
-    // robot.rotate(motor2, i, CW);// turn motor2 with i% speed in CCW direction (whatever is i) 
-    delay(100);
+    robot.rotate(motor1, i, CCW);// turn motor1 with i% speed in CW direction (whatever is i)
+    robot.rotate(motor2, i, CW);// turn motor2 with i% speed in CCW direction (whatever is i) 
+    // delay(100);
   }
-  delay(2000);
+  // delay(2000);
   robot.brake(1);
-  // robot.brake(2);
+  robot.brake(2);
   // delay(500);
 // for(int i=0; i<=100; i++)
 //   {
