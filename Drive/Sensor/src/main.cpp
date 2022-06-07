@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include "SPI.h"
+#include <Robojax_L298N_DC_motor.h>
 
 // these pins may be different on different boards
 
@@ -13,6 +14,24 @@
 
 #define ADNS3080_PIXELS_X                 30
 #define ADNS3080_PIXELS_Y                 30
+
+#define CHA 0
+#define ENA 21 //19 // this pin must be PWM enabled pin if Arduino board is used
+#define IN1 22 //18
+#define IN2 2 //5
+// motor 2 settings
+#define IN3 17
+#define IN4 16
+#define ENB 4// this pin must be PWM enabled pin if Arduino board is used
+#define CHB 1
+const int CCW = 2; // do not change
+const int CW  = 1; // do not change
+#define motor1 1 // do not change
+#define motor2 2 // do not change
+// for two motors without debug information // Watch video instruciton for this line: https://youtu.be/2JTMqURJTwg
+Robojax_L298N_DC_motor robot(IN1, IN2, ENA, CHA,  IN3, IN4, ENB, CHB);
+// for two motors with debug information
+//Robojax_L298N_DC_motor robot(IN1, IN2, ENA, CHA, IN3, IN4, ENB, CHB, true);
 
 #define ADNS3080_PRODUCT_ID            0x00
 #define ADNS3080_REVISION_ID           0x01
@@ -66,6 +85,11 @@ int b=0;
 int distance_x=0;
 int distance_y=0;
 
+int temp_x=0;
+int temp_y=0;
+
+float angle=0;
+
 volatile byte movementflag=0;
 volatile int xydat[2];
 
@@ -99,6 +123,8 @@ int mousecam_init()
   digitalWrite(PIN_MOUSECAM_CS,HIGH);
 
   mousecam_reset();
+
+  return 1;
 }
 
 void mousecam_write_reg(int reg, int val)
@@ -193,6 +219,16 @@ int mousecam_frame_capture(byte *pdata)
   return ret;
 }
 
+
+float find_angle(int x, int y){
+  int r=70;
+  float angle;
+  float d = x^2+y^2;
+  angle = abs(((2*(r^2))-d)/(2*(r^2)));
+  angle = acos(angle);
+  return angle;
+}
+
 void setup()
 {
   pinMode(PIN_SS,OUTPUT);
@@ -205,7 +241,8 @@ void setup()
   SPI.setDataMode(SPI_MODE3);
   SPI.setBitOrder(MSBFIRST);
 
-  Serial.begin(9600);
+  Serial.begin(115200);
+  robot.begin();
 
   if(mousecam_init()==-1)
   {
@@ -225,7 +262,7 @@ byte frame[ADNS3080_PIXELS_X * ADNS3080_PIXELS_Y];
 void loop()
 {
  #if 0
-/*
+
     if(movementflag){
 
     tdistance = tdistance + convTwosComp(xydat[0]);
@@ -234,7 +271,7 @@ void loop()
     delay(3);
     }
 
-  */
+  
   // if enabled this section grabs frames and outputs them as ascii art
 
   if(mousecam_frame_capture(frame)==0)
@@ -264,6 +301,9 @@ void loop()
   for(int i=0; i<md.squal/4; i++){
     Serial.print('*');
   }
+  Serial.print(md.squal);
+  Serial.print(' ');
+  Serial.print(md.squal/4);
   Serial.print(' ');
   Serial.print((val*100)/351);
   Serial.print(' ');
@@ -271,12 +311,14 @@ void loop()
   Serial.print((int)md.dx); Serial.print(',');
   Serial.print((int)md.dy); Serial.println(')');
 
-  // Serial.println(md.max_pix);
-  delay(100);
+
+// Serial.println(md.max_pix);
+delay(100);
 
 
-    distance_x = md.dx; //convTwosComp(md.dx);
-    distance_y = md.dy; //convTwosComp(md.dy);
+distance_x = md.dx; //convTwosComp(md.dx);
+distance_y = md.dy; //convTwosComp(md.dy);
+
 
 total_x1 = total_x1 + distance_x;
 total_y1 = total_y1 + distance_y;
@@ -284,16 +326,38 @@ total_y1 = total_y1 + distance_y;
 total_x = total_x1/157;
 total_y = total_y1/157;
 
+angle = find_angle(total_x-temp_x, total_y-temp_y);
+Serial.println("Angle might be: " + String(angle));
 
 Serial.print('\n');
 
-
+Serial.println(ADNS3080_PIXELS_X);
 Serial.println("Distance_x = " + String(total_x));
 
 Serial.println("Distance_y = " + String(total_y));
 Serial.print('\n');
 
-  delay(250);
-
-  #endif
+delay(250);
+temp_x = total_x;
+temp_y = total_y;
+for(int i=0; i<=100; i++)
+  {
+    robot.rotate(motor1, i, CW);// turn motor1 with i% speed in CW direction (whatever is i)
+    // robot.rotate(motor2, i, CW);// turn motor2 with i% speed in CCW direction (whatever is i) 
+    delay(100);
+  }
+  delay(2000);
+  robot.brake(1);
+  // robot.brake(2);
+  // delay(500);
+// for(int i=0; i<=100; i++)
+//   {
+//     robot.rotate(motor1, i, CCW);// turn motor1 with i% speed in CW direction (whatever is i)
+//     robot.rotate(motor2, i, CW);// turn motor2 with i% speed in CCW direction (whatever is i) 
+//     delay(100);
+//   }
+//   delay(2000);
+//   robot.brake(1);
+//   robot.brake(2);
+#endif
 }
