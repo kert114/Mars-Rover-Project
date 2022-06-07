@@ -14,7 +14,6 @@ function Drive() {
             alert("Automated mode activated");
         } else {
             if(document.getElementById('angle').value === '') {
-               // alert('please enter angle');
             } else {
                 var enteredAngle = document.getElementById('angle').value;
                 Socket.emit("Angle", enteredAngle);
