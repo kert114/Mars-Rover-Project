@@ -229,6 +229,33 @@ float find_angle(int x, int y){
   return angle;
 }
 
+void move_F(int x = 0){
+  robot.rotate(motor1, 25, CCW);// turn motor1 with 25% speed in CCW direction
+  robot.rotate(motor2, 25, CW);// turn motor2 with 25% speed in CW direction
+  delay(x);
+}
+void move_B(int x = 0){
+  robot.rotate(motor1, 25, CW);// turn motor1 with 25% speed in CCW direction
+  robot.rotate(motor2, 25, CCW);// turn motor2 with 25% speed in CW direction
+  delay(x);
+}
+void move_R(int x = 0){
+  robot.rotate(motor1, 25, CW);// turn motor1 with 25% speed in CCW direction
+  robot.rotate(motor2, 25, CW);// turn motor2 with 25% speed in CW direction
+  delay(x);
+}
+void move_L(int x = 0){
+  robot.rotate(motor1, 25, CCW);// turn motor1 with 25% speed in CCW direction
+  robot.rotate(motor2, 25, CCW);// turn motor2 with 25% speed in CW direction
+  delay(x);
+}
+
+// Need to use the sensor working with an LED so we can callebrate the distances along x and y accurately 
+// If this gets working then we can accurately measure angle travelled as well as distance travelled so if 
+// driving commands are in the form of final distance to travel that can work but we can also figure out 
+// how far the rover travels if the motors are at a set speed for a set time allowing for accurately moving 
+// set distances
+
 void setup()
 {
   pinMode(PIN_SS,OUTPUT);
@@ -312,52 +339,62 @@ void loop()
   Serial.print((int)md.dy); Serial.println(')');
 
 
-// Serial.println(md.max_pix);
-delay(100);
+  // Serial.println(md.max_pix);
+  delay(100);
 
 
-distance_x = md.dx; //convTwosComp(md.dx);
-distance_y = md.dy; //convTwosComp(md.dy);
+  distance_x = md.dx; //convTwosComp(md.dx);
+  distance_y = md.dy; //convTwosComp(md.dy);
 
 
-total_x1 = total_x1 + distance_x;
-total_y1 = total_y1 + distance_y;
+  total_x1 = total_x1 + distance_x;
+  total_y1 = total_y1 + distance_y;
 
-total_x = total_x1/157;
-total_y = total_y1/157;
+  total_x = total_x1/157;
+  total_y = total_y1/157;
 
-// angle = find_angle(total_x-temp_x, total_y-temp_y);
-// Serial.println("Angle might be: " + String(angle));
+  // angle = find_angle(total_x-temp_x, total_y-temp_y);
+  // Serial.println("Angle might be: " + String(angle));
 
-Serial.print('\n');
+  Serial.print('\n');
 
-Serial.println(ADNS3080_PIXELS_X);
-Serial.println("Distance_x = " + String(total_x));
+  Serial.println(ADNS3080_PIXELS_X);
+  Serial.println("Distance_x = " + String(total_x));
 
-Serial.println("Distance_y = " + String(total_y));
-Serial.print('\n');
+  Serial.println("Distance_y = " + String(total_y));
+  Serial.print('\n');
 
-delay(250);
-temp_x = total_x;
-temp_y = total_y;
-for(int i=0; i<=100; i++)
-  {
-    robot.rotate(motor1, i, CCW);// turn motor1 with i% speed in CW direction (whatever is i)
-    robot.rotate(motor2, i, CW);// turn motor2 with i% speed in CCW direction (whatever is i) 
-    // delay(100);
-  }
+  delay(250);
+  temp_x = total_x;
+  temp_y = total_y;
+  // move_F();
   // delay(2000);
-  robot.brake(1);
-  robot.brake(2);
+  // move_R();
+  // delay(2000);
+  // move_B();
+  // delay(2000);
+  // move_L();
+  // delay(2000);
+  // for(int i=0; i<=100; i++)
+  //   {
+  //     robot.rotate(motor1, i, CCW);// turn motor1 with i% speed in CW direction (whatever is i)
+  //     robot.rotate(motor2, i, CW);// turn motor2 with i% speed in CCW direction (whatever is i) 
+  //     // delay(100);
+  //   }
+  // robot.rotate(motor1, 25, CCW);// turn motor1 with 25% speed in CCW direction
+  // robot.rotate(motor2, 25, CW);// turn motor2 with 25% speed in CW direction
+  // delay(2000);
+  // robot.brake(1);
+  // robot.brake(2);
   // delay(500);
-// for(int i=0; i<=100; i++)
-//   {
-//     robot.rotate(motor1, i, CCW);// turn motor1 with i% speed in CW direction (whatever is i)
-//     robot.rotate(motor2, i, CW);// turn motor2 with i% speed in CCW direction (whatever is i) 
-//     delay(100);
-//   }
-//   delay(2000);
-//   robot.brake(1);
-//   robot.brake(2);
-#endif
+  // for(int i=0; i<=100; i++)
+  //   {
+  //     robot.rotate(motor1, i, CCW);// turn motor1 with i% speed in CW direction (whatever is i)
+  //     robot.rotate(motor2, i, CW);// turn motor2 with i% speed in CCW direction (whatever is i) 
+  //     delay(100);
+  //   }
+  //   delay(2000);
+  //   robot.brake(1);
+  //   robot.brake(2);
+  #endif
 }
