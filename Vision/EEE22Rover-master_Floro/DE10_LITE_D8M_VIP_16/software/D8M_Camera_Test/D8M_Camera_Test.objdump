@@ -3318,8 +3318,8 @@ int main() {
 	alt_u32 exposureTime = EXPOSURE_INIT;
    21858:	00880004 	movi	r2,8192
    2185c:	e0bffb15 	stw	r2,-20(fp)
-	alt_u16 gain = GAIN_INIT;
-   21860:	00804804 	movi	r2,288
+	alt_u16 gain = 0x200;
+   21860:	00808004 	movi	r2,512
    21864:	e0bffc0d 	sth	r2,-16(fp)
 
 	OV8865SetExposure(exposureTime);

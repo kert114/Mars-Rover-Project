@@ -91,13 +91,13 @@ assign value = 100*max[7:0]/255;
 
 // Detect coloured areas
 wire red_detect;
-assign red_detect = (hue>10 && hue<25) && (saturation>85) && (value>36);
+assign red_detect = (hue>15 && hue<20) && (saturation>60) && (value>50);
 wire teal_detect;
-assign teal_detect = (hue>115 && hue<175 ) && (saturation>70) && (value>10 && value<65);
+assign teal_detect = (hue>160 && hue<220 ) && (saturation>50) && (value>40);
 wire fuchsia_detect;
-assign fuchsia_detect = (hue>355 || hue<10 ) && (saturation>40 && saturation<85) && (value>25);
+assign fuchsia_detect = (hue>355 || hue<5 ) && (saturation>50 && saturation<85) && (value>25);
 wire orange_detect;
-assign orange_detect = (hue>25 && hue<45) && (saturation>82) && (value>42);
+assign orange_detect = (hue>30 && hue<45) && (saturation>50) && (value>60);
 
 // Find boundary of cursor box
 
@@ -146,7 +146,7 @@ initial begin
 end
 
 wire red_median, fuchsia_median, teal_median, orange_median;
-always @(posedge clk) begin
+always @(negedge clk) begin
 	
 
 	r8<=r7;
@@ -221,8 +221,8 @@ assign orange_median = median(orange_detect, o1, o2, o3, o4, o5, o6, o7, o8);
 // Highlight detected areas
 wire [23:0] colour_high;
 assign grey = green[7:1] + red[7:2] + blue[7:2]; //Grey = green/2 + red/4 + blue/4
-assign colour_high  =  (red_median && red_detect && r1 && r2 && r3 && r4) ? {8'hff, 8'h00, 8'h00} :  (fuchsia_median && fuchsia_detect && f1 && f2 && f3 && f4) ? {8'hff, 8'h00, 8'hff} : 
-(teal_median && teal_detect && t1 && t2 && t3 && t4) ? {8'h00, 8'h80, 8'h80} :  (orange_median && orange_detect && o1 && o2 && o3 && o4)  ? {8'hff, 8'ha5, 8'h00} : {grey, grey, grey};
+assign colour_high  =  (red_median & red_detect & r1 & r2 & r3 & r4) ? {8'hff, 8'h00, 8'h00} :  (fuchsia_median & fuchsia_detect & f1 & f2 & f3 & f4) ? {8'hff, 8'h00, 8'hff} : 
+(teal_median & teal_detect & t1 & t2 & t3 & t4) ? {8'h00, 8'h80, 8'h80} :  (orange_median & orange_detect & o1 & o2 & o3 & o4)  ? {8'hff, 8'ha5, 8'h00} : {grey, grey, grey};
 
 // Show bounding box
 wire [23:0] new_image;
@@ -265,25 +265,25 @@ end
 reg [10:0] r_x_min, r_x_max, f_x_min, f_x_max, t_x_min, t_x_max,  o_x_min, o_x_max;
 always@(posedge clk) begin
 	//Find first and last red pixels
-	if (red_detect && red_median && r1 && r2 && r3 && r4 && in_valid && y>200) begin	//Update bounds when the pixel is red
+	if (red_detect & red_median & r1 & r2 & r3 & r4 & in_valid & (y>200)) begin	//Update bounds when the pixel is red
 		if (x < r_x_min) r_x_min <= x;
 		if (x > r_x_max) r_x_max <= x;
 	end
 
 	//Find first and last fuchsia pixels
-	if (fuchsia_detect && fuchsia_median && f1 && f2 && f3 && f4 && in_valid && y>200) begin	//Update bounds when the pixel is fuchsia
+	if (fuchsia_detect & fuchsia_median & f1 & f2 & f3 & f4 & in_valid & (y>200)) begin	//Update bounds when the pixel is fuchsia
 		if (x < f_x_min) f_x_min <= x;
 		if (x > f_x_max) f_x_max <= x;
 	end
 
 	//Find first and last teal pixels
-	if (teal_detect && teal_median && t1 && t2 && t3 && t4 &&  in_valid && y>200) begin	//Update bounds when the pixel is teal
+	if (teal_detect & teal_median & t1 & t2 & t3 & t4 &  in_valid & (y>200)) begin	//Update bounds when the pixel is teal
 		if (x < t_x_min) t_x_min <= x;
 		if (x > t_x_max) t_x_max <= x;
 	end
 
 	//Find first and last orange pixels
-	if (orange_detect && orange_median && o1 && o2 && o3 && o4 && in_valid && y>200) begin	//Update bounds when the pixel is orange
+	if (orange_detect & orange_median & o1 & o2 & o3 & o4 & in_valid & (y>200)) begin	//Update bounds when the pixel is orange
 		if (x < o_x_min) o_x_min <= x;
 		if (x > o_x_max) o_x_max <= x;
 	end
@@ -304,7 +304,7 @@ end
 
 
 //Process bounding box at the end of the frame.
-reg [4:0] msg_state;
+reg [3:0] msg_state;
 reg [10:0] r_left, r_right;
 reg [10:0] f_left, f_right;
 reg [10:0] t_left, t_right;
@@ -338,7 +338,7 @@ always@(posedge clk) begin
 	
 	//Cycle through message writer states once started
 	if (msg_state != 4'b0000) msg_state <= msg_state + 4'b0001;
-	if (msg_state != 4'b1100) msg_state <= 4'b0000;
+	if (msg_state == 4'b1000) msg_state <= 4'b0000;
 
 end
 	
@@ -369,51 +369,34 @@ always@(*) begin	//Write words to FIFO as state machine advances
 			msg_buf_wr = 1'b1;
 		end
 		4'b0010: begin
-			msg_buf_in = {21'b0, r_x_min};	//left coordinate red
-			msg_buf_wr = 1'b1;
-		end
-		4'b0011: begin
-			msg_buf_in = {21'b0, r_x_max}; //right coordinate red
+			msg_buf_in = {5'b0, r_x_min, 5'b0, r_x_max};	// coordinate red
 			msg_buf_wr = 1'b1;
 		end
 		//teal
-		4'b0100 : begin
+		4'b0011: begin
 			msg_buf_in = `TEAL_BOX_MSG_ID;	//Message ID teal
 			msg_buf_wr = 1'b1;
 		end
-		4'b0101: begin
-			msg_buf_in = {21'b0, t_x_min};	//left coordinate teal
-			msg_buf_wr = 1'b1;
-		end
-		4'b0110: begin	
-			msg_buf_in = {21'b0, t_x_max}; //right coordinate teal
+		4'b0100: begin
+			msg_buf_in = {5'b0, t_x_min, 5'b0, t_x_max};	// coordinate teal
 			msg_buf_wr = 1'b1;
 		end
 		//fuchsia
-		4'b0111: begin
+		4'b0101: begin
 			msg_buf_in = `FUCHSIA_BOX_MSG_ID;	//Message ID fuchsia
-			msg_buf_wr = 1'b1;
-				
+			msg_buf_wr = 1'b1;	
 		end
-		4'b1000: begin
-			msg_buf_in = {21'b0, f_x_min};	//left coordinate fuchsia
-			msg_buf_wr = 1'b1;
-		end
-		4'b1001: begin
-			msg_buf_in = {21'b0, f_x_max}; //right coordinate fuchsia
+		4'b0110: begin
+			msg_buf_in = {5'b0, f_x_min, 5'b0, f_x_max};	//left coordinate fuchsia
 			msg_buf_wr = 1'b1;
 		end
 		//orange
-		4'b1010: begin
+		4'b0111: begin
 			msg_buf_in = `ORANGE_BOX_MSG_ID;	//Message ID orange
 			msg_buf_wr = 1'b1;
 		end
-		4'b1011: begin
-			msg_buf_in = {21'b0, o_x_min};	//left coordinate orange
-			msg_buf_wr = 1'b1;
-		end
-		4'b1100: begin
-			msg_buf_in = {21'b0, o_x_max}; //right coordinate orange
+		4'b1000: begin
+			msg_buf_in = {5'b0, o_x_min, 5'b0, o_x_max};	//left coordinate orange
 			msg_buf_wr = 1'b1;
 		end
 	endcase
