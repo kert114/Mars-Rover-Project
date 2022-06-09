@@ -13,6 +13,7 @@ function Nav() {
                     <Link to="/map" className='nav-item nav-link'>Map</Link>
                     <Link to="/drive" className='nav-item nav-link'>Drive</Link>
                     <Link to="/Control" className='nav-item nav-link'>Control</Link>
+                    <Link to="/mouseposition" className='nav-item nav-link'>mouseposition</Link>
                 </div>
             </div>
         </nav>

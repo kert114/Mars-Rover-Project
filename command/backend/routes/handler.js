@@ -7,8 +7,16 @@ var xValue;
 var yValue;
 router.get('/control', (req, res) => { //takes the request and the response. 
     //if anyone goes to the tweets page, they wll get back a json response. 
-    
-    res.end(JSON.stringify(json));
+    console.log(object);    
+    res.end(object);
+});
+
+router.post('/directions', (req, res) =>{
+    // request the rover directions LRFB
+    let response = JSON.stringify(req.body);
+    console.log ("req ", req);
+    console.log("res ", res);
+    console.log("directions response ", response);
 });
 
 router.post('/Newcontrol', (req, res) => {
