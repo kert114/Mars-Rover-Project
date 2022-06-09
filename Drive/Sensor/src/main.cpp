@@ -278,7 +278,7 @@ void move_R(int x = 90){
   robot.rotate(motor1, 29, CW);// turn motor1 with 25% speed in CCW direction
   robot.rotate(motor2, 29, CW);// turn motor2 with 25% speed in CW direction
   // convert distance required to move to time needed to turn
-  x=9500*x/360;00
+  x=9450*x/360;
   delay(x);
   robot.brake(1);
   robot.brake(2);
@@ -287,8 +287,10 @@ void move_L(int x = 90){
   robot.rotate(motor1, 29, CCW);// turn motor1 with 25% speed in CCW direction
   robot.rotate(motor2, 29, CCW);// turn motor2 with 25% speed in CW direction
   // convert distance required to move to time needed to turn
-  x=9500*x/360;
+  x=9450*x/360;
   delay(x);
+  robot.brake(1);
+  robot.brake(2);
 }
 void brake_rover(int x = 0)
 {
