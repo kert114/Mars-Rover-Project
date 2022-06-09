@@ -1,6 +1,7 @@
 
 html{
   height:100%;
+  width:100%;
 }
 h1 {
   transform: scale(1,1);
@@ -11,6 +12,7 @@ h1 {
 
 body {
   height:100%;
+  width: 100%;
   background-repeat: no-repeat;
   color: rgb(255, 255, 255);
   /*background-image: Linear-gradient(rgb(43, 0, 255), yellow, rgb(29, 214, 29));*/
