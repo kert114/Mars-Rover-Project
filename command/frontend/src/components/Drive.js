@@ -1,12 +1,26 @@
-import React, {useState, Component} from 'react';
+import React, {useState, Component, useEffect} from 'react';
+import axios from 'axios';
 import './Drive.css';
 import {Link} from 'react-router-dom';
 import {Button} from './button';
 import Socket from './socket';
-
+import Switch from "react-switch";
+class SwitchExample extends Component {
+    constructor() {
+      super();
+      this.state = { checked: false };
+      this.handleChange = this.handleChange.bind(this);
+    }
+  
+    handleChange(checked) {
+      this.setState({ checked });
+    }
+  
+   
+  };
 
 function Drive() {
-
+    let switch_web = new SwitchExample();
     const [automated, ManualMethod] = useState(false);
 
     function sendAngle() {
@@ -48,6 +62,30 @@ function Drive() {
         ManualMethod(false);
         alert("Automated mode exited");
     }
+    var whatkey;
+function GetkeyPress (){
+    useEffect (()=>{
+        document.addEventListener('keydown', detectKeydown, true)
+    },[])
+    const detectKeydown = (e) => {
+        console.log("clicked key " , e.key);
+        if (e.key === 'ArrowLeft') {
+            whatkey = "left";
+        } 
+        if (e.key === 'ArrowRight'){
+        whatkey = "right";
+        }
+        if (e.key === 'ArrowDown'){
+            whatkey = "backwards";
+        }
+        if (e.key === 'ArrowUp'){
+        whatkey = "forwards";
+        }
+        console.log("whatkey value in keypress is before ", whatkey);
+        axios.post('http://localhost:4000/directions', { 'direction': whatkey});
+
+    }
+}
 
     return (
         <div className='command-container'>
@@ -90,6 +128,9 @@ function Drive() {
                     <Button name="button" className='btns' buttonStyle='btn-outline' buttonSize='btn--medium' onClick={sendDistance}>
                         Send
                     </Button>
+                </div>
+                <div classname='ArrowKeys'>
+                <Switch onChange={switch_web.handleChange} checked={SwitchExample.this.state.checked} />
                 </div>
             </div>
         </div>
