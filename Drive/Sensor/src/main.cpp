@@ -229,25 +229,40 @@ float find_angle(int x, int y){
   return angle;
 }
 
-void move_F(int x = 0){
+void move_F(int x = 1000){
   robot.rotate(motor1, 25, CCW);// turn motor1 with 25% speed in CCW direction
   robot.rotate(motor2, 25, CW);// turn motor2 with 25% speed in CW direction
+  // convert distance required to move to time needed to move
   delay(x);
+  robot.brake(1);
+  robot.brake(2);
 }
-void move_B(int x = 0){
+void move_B(int x = 1000){
   robot.rotate(motor1, 25, CW);// turn motor1 with 25% speed in CCW direction
   robot.rotate(motor2, 25, CCW);// turn motor2 with 25% speed in CW direction
+  // convert distance required to move to time needed to move
   delay(x);
+  robot.brake(1);
+  robot.brake(2);
 }
-void move_R(int x = 0){
-  robot.rotate(motor1, 25, CW);// turn motor1 with 25% speed in CCW direction
-  robot.rotate(motor2, 25, CW);// turn motor2 with 25% speed in CW direction
+void move_R(int x = 90){
+  robot.rotate(motor1, 29, CW);// turn motor1 with 25% speed in CCW direction
+  robot.rotate(motor2, 29, CW);// turn motor2 with 25% speed in CW direction
+  // convert distance required to move to time needed to turn
+  x=9500*x/360;
   delay(x);
+  robot.brake(1);
+  robot.brake(2);
 }
-void move_L(int x = 0){
-  robot.rotate(motor1, 25, CCW);// turn motor1 with 25% speed in CCW direction
-  robot.rotate(motor2, 25, CCW);// turn motor2 with 25% speed in CW direction
+void move_L(int x = 90){
+  robot.rotate(motor1, 29, CCW);// turn motor1 with 25% speed in CCW direction
+  robot.rotate(motor2, 29, CCW);// turn motor2 with 25% speed in CW direction
+  // convert distance required to move to time needed to turn
+  x=9500*x/360;
   delay(x);
+  robot.brake(1);
+  robot.brake(2);
+
 }
 
 // Need to use the sensor working with an LED so we can callebrate the distances along x and y accurately 
@@ -373,7 +388,8 @@ void loop()
   // delay(2000);
   // move_B();
   // delay(2000);
-  // move_L();
+  move_L(360);
+  move_R(360);
   // delay(2000);
   // for(int i=0; i<=100; i++)
   //   {
