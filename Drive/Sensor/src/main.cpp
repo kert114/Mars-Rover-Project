@@ -81,6 +81,8 @@ MFRC522 mfrc522(IN2, IN3); //// RANDOM IN2 AND IN3 FOR TESTING
 
 const char *ssid = "Kert12345";
 const char *password = "1234567891";
+// const char *ssid = "AngusiPhone";
+// const char *password = "AngusJames";
 const uint16_t port = 12000;
 const char *host = "192.168.158.30";
 
@@ -260,37 +262,37 @@ float find_angle(int x, int y)
 /////////////////////////////// ROVER MOVE FUNCTIONS///////////////////////////////
 void move_F(int x = 0)
 {
-  robot.rotate(motor1, 40, CCW); // turn motor1 with 25% speed in CCW direction
+  robot.rotate(motor1, 42, CCW); // turn motor1 with 25% speed in CCW direction
   robot.rotate(motor2, 40, CW);  // turn motor2 with 25% speed in CW direction
   delay(x);
-  robot.brake(1);
-  robot.brake(2);
+  // robot.brake(1);
+  // robot.brake(2);
 }
 void move_B(int x = 0)
 {
-  robot.rotate(motor1, 40, CW);  // turn motor1 with 25% speed in CCW direction
+  robot.rotate(motor1, 42, CW);  // turn motor1 with 25% speed in CCW direction
   robot.rotate(motor2, 40, CCW); // turn motor2 with 25% speed in CW direction
   delay(x);
-  robot.brake(1);
-  robot.brake(2);
+  // robot.brake(1);
+  // robot.brake(2);
 }
 void move_R(int x = 90){
   robot.rotate(motor1, 29, CW);// turn motor1 with 25% speed in CCW direction
   robot.rotate(motor2, 29, CW);// turn motor2 with 25% speed in CW direction
   // convert distance required to move to time needed to turn
-  x=9450*x/360;
+  // x=9450*x/360;
   delay(x);
-  robot.brake(1);
-  robot.brake(2);
+  // robot.brake(1);
+  // robot.brake(2);
 }
 void move_L(int x = 90){
   robot.rotate(motor1, 29, CCW);// turn motor1 with 25% speed in CCW direction
   robot.rotate(motor2, 29, CCW);// turn motor2 with 25% speed in CW direction
   // convert distance required to move to time needed to turn
-  x=9450*x/360;
+  // x=9450*x/360;
   delay(x);
-  robot.brake(1);
-  robot.brake(2);
+  // robot.brake(1);
+  // robot.brake(2);
 }
 void brake_rover(int x = 0)
 {
@@ -310,18 +312,26 @@ void brake_rover(int x = 0)
 
 void setup()
 {
-  pinMode(PIN_SS, OUTPUT);
-  pinMode(PIN_MISO, INPUT);
-  pinMode(PIN_MOSI, OUTPUT);
-  pinMode(PIN_SCK, OUTPUT);
-
-  SPI.begin();
-  SPI.setClockDivider(SPI_CLOCK_DIV32);
-  SPI.setDataMode(SPI_MODE3);
-  SPI.setBitOrder(MSBFIRST);
-
   Serial.begin(115200);
   robot.begin();
+  pinMode(PIN_SS, OUTPUT);
+  // Serial.println("SS");
+  pinMode(PIN_MISO, INPUT);
+  // Serial.println("MISO");
+  pinMode(PIN_MOSI, OUTPUT);
+  // Serial.println("MOSI");
+  pinMode(PIN_SCK, OUTPUT);
+  // Serial.println("SCK");
+
+  SPI.begin();
+  // Serial.println("SPI");
+  SPI.setClockDivider(SPI_CLOCK_DIV32);
+  // Serial.println("SPI CLOCK DIV");
+  SPI.setDataMode(SPI_MODE3);
+  // Serial.println("SPI MODE");
+  SPI.setBitOrder(MSBFIRST);
+  // Serial.println("MSB");
+
 
   if (mousecam_init() == -1)
   {
@@ -329,6 +339,8 @@ void setup()
     while (1)
       ;
   }
+  
+  Serial.println("INIT");
   /////////////WIFI STUFF IN SETUP///////////
 
   Serial.begin(115200);
@@ -363,9 +375,9 @@ void loop()
 
   /////////////////////////CONTROL THE ROVER USING 123456789
   int i;
-  while (Serial.available() == 0)
-  {
-  } // if it breaks, do >= 0 in conditions as per Hepple
+  // while (Serial.available() == 0)
+  // {
+  // } // if it breaks, do >= 0 in conditions as per Hepple
   i = Serial.parseInt();
   switch (i)
   {
@@ -434,17 +446,17 @@ void loop()
     brake_rover(10);
     break;
 
-  case 10:
-    while (i == 10)
-    {
+  // case 0:
+  //   while (i == 0)
+  //   {
 
-      // adjust to the right
-      robot.rotate(motor1, 80, CCW); // run motor1 at 60% speed in CCW direction
-      robot.rotate(motor2, 75, CW);  // run motor1 at 60% speed in CW direction
-      delay(10);
-      i = Serial.parseInt();
-    }
-    break;
+  //     // adjust to the right
+  //     robot.rotate(motor1, 80, CCW); // run motor1 at 60% speed in CCW direction
+  //     robot.rotate(motor2, 75, CW);  // run motor1 at 60% speed in CW direction
+  //     delay(10);
+  //     i = Serial.parseInt();
+  //   }
+  //   break;
 
   default:
     // brake
@@ -550,8 +562,8 @@ void loop()
   // delay(2000);
   // move_B();
   // delay(2000);
-  move_L(360);
-  move_R(360);
+  // move_L(360);
+  // move_R(360);
   // delay(2000);
   // for(int i=0; i<=100; i++)
   //   {

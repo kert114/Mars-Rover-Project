@@ -1,0 +1,20 @@
+{
+	"folders": [
+		{
+			"path": "..\\..\\..\\..\\..\\OneDrive\\Documents\\PlatformIO\\Projects\\BLINK_LED"
+		},
+		{
+			"name": "PUSH_BUTTON",
+			"path": "..\\..\\..\\..\\..\\OneDrive\\Documents\\PlatformIO\\Projects\\PUSH_BUTTON"
+		},
+		{
+			"name": "Sensor",
+			"path": "..\\..\\..\\..\\..\\OneDrive\\Documents\\PlatformIO\\Projects\\Sensor"
+		},
+		{
+			"name": "Sensor",
+			"path": ".."
+		}
+	],
+	"settings": {}
+}
