@@ -17,8 +17,14 @@ function Drive() {
             if(document.getElementById('angle').value === '') {
             } else {
                 var enteredAngle = document.getElementById('angle').value;
-                Socket.emit("Angle", enteredAngle);
-            }
+                axios.post('http://localhost:4000/directions', { 'angle': enteredAngle})
+                .then(response =>{
+                    console.log("received " + JSON.stringify(response));
+                })
+                .catch(err => {
+                    console.log("Received error: " + err);
+                })
+                console.log("sent");            }
         }
     }
 
@@ -30,27 +36,55 @@ function Drive() {
                 alert('please enter distance');
             } else {
                 var enteredDistance = document.getElementById('distance').value;
-                Socket.emit("Distance", enteredDistance);
+                axios.post('http://localhost:4000/directions', { 'direction': enteredDistance})
+            .then(response =>{
+                console.log("received " + JSON.stringify(response));
+            })
+            .catch(err => {
+                console.log("Received error: " + err);
+            })
+            console.log("sent");
             }
         }
     }
 
     function automationMode() {
         ManualMethod(true);
-        Socket.emit("Command", "automation");
+        axios.post('http://localhost:4000/directions', { 'direction': "automate"}) // if automate - then pathfind
+            .then(response =>{
+                console.log("received " + JSON.stringify(response));
+            })
+            .catch(err => {
+                console.log("Received error: " + err);
+            })
+            console.log("sent");
         alert("The rover will start investigating!");
     }
     function goback() {
-        Socket.emit("Command", "back");
+        axios.post('http://localhost:4000/directions', { 'direction': "0,0"})// base = 0,0
+            .then(response =>{
+                console.log("received " + JSON.stringify(response));
+            })
+            .catch(err => {
+                console.log("Received error: " + err);
+            })
+            console.log("sent");
         alert("The rover will head back to the base.");
     }
     function stop() {
-        Socket.emit("Command", "stop");
+    axios.post('http://localhost:4000/directions', { 'direction': "stop"})
+            .then(response =>{
+                console.log("received " + JSON.stringify(response));
+            })
+            .catch(err => {
+                console.log("Received error: " + err);
+            })
+            console.log("sent");
         ManualMethod(false);
         alert("Automated mode exited");
     }
     var whatkey;
-    function GetkeyPress() {
+    function GetkeyPress (){
         useEffect (()=>{
             document.addEventListener('keydown', detectKeydown, true)
         },[])
@@ -69,10 +103,20 @@ function Drive() {
             whatkey = "forwards";
             }
             console.log("whatkey value in keypress is before ", whatkey);
-            axios.post('http://localhost:4000/directions', { 'direction': whatkey});
-
+            if (whatkey == "forwards" || whatkey == "backwards" || whatkey == "right" || whatkey == "left"){
+                axios.post('http://localhost:4000/directions', { 'direction': whatkey})
+                .then(response =>{
+                    console.log("received " + JSON.stringify(response));
+                })
+                .catch(err => {
+                    console.log("Received error: " + err);
+                })
+                console.log("sent");
+            }
+            var whatkey;
+    
         }
-}
+    }
 
     return (
         <div class="background">
