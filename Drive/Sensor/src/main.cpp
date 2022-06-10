@@ -4,6 +4,8 @@
 #include <Wire.h>
 #include <wifi.h>
 #include <MFRC522.h>
+#include <math.h>
+#include <iostream>
 
 // these pins may be different on different boards
 
@@ -87,26 +89,33 @@ const uint16_t port = 12000;
 const char *host = "192.168.158.30";
 
 ///
-
-int total_x = 0;
-int total_y = 0;
-
-int total_x1 = 0;
-int total_y1 = 0;
-
-int x = 0;
-int y = 0;
-
-int a = 0;
-int b = 0;
-
-int distance_x = 0;
-int distance_y = 0;
-
-int temp_x = 0;
-int temp_y = 0;
-
+float pi = 3.14159265359;
 float angle = 0;
+float current_angle = 0;
+
+float total_x = 0;
+float total_y = 0;
+float total_x_overall = 0;
+float total_y_overall = 0;
+
+float total_x1 = 0;
+float total_y1 = 0;
+float total_x1_overall = 0;
+float total_y1_overall = 0;
+
+float x = 0;
+float y = 0;
+
+float a = 0;
+float b = 0;
+
+float distance_x = 0;
+float distance_y = 0;
+float distance_x_overall = 0;
+float distance_y_overall = 0;
+
+float temp_x = 0;
+float temp_y = 0;
 
 volatile byte movementflag = 0;
 volatile int xydat[2];
@@ -158,6 +167,7 @@ int mousecam_init()
 
   return 1;
 }
+
 
 void mousecam_write_reg(int reg, int val)
 {
@@ -304,6 +314,44 @@ void brake_rover(int x = 0)
 
 }
 
+void go_to(float x, float y){
+  float delta_x=x-total_x; // difference in x needed to be moved
+  float delta_y=y-total_y; // difference in y needed to be moved
+
+  // aim of this section is to read current position, then find target position's relative distance and angle, then move to that location
+
+  // angle to move is arctan(delta_x/delta_y) so distance is delta_y*cos(angle)
+  angle = atan(delta_x/delta_y);
+  float dist = sqrt(pow(delta_x,2)+pow(delta_y,2));
+  angle = angle*180/pi; // converting angle to degrees
+  Serial.print("Angle: ");
+  Serial.println(angle,3);
+  Serial.print("Distance: ");
+  Serial.println(dist,3);
+}
+
+float angle_facing(){
+  // this function is to try to determine what angle the rover is facing relative to the y-axis
+  float delta_x=total_x-temp_x;
+  float delta_y=total_y-temp_y;
+  float temp_angle = 0;
+  if (delta_y==0){
+    return current_angle;
+  }
+  float degree_conversion = atan(delta_x/delta_y)*180/pi;
+  if (delta_x>0 && delta_y>0){
+    temp_angle=degree_conversion;
+
+  }else if(delta_x>0){
+    temp_angle=180+degree_conversion;
+  }else if(delta_x<0 && delta_y>0){
+    temp_angle=360+degree_conversion;
+  }else{
+    temp_angle=180+degree_conversion;
+  }
+  return temp_angle;
+}
+
 // Need to use the sensor working with an LED so we can callebrate the distances along x and y accurately
 // If this gets working then we can accurately measure angle travelled as well as distance travelled so if
 // driving commands are in the form of final distance to travel that can work but we can also figure out
@@ -355,11 +403,11 @@ void setup()
 
   // }
 
-  initWiFi();
+  // initWiFi();
 
-  Serial.print("RRSI: ");
+  // Serial.print("RRSI: ");
 
-  Serial.println(WiFi.RSSI());
+  // Serial.println(WiFi.RSSI());
 }
 
 char asciiart(int k)
@@ -460,7 +508,7 @@ void loop()
 
   default:
     // brake
-    brake_rover;
+    brake_rover();
     // Serial.println("We are a go0");
     break;
   }
@@ -510,7 +558,7 @@ void loop()
   // if enabled this section produces a bar graph of the surface quality that can be used to focus the camera
   // also drawn is the average pixel value 0-63 and the shutter speed and the motion dx,dy.
 
-  int val = mousecam_read_reg(ADNS3080_PIXEL_SUM);
+  float val = mousecam_read_reg(ADNS3080_PIXEL_SUM);
   MD md;
   mousecam_read_motion(&md);
   for (int i = 0; i < md.squal / 4; i++)
@@ -529,22 +577,35 @@ void loop()
   Serial.print(',');
   Serial.print((int)md.dy);
   Serial.println(')');
+  if(md.squal<=15){ // fixing random increases in x when the rover sees a low quality image
+    md.dx=0;
+    md.dy=0;
+  }
 
   // Serial.println(md.max_pix);
   delay(100);
 
-  distance_x = md.dx; // convTwosComp(md.dx);
-  distance_y = md.dy; // convTwosComp(md.dy);
+// normal values are relative to the rover, overall values are relative to the overall y axis
+  distance_x = /*md.dx; //*/ convTwosComp(md.dx);
+  distance_y = /*md.dy; //*/ convTwosComp(md.dy);
+  distance_x_overall = /*md.dx; //*/ convTwosComp(md.dx)*cos(current_angle) + convTwosComp(md.dy)*sin(current_angle);
+  distance_y_overall = /*md.dy; //*/ convTwosComp(md.dy)*cos(current_angle) + convTwosComp(md.dx)*sin(current_angle);
 
   total_x1 = total_x1 + distance_x;
   total_y1 = total_y1 + distance_y;
+  total_x1_overall = total_x1 + distance_x;
+  total_y1_overall = total_y1 + distance_y;
 
-  total_x = total_x1 / 50.8;
-  total_y = total_y1 / 50.8;
+  total_x = total_x1 / 39.1;//50.8;
+  total_y = total_y1 / 39.1;//50.8;
+  total_x_overall = total_x1 / 39.1;//50.8;
+  total_y_overall = total_y1 / 39.1;//50.8;
+  current_angle=angle_facing();
 
   // angle = find_angle(total_x-temp_x, total_y-temp_y);
   // Serial.println("Angle might be: " + String(angle));
-
+  Serial.print('\n');
+  Serial.println(current_angle);
   Serial.print('\n');
 
   Serial.println(ADNS3080_PIXELS_X);
@@ -552,6 +613,7 @@ void loop()
 
   Serial.println("Distance_y = " + String(total_y));
   Serial.print('\n');
+  go_to(0,0);
 
   delay(250);
   temp_x = total_x;
