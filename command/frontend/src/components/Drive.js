@@ -75,6 +75,9 @@ function Drive() {
 }
 
     return (
+        <div class="background">
+            <div class="layer"></div>
+        
         <div className='command-container'>
             <h1>Drive Commands</h1>
             <h4 className="automated header">Automated Driving</h4>
@@ -97,8 +100,8 @@ function Drive() {
                 </div>
                 <div className='viewmap'>
                     <Link to='/map'>
-                        <Button name="button" className='btns' buttonStyle='btn-outline' buttonSize='btn--medium'>
-                            View the map
+                        <Button name="button" className='btns' buttonStyle='btn-outline' buttonSize='btn--medium' >
+                            View map
                         </Button>
                     </Link>
                 </div>
@@ -117,6 +120,7 @@ function Drive() {
                     </Button>
                 </div>
             </div>
+        </div>
         </div>
     );
 };
