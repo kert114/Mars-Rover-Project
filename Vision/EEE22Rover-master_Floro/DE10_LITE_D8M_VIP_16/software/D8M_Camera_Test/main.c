@@ -22,7 +22,7 @@
 
 #define EXPOSURE_INIT 0x002000
 #define EXPOSURE_STEP 0x100
-#define GAIN_INIT 0x320
+#define GAIN_INIT 0x300
 #define GAIN_STEP 0x040
 #define DEFAULT_LEVEL 3
 
@@ -171,7 +171,7 @@ int main() {
 	alt_u16 current_focus = 300;
 	int boundingBoxColour = 0;
 	alt_u32 exposureTime = EXPOSURE_INIT;
-	alt_u16 gain = 0x200;
+	alt_u16 gain = 0x600;
 
 	OV8865SetExposure(exposureTime);
 	OV8865SetGain(gain);
