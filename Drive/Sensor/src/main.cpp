@@ -314,7 +314,7 @@ void brake_rover(int x = 0)
 
 }
 
-void go_to(float x, float y){
+void go_to(float x, float y){ // for now just states distance and angle to target destination
   float delta_x=x-total_x; // difference in x needed to be moved
   float delta_y=y-total_y; // difference in y needed to be moved
 
@@ -330,7 +330,7 @@ void go_to(float x, float y){
   Serial.println(dist,3);
 }
 
-float angle_facing(){
+float angle_facing(){ // currently doesn't work well - really need to take a long hard look at my workings
   // this function is to try to determine what angle the rover is facing relative to the y-axis
   float delta_x=total_x-temp_x;
   float delta_y=total_y-temp_y;
