@@ -12,7 +12,6 @@ app.use(function(req, res, next) {
 });
 app.use('/', routesHandler); 
 
-
 const PORT = 4000; // backend routing port need to be adifferent port. 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}.`);

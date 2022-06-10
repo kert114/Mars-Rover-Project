@@ -3,7 +3,6 @@ import axios from 'axios';
 import './Drive.css';
 import {Link} from 'react-router-dom';
 import {Button} from './button';
-import Socket from './socket';
 import ToggleSwitch from './toggleswitch';
 
 

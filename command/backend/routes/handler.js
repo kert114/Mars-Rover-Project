@@ -1,4 +1,6 @@
 const express = require('express');
+const db = require('./mysql')
+
 const router = express.Router();// the mpules you need to use.
 let json = require('../data.json');
 var object = JSON.stringify(json);
@@ -11,29 +13,18 @@ router.get('/control', (req, res) => { //takes the request and the response.
     console.log(object);    
     res.end(object);
 });
+var array=[];
 router.post('/directions', (req, res) =>{
-    // request the rover directions LRFB
-    let response = JSON.stringify(req.body);
-    let usersjson = fs.readFileSync("user.json","utf-8");
-    let users = JSON.parse(usersjson);
-    users.push(req.body);
-    usersjson = JSON.stringify(users);
-    fs.writeFileSync("user.json",usersjson,"utf-8");
-    let to_send = {
-        "received": "yes"
-    };
-    res.send(to_send);
-  //  fs.appendFileSync('user.json', usersjson, (err) => {
-    //    if (err) {
-      //      throw err;
-       // }
-        //console.log("JSON data is saved.");
-    //});
-  //  console.log(response);
-    //fs.appendFileSync('./data.txt', response + ",", 'utf-8');
+   // Route for creating the post
+  const username = req.body.direction;
+  console.log(username);
+  db.query("INSERT INTO flying (direction) VALUES (?)",[username], (err,result)=>{
+     if(err) {
+     console.log(err)
+     } 
+     console.log(result)
+  });   })
     
-    
-});
 
 router.post('/Newcontrol', (req, res) => {
     res.end('NA'); // not implemented yet.  

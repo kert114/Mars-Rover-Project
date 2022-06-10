@@ -23,7 +23,8 @@ function GetkeyPress (){
         }
         console.log("whatkey value in keypress is before ", whatkey);
         if (whatkey == "forwards" || whatkey == "backwards" || whatkey == "right" || whatkey == "left"){
-            axios.post('http://localhost:4000/directions', { 'direction': whatkey})
+            
+           axios.post('http://localhost:4000/directions', { 'direction': whatkey})
             .then(response =>{
                 console.log("received " + JSON.stringify(response));
             })
