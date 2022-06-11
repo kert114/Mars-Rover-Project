@@ -332,6 +332,13 @@ void go_to(float x, float y){ // for now just states distance and angle to targe
 
 float angle_facing(){ // currently doesn't work well - really need to take a long hard look at my workings
   // this function is to try to determine what angle the rover is facing relative to the y-axis
+
+  // Instead thinking about arc length s=r*Theta - if the distance measured between points is the arc 
+  // length then the angle is easy to calculate. As it is instead the straight line between the points,
+  // it's a tad more difficult - could use formula arccos((r^2-d^2)/r^2) - still need to measure r though.
+  // It also doesn't work hugely well if you turn while moving fast so best to always turn stationary.
+  // In order to correct for turns while moving, need to track variations in the x distance moved and 
+  // adjust motor speeds accordingly
   float delta_x=total_x-temp_x;
   float delta_y=total_y-temp_y;
   float temp_angle = 0;
