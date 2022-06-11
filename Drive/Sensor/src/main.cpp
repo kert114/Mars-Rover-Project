@@ -609,13 +609,15 @@ void loop()
   current_angle=angle_facing(md.dx, md.dy); // still need to find the right conversion from md values to cm or mm
 
   Serial.print('\n');
-  Serial.println(current_angle);
+  Serial.println(current_angle, 5);
   Serial.print('\n');
 
   Serial.println(ADNS3080_PIXELS_X);
-  Serial.println("Distance_x = " + String(total_x));
+  Serial.print("Distance_x = ");
+  Serial.println(total_x,5);
 
-  Serial.println("Distance_y = " + String(total_y));
+  Serial.print("Distance_y = ");
+  Serial.println(total_y,5);
   Serial.print('\n');
   go_to(0,0);
 
