@@ -311,8 +311,8 @@ void brake_rover(int x = 0)
 }
 
 void go_to(float x, float y){ // for now just states distance and angle to target destination
-  float delta_x=x-total_x_overall; // difference in x needed to be moved
-  float delta_y=y-total_y_overall; // difference in y needed to be moved
+  float delta_x=x-total_x; // difference in x needed to be moved
+  float delta_y=y-total_y; // difference in y needed to be moved
 
   // aim of this section is to read current position, then find target position's relative distance and angle, then move to that location
   // at the moment this doesn't do the move part as that requires accurate turning and driving - only theoretically right in our code now
@@ -329,9 +329,11 @@ void go_to(float x, float y){ // for now just states distance and angle to targe
   Serial.println(angle,3);
   Serial.print("Distance: ");
   Serial.println(dist,3);
-  // if(delta_y<2 && delta_y>-2){
-  //   move_F(500);
-  // }
+  Serial.print("Delta_y: ");
+  Serial.println(delta_y,3);
+  if(!(delta_y<2 && delta_y>-2)){
+    move_F(500);
+  }
 }
 
 float angle_facing(float delta_x, float delta_y, float current_angle){ // still need to measure r and callebrate dx, dy to cm
@@ -595,13 +597,13 @@ void loop()
   Serial.print(',');
   Serial.print((int)md.dy);
   Serial.println(')');
-  if(md.squal<=20){ // fixing random increases in x when the rover sees a low quality image (***** or lower)
+  if(md.squal<=16){ // fixing random increases in x when the rover sees a low quality image (***** or lower)
     md.dx=0;
     md.dy=0;
   }
 
   // Serial.println(md.max_pix);
-  delay(100);
+  delay(300);
 
   current_angle=angle_facing(md.dx/39.1, md.dy/39.1, current_angle); // still need to find the right conversion from md values to cm or mm
   // normal values are relative to the rover, overall values are relative to the overall y axis
@@ -635,9 +637,9 @@ void loop()
   Serial.print("    Total distance_y = ");
   Serial.println(total_y_overall,5);
   Serial.print('\n');
-  go_to(0,20);
+  go_to(0,30);
 
-  delay(250);
+  delay(750);
   temp_x = total_x;
   temp_y = total_y;
   #endif
