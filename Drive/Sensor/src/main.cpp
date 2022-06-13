@@ -595,12 +595,12 @@ void loop()
   // Serial.println(md.max_pix);
   delay(100);
 
-  current_angle=angle_facing(md.dx, md.dy, current_angle); // still need to find the right conversion from md values to cm or mm
+  current_angle=angle_facing(md.dx/39.1, md.dy/39.1, current_angle); // still need to find the right conversion from md values to cm or mm
   // normal values are relative to the rover, overall values are relative to the overall y axis
   distance_x = /*md.dx; //*/ convTwosComp(md.dx);
   distance_y = /*md.dy; //*/ convTwosComp(md.dy);
-  distance_x_overall = /*md.dx; //*/ convTwosComp(md.dx)*cos(current_angle) + convTwosComp(md.dy)*sin(current_angle);
-  distance_y_overall = /*md.dy; //*/ convTwosComp(md.dy)*cos(current_angle) + convTwosComp(md.dx)*sin(current_angle);
+  distance_x_overall = /*md.dx; //*/ convTwosComp(md.dx)*cos(current_angle*(pi/180)) + convTwosComp(md.dy)*sin(current_angle*(pi/180));
+  distance_y_overall = /*md.dy; //*/ convTwosComp(md.dy)*cos(current_angle*(pi/180)) + convTwosComp(md.dx)*sin(current_angle*(pi/180));
 
   total_x1 = total_x1 + distance_x;
   total_y1 = total_y1 + distance_y;
