@@ -394,8 +394,7 @@ void setup()
   if (mousecam_init() == -1)
   {
     Serial.println("Mouse cam failed to init");
-    while (1)
-      ;
+    while (1);
   }
   
   Serial.println("INIT");
