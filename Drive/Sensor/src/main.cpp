@@ -27,12 +27,12 @@
 // motor 2 settings
 #define IN3 17
 #define IN4 16
-#define ENB 4 // this pin must be PWM enabled pin if Arduino board is used
+#define ENB 27 //4 // this pin must be PWM enabled pin if Arduino board is used
 #define CHB 1
 const int CCW = 2; // do not change
 const int CW = 1;  // do not change
 #define motor1 1   // do not change
-#define motor2 2   // do not change
+#define motor2 2 //2   // do not change
 // for two motors without debug information // Watch video instruciton for this line: https://youtu.be/2JTMqURJTwg
 Robojax_L298N_DC_motor robot(IN1, IN2, ENA, CHA, IN3, IN4, ENB, CHB);
 // for two motors with debug information
@@ -92,8 +92,7 @@ const char *host = "192.168.158.30";
 float pi = 3.14159265359;
 float angle = 0;
 float current_angle = 0;
-const float r = 7.8; // need to properly measure the radius of the rover's turns 
-                     // (aka distance from flow sensor to the centre of the axis the rover turns around)
+const float r = 13.2; // the distance from flow sensor to the centre of the axis the rover turns around
 
 float total_x = 0;
 float total_y = 0;
@@ -262,15 +261,15 @@ int mousecam_frame_capture(byte *pdata)
   return ret;
 }
 
-float find_angle(int x, int y)
-{
-  int r = 70;
-  float angle;
-  float d = x ^ 2 + y ^ 2;
-  angle = abs(((2 * (r ^ 2)) - d) / (2 * (r ^ 2)));
-  angle = acos(angle);
-  return angle;
-}
+// float find_angle(int x, int y)
+// {
+//   int r = 70;
+//   float angle;
+//   float d = x ^ 2 + y ^ 2;
+//   angle = abs(((2 * (r ^ 2)) - d) / (2 * (r ^ 2)));
+//   angle = acos(angle);
+//   return angle;
+// }
 /////////////////////////////// ROVER MOVE FUNCTIONS///////////////////////////////
 
 // aim is to get moving forwards working in a straight line with an autocorrection function so we can move in a straight line fine.
@@ -312,8 +311,8 @@ void brake_rover(int x = 0)
 }
 
 void go_to(float x, float y){ // for now just states distance and angle to target destination
-  float delta_x=x-total_x; // difference in x needed to be moved
-  float delta_y=y-total_y; // difference in y needed to be moved
+  float delta_x=x-total_x_overall; // difference in x needed to be moved
+  float delta_y=y-total_y_overall; // difference in y needed to be moved
 
   // aim of this section is to read current position, then find target position's relative distance and angle, then move to that location
   // at the moment this doesn't do the move part as that requires accurate turning and driving - only theoretically right in our code now
@@ -321,15 +320,21 @@ void go_to(float x, float y){ // for now just states distance and angle to targe
 
   // angle to move is arctan(delta_x/delta_y) so distance is delta_y*cos(angle)
   angle = atan(delta_x/delta_y);
+  if(delta_x<2){
+    angle = 0;
+  }
   float dist = sqrt(pow(delta_x,2)+pow(delta_y,2));
   angle = angle*180/pi; // converting angle to degrees
   Serial.print("Angle: ");
   Serial.println(angle,3);
   Serial.print("Distance: ");
   Serial.println(dist,3);
+  // if(delta_y<2 && delta_y>-2){
+  //   move_F(500);
+  // }
 }
 
-float angle_facing(float delta_x, float delta_y){ // still need to measure r and callebrate dx, dy to cm
+float angle_facing(float delta_x, float delta_y, float current_angle){ // still need to measure r and callebrate dx, dy to cm
   // this function is to try to determine what angle the rover is facing relative to the y-axis
 
   // Instead thinking about arc length s=r*Theta - if the distance measured between points is the arc 
@@ -343,9 +348,18 @@ float angle_facing(float delta_x, float delta_y){ // still need to measure r and
   // float delta_x=total_x-temp_x;
   // float delta_y=total_y-temp_y;
   float dist = sqrt(pow(delta_x,2)+pow(delta_y,2));
-  float delta_angle = (180/pi)*acos((pow(r,2)+pow(dist,2))/pow(r,2));
+  float delta_angle = (180/pi)*acos((2*pow(r,2)-pow(dist,2))/(2*pow(r,2)));
+  Serial.print("r^2: ");
+  Serial.println(pow(r,2), 4);
+  Serial.print("dist^2: ");
+  Serial.println(pow(dist,2), 4);
+  Serial.print("Change in angle: ");
+  Serial.println(delta_angle, 4);
+  Serial.print("Inside acos: ");
+  Serial.println((2*pow(r,2)-pow(dist,2))/(2*pow(r,2)), 6);
+  
 
-  if(delta_y>0){ // the y value has to increase if the rover is moving in a circle
+  // if(delta_y>0){ // the y value has to increase if the rover is moving in a circle
     if(delta_x>0.5){ // put 0.5 as a temp value so we don't change the angle if we are trying to drive forwards
                      // naturally this only works properly once we have driving in a straight line down correctly
       current_angle-=delta_angle;
@@ -353,7 +367,7 @@ float angle_facing(float delta_x, float delta_y){ // still need to measure r and
     if(delta_x<-0.5){
       current_angle+=delta_angle;
     }
-  }
+  // }
   return current_angle;
 }
 
@@ -389,8 +403,7 @@ void setup()
   if (mousecam_init() == -1)
   {
     Serial.println("Mouse cam failed to init");
-    while (1)
-      ;
+    while (1);
   }
   
   Serial.println("INIT");
@@ -590,36 +603,39 @@ void loop()
   // Serial.println(md.max_pix);
   delay(100);
 
+  current_angle=angle_facing(md.dx/39.1, md.dy/39.1, current_angle); // still need to find the right conversion from md values to cm or mm
   // normal values are relative to the rover, overall values are relative to the overall y axis
   distance_x = /*md.dx; //*/ convTwosComp(md.dx);
   distance_y = /*md.dy; //*/ convTwosComp(md.dy);
-  distance_x_overall = /*md.dx; //*/ convTwosComp(md.dx)*cos(current_angle) + convTwosComp(md.dy)*sin(current_angle);
-  distance_y_overall = /*md.dy; //*/ convTwosComp(md.dy)*cos(current_angle) + convTwosComp(md.dx)*sin(current_angle);
+  distance_x_overall = /*md.dx; //*/ convTwosComp(md.dx)*cos(current_angle*(pi/180)) + convTwosComp(md.dy)*sin(current_angle*(pi/180));
+  distance_y_overall = /*md.dy; //*/ convTwosComp(md.dy)*cos(current_angle*(pi/180)) + convTwosComp(md.dx)*sin(current_angle*(pi/180));
 
   total_x1 = total_x1 + distance_x;
   total_y1 = total_y1 + distance_y;
-  total_x1_overall = total_x1 + distance_x;
-  total_y1_overall = total_y1 + distance_y;
+  total_x1_overall = total_x1_overall + distance_x_overall;
+  total_y1_overall = total_y1_overall + distance_y_overall;
 
   total_x = total_x1 / 39.1;//50.8; // This value is still just temporary - need to properly measure
   total_y = total_y1 / 39.1;//50.8; // This value is still just temporary - need to properly measure
-  total_x_overall = total_x1 / 39.1;//50.8; // This value is still just temporary - need to properly measure
-  total_y_overall = total_y1 / 39.1;//50.8; // This value is still just temporary - need to properly measure
-
-  current_angle=angle_facing(md.dx, md.dy); // still need to find the right conversion from md values to cm or mm
+  total_x_overall = total_x1_overall / 39.1;//50.8; // This value is still just temporary - need to properly measure
+  total_y_overall = total_y1_overall / 39.1;//50.8; // This value is still just temporary - need to properly measure
 
   Serial.print('\n');
   Serial.println(current_angle, 5);
   Serial.print('\n');
 
-  Serial.println(ADNS3080_PIXELS_X);
-  Serial.print("Distance_x = ");
-  Serial.println(total_x,5);
+  // Serial.println(ADNS3080_PIXELS_X);
+  Serial.print("Relative distance_x = ");
+  Serial.print(total_x,5);
+  Serial.print("    Total distance_x = ");
+  Serial.println(total_x_overall,5);
 
-  Serial.print("Distance_y = ");
-  Serial.println(total_y,5);
+  Serial.print("Relative distance_y = ");
+  Serial.print(total_y,5);
+  Serial.print("    Total distance_y = ");
+  Serial.println(total_y_overall,5);
   Serial.print('\n');
-  go_to(0,0);
+  go_to(0,20);
 
   delay(250);
   temp_x = total_x;
