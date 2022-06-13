@@ -4,6 +4,48 @@ import './Drive.css';
 import {Link} from 'react-router-dom';
 import {Button} from './button';
 import ToggleSwitch from './toggleswitch';
+import Switch from '@material-ui/core/Switch';
+import { withStyles } from '@material-ui/core/styles';
+import { makeStyles } from '@material-ui/core/styles';
+
+
+
+
+const AntSwitch = withStyles((theme) => ({
+    root: {
+      width: 28,
+      height: 16,
+      padding: 0,
+      display: 'flex',
+    },
+    switchBase: {
+      padding: 2,
+      color: theme.palette.grey[500],
+      '&$checked': {
+        transform: 'translateX(12px)',
+        color: theme.palette.common.white,
+        '& + $track': {
+          opacity: 1,
+          backgroundColor: theme.palette.primary.main,
+          borderColor: theme.palette.primary.main,
+        },
+      },
+    },
+    thumb: {
+      width: 12,
+      height: 12,
+      boxShadow: 'none',
+    },
+    track: {
+      border: `1px solid ${theme.palette.grey[500]}`,
+      borderRadius: 16 / 2,
+      opacity: 1,
+      backgroundColor: theme.palette.common.white,
+    },
+    checked:{},
+  }))(Switch);
+
+
 
 
 function Drive() {
@@ -83,7 +125,7 @@ function Drive() {
         alert("Automated mode exited");
     }
     var whatkey;
-    function GetkeyPress (){
+    function GetkeyPress(){
         useEffect (()=>{
             document.addEventListener('keydown', detectKeydown, true)
         },[])
@@ -101,6 +143,9 @@ function Drive() {
             if (e.key === 'ArrowUp'){
             whatkey = "forwards";
             }
+            if(e.key === " "){
+                whatkey = "spacebar";
+            }
             console.log("whatkey value in keypress is before ", whatkey);
             if (whatkey == "forwards" || whatkey == "backwards" || whatkey == "right" || whatkey == "left"){
                 axios.post('http://localhost:4000/directions', { 'direction': whatkey})
@@ -116,7 +161,18 @@ function Drive() {
     
         }
     }
-
+const [control, setControl] = useState(true);
+    const SetVar=(event)=>{
+       // event.preventDefault();// the default action will not happen
+            // if(control===true){
+            // setControl(!control);
+            // event.preventDefault();
+            GetkeyPress();
+           // }
+            // else{
+            //  setControl(!control);
+            // }
+    }
     return (
         <div class="background">
             <div class="layer"></div>
@@ -161,6 +217,9 @@ function Drive() {
                     <Button name="button" className='btns' buttonStyle='btn-outline' buttonSize='btn--medium' onClick={sendDistance}>
                         Send
                     </Button>
+                </div>
+                <div>
+                <AntSwitch onChange={SetVar()} />
                 </div>
             </div>
         </div>
