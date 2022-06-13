@@ -348,7 +348,16 @@ float angle_facing(float delta_x, float delta_y, float current_angle){ // still 
   // float delta_x=total_x-temp_x;
   // float delta_y=total_y-temp_y;
   float dist = sqrt(pow(delta_x,2)+pow(delta_y,2));
-  float delta_angle = (180/pi)*acos((pow(r,2)+pow(dist,2))/pow(r,2));
+  float delta_angle = (180/pi)*acos((2*pow(r,2)-pow(dist,2))/(2*pow(r,2)));
+  Serial.print("r^2: ");
+  Serial.println(pow(r,2), 4);
+  Serial.print("dist^2: ");
+  Serial.println(pow(dist,2), 4);
+  Serial.print("Change in angle: ");
+  Serial.println(delta_angle, 4);
+  Serial.print("Inside acos: ");
+  Serial.println((2*pow(r,2)-pow(dist,2))/(2*pow(r,2)), 6);
+  
 
   // if(delta_y>0){ // the y value has to increase if the rover is moving in a circle
     if(delta_x>0.5){ // put 0.5 as a temp value so we don't change the angle if we are trying to drive forwards
