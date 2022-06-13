@@ -334,7 +334,7 @@ void go_to(float x, float y){ // for now just states distance and angle to targe
   // }
 }
 
-float angle_facing(float delta_x, float delta_y){ // still need to measure r and callebrate dx, dy to cm
+float angle_facing(float delta_x, float delta_y, float current_angle){ // still need to measure r and callebrate dx, dy to cm
   // this function is to try to determine what angle the rover is facing relative to the y-axis
 
   // Instead thinking about arc length s=r*Theta - if the distance measured between points is the arc 
@@ -595,7 +595,7 @@ void loop()
   // Serial.println(md.max_pix);
   delay(100);
 
-  current_angle=angle_facing(md.dx, md.dy); // still need to find the right conversion from md values to cm or mm
+  current_angle=angle_facing(md.dx, md.dy, current_angle); // still need to find the right conversion from md values to cm or mm
   // normal values are relative to the rover, overall values are relative to the overall y axis
   distance_x = /*md.dx; //*/ convTwosComp(md.dx);
   distance_y = /*md.dy; //*/ convTwosComp(md.dy);
