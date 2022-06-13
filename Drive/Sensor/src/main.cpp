@@ -92,8 +92,7 @@ const char *host = "192.168.158.30";
 float pi = 3.14159265359;
 float angle = 0;
 float current_angle = 0;
-const float r = 7.8; // need to properly measure the radius of the rover's turns 
-                     // (aka distance from flow sensor to the centre of the axis the rover turns around)
+const float r = 13.2; // the distance from flow sensor to the centre of the axis the rover turns around
 
 float total_x = 0;
 float total_y = 0;
