@@ -11,7 +11,7 @@
 
 #define PIN_SS 5
 #define PIN_MISO 19
-#define PIN_MOSI 23
+#define PIN_MOSI 4 //was 23
 #define PIN_SCK 18
 
 #define PIN_MOUSECAM_RESET 35
@@ -21,8 +21,8 @@
 #define ADNS3080_PIXELS_Y 30
 
 #define CHA 0
-#define ENA 21 // 19 // this pin must be PWM enabled pin if Arduino board is used
-#define IN1 22 // 18
+#define ENA 23 //21 // 19 // this pin must be PWM enabled pin if Arduino board is used
+#define IN1 26 //22 // 18 
 #define IN2 14 // 5
 // motor 2 settings
 #define IN3 17
@@ -376,15 +376,16 @@ float angle_facing(float delta_x, float delta_y, float current_angle){ // still 
   // float delta_x=total_x-temp_x;
   // float delta_y=total_y-temp_y;
   float dist = sqrt(pow(delta_x,2)+pow(delta_y,2));
-  float delta_angle = (180/pi)*acos((2*pow(r,2)-pow(dist,2))/(2*pow(r,2)));
-  Serial.print("r^2: ");
-  Serial.println(pow(r,2), 4);
-  Serial.print("dist^2: ");
-  Serial.println(pow(dist,2), 4);
+  // float delta_angle = (180/pi)*acos((2*pow(r,2)-pow(dist,2))/(2*pow(r,2)));
+  float delta_angle = (delta_x*r)*(180/pi);
+  // Serial.print("r^2: ");
+  // Serial.println(pow(r,2), 4);
+  // Serial.print("dist^2: ");
+  // Serial.println(pow(dist,2), 4);
   Serial.print("Change in angle: ");
   Serial.println(delta_angle, 4);
-  Serial.print("Inside acos: ");
-  Serial.println((2*pow(r,2)-pow(dist,2))/(2*pow(r,2)), 6);
+  // Serial.print("Inside acos: ");
+  // Serial.println((2*pow(r,2)-pow(dist,2))/(2*pow(r,2)), 6);
   
 
   // if(delta_y>0){ // the y value has to increase if the rover is moving in a circle
