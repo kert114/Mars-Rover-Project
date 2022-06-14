@@ -6,6 +6,8 @@
 #include <MFRC522.h>
 #include <math.h>
 #include <iostream>
+#include <Adafruit_MPU6050.h>
+#include <Adafruit_Sensor.h>
 
 // these pins may be different on different boards
 
@@ -81,6 +83,9 @@ IPAddress secondaryDNS(8, 8, 4, 4);
 WiFiClient client;
 MFRC522 mfrc522(IN2, IN3); //// RANDOM IN2 AND IN3 FOR TESTING
 
+
+Adafruit_MPU6050 mpu;
+
 const char *ssid = "Kert12345";
 const char *password = "1234567891";
 // const char *ssid = "AngusiPhone";
@@ -117,6 +122,8 @@ float correction = 39.1;
 
 float a = 0;
 float b = 0;
+
+float gyro_rotation = 0;
 
 float distance_x = 0;
 float distance_y = 0;
@@ -366,8 +373,7 @@ float angle_facing(float delta_x, float delta_y, float current_angle){ // still 
   // this function is to try to determine what angle the rover is facing relative to the y-axis
 
   // Instead thinking about arc length s=r*Theta - if the distance measured between points is the arc 
-  // length then the angle is easy to calculate. As it is instead the straight line between the points,
-  // it's a tad more difficult - could use formula arccos((r^2-d^2)/r^2) - still need to measure r though.
+  // length then the angle is easy to calculate. 
   // It also doesn't work hugely well if you turn while moving fast so best to always turn stationary.
   // In order to correct for turns while moving, need to track variations in the x distance moved as the x 
   // measured is relative to the motor and adjust motor speeds accordingly - don't want to have to rely on a gyroscope
@@ -375,9 +381,9 @@ float angle_facing(float delta_x, float delta_y, float current_angle){ // still 
 
   // float delta_x=total_x-temp_x;
   // float delta_y=total_y-temp_y;
-  float dist = sqrt(pow(delta_x,2)+pow(delta_y,2));
+  // float dist = sqrt(pow(delta_x,2)+pow(delta_y,2));
   // float delta_angle = (180/pi)*acos((2*pow(r,2)-pow(dist,2))/(2*pow(r,2)));
-  float delta_angle = (delta_x*r)*(180/pi);
+  float delta_angle = (delta_x*r)*(180/pi); // realised I've been stupid and have gone back to arc lengths
   // Serial.print("r^2: ");
   // Serial.println(pow(r,2), 4);
   // Serial.print("dist^2: ");
@@ -386,8 +392,6 @@ float angle_facing(float delta_x, float delta_y, float current_angle){ // still 
   Serial.println(delta_angle, 4);
   // Serial.print("Inside acos: ");
   // Serial.println((2*pow(r,2)-pow(dist,2))/(2*pow(r,2)), 6);
-  
-
   // if(delta_y>0){ // the y value has to increase if the rover is moving in a circle
     if(delta_x>0.5){ // put 0.5 as a temp value so we don't change the angle if we are trying to drive forwards
                      // naturally this only works properly once we have driving in a straight line down correctly
@@ -409,6 +413,9 @@ float angle_facing(float delta_x, float delta_y, float current_angle){ // still 
 void setup()
 {
   Serial.begin(115200);
+  while (!Serial){
+    delay(10); // will pause Zero, Leonardo, etc until serial console opens
+  }
   robot.begin();
   pinMode(PIN_SS, OUTPUT);
   // Serial.println("SS");
@@ -438,11 +445,79 @@ void setup()
   Serial.println("INIT");
   /////////////WIFI STUFF IN SETUP///////////
 
-  Serial.begin(115200);
+  // Serial.begin(115200);
 
   SPI.begin();
 
   mfrc522.PCD_Init();
+
+  // Try to initialize the mpu6050
+  if (!mpu.begin()) {
+    Serial.println("Failed to find MPU6050 chip");
+    while (1) {
+      delay(10);
+    }
+  }
+  Serial.println("MPU6050 Found!");
+  mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
+  Serial.print("Accelerometer range set to: ");
+  switch (mpu.getAccelerometerRange()) {
+  case MPU6050_RANGE_2_G:
+    Serial.println("+-2G");
+    break;
+  case MPU6050_RANGE_4_G:
+    Serial.println("+-4G");
+    break;
+  case MPU6050_RANGE_8_G:
+    Serial.println("+-8G");
+    break;
+  case MPU6050_RANGE_16_G:
+    Serial.println("+-16G");
+    break;
+  }
+  mpu.setGyroRange(MPU6050_RANGE_500_DEG);
+  Serial.print("Gyro range set to: ");
+  switch (mpu.getGyroRange()) {
+  case MPU6050_RANGE_250_DEG:
+    Serial.println("+- 250 deg/s");
+    break;
+  case MPU6050_RANGE_500_DEG:
+    Serial.println("+- 500 deg/s");
+    break;
+  case MPU6050_RANGE_1000_DEG:
+    Serial.println("+- 1000 deg/s");
+    break;
+  case MPU6050_RANGE_2000_DEG:
+    Serial.println("+- 2000 deg/s");
+    break;
+  }
+  mpu.setFilterBandwidth(MPU6050_BAND_21_HZ);
+  Serial.print("Filter bandwidth set to: ");
+  switch (mpu.getFilterBandwidth()) {
+  case MPU6050_BAND_260_HZ:
+    Serial.println("260 Hz");
+    break;
+  case MPU6050_BAND_184_HZ:
+    Serial.println("184 Hz");
+    break;
+  case MPU6050_BAND_94_HZ:
+    Serial.println("94 Hz");
+    break;
+  case MPU6050_BAND_44_HZ:
+    Serial.println("44 Hz");
+    break;
+  case MPU6050_BAND_21_HZ:
+    Serial.println("21 Hz");
+    break;
+  case MPU6050_BAND_10_HZ:
+    Serial.println("10 Hz");
+    break;
+  case MPU6050_BAND_5_HZ:
+    Serial.println("5 Hz");
+    break;
+  }
+
+  Serial.println("");
 
   // if(!WiFi.config(local_IP,gateway,subnet,primaryDNS,secondaryDNS)){
 
@@ -470,6 +545,8 @@ void loop()
 
   /////////////////////////CONTROL THE ROVER USING 123456789
   int i;
+  sensors_event_t a, g, temp;
+  mpu.getEvent(&a, &g, &temp);
   // while (Serial.available() == 0)
   // {
   // } // if it breaks, do >= 0 in conditions as per Hepple
@@ -608,6 +685,16 @@ void loop()
   float val = mousecam_read_reg(ADNS3080_PIXEL_SUM);
   MD md;
   mousecam_read_motion(&md);
+  if(md.squal<=16){ // fixing random increases in x when the rover sees a low quality image (***** or lower)
+    md.dx=0;
+    md.dy=0;
+  }
+  if(md.dx == 255){
+    md.dx = 0;
+  }
+  if(md.dy == 255){
+    md.dy = 0;
+  }
   for (int i = 0; i < md.squal / 4; i++)
   {
     Serial.print('*');
@@ -624,10 +711,7 @@ void loop()
   Serial.print(',');
   Serial.print((int)md.dy);
   Serial.println(')');
-  if(md.squal<=16){ // fixing random increases in x when the rover sees a low quality image (***** or lower)
-    md.dx=0;
-    md.dy=0;
-  }
+  
 
   // Serial.println(md.max_pix);
   delay(100);
@@ -652,6 +736,8 @@ void loop()
   Serial.print('\n');
   Serial.println(current_angle, 5);
   Serial.print('\n');
+
+  gyro_rotation = g.gyro.z; // rotation changed in rad/s
 
   // Serial.println(ADNS3080_PIXELS_X);
   Serial.print("Relative distance_x = ");
