@@ -322,7 +322,7 @@ void go_to(float x, float y, float dx, float dy, float prev_dx, float prev_dy){ 
   // at the moment this doesn't do the move part as that requires accurate turning and driving - only theoretically right in our code now
   // still need to figure out the rate at which motors need to change speeds in order to drive in a straight line on different surfaces
 
-  // angle to move is arctan(delta_x/delta_y) so distance is delta_y*cos(angle)
+  // angle to move is arctan(delta_x/delta_y) and distance is sqrt(x^2 + y^2)
   angle = atan(delta_x/delta_y);
   if(delta_x<2){
     angle = 0;
@@ -340,13 +340,13 @@ void go_to(float x, float y, float dx, float dy, float prev_dx, float prev_dy){ 
       m1-=10;
       m2-=10;
     }
-    else if(dx < 0.5 && prev_dx < 0.5){
+    else if(dx < 0.3 && prev_dx < 0.3){
       m1-=1;
       m2+=1;
-    }else if(dx > -0.5 && prev_dy > -0.5){
+    }else if(dx > -0.3 && prev_dy > -0.3){
       m1+=1;
       m2-=1;
-    }else if(dx>-0.5 && dx<0.5 && prev_dx<0.5 && prev_dx>-0.5){
+    }else if(dx>-0.3 && dx<0.3 && prev_dx<0.3 && prev_dx>-0.3){
       m1=42;
       m2=40;
     }
@@ -663,7 +663,7 @@ void loop()
   Serial.print("    Total distance_y = ");
   Serial.println(total_y_overall,5);
   Serial.print('\n');
-  go_to(0,30, md.dx/correction, md.dy/correction, prev_dx, prev_dy);
+  // go_to(0,30, md.dx/correction, md.dy/correction, prev_dx, prev_dy);
 
   delay(250);
   temp_x = total_x;
