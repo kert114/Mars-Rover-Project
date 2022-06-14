@@ -13,7 +13,7 @@
 
 #define PIN_SS 5
 #define PIN_MISO 19
-#define PIN_MOSI 4 //was 23
+#define PIN_MOSI 23
 #define PIN_SCK 18
 
 #define PIN_MOUSECAM_RESET 35
@@ -23,7 +23,7 @@
 #define ADNS3080_PIXELS_Y 30
 
 #define CHA 0
-#define ENA 23 //21 // 19 // this pin must be PWM enabled pin if Arduino board is used
+#define ENA 15 //23 //21 // 19 // this pin must be PWM enabled pin if Arduino board is used
 #define IN1 26 //22 // 18 
 #define IN2 14 // 5
 // motor 2 settings
@@ -714,9 +714,9 @@ void loop()
   
 
   // Serial.println(md.max_pix);
-  delay(100);
+  // delay(100);
 
-  current_angle=angle_facing(md.dx/correction, md.dy/correction, current_angle); // still need to find the right conversion from md values to cm or mm
+  current_angle=angle_facing(total_x/*md.dx/correction*/, md.dy/correction, current_angle); // still need to find the right conversion from md values to cm or mm
   // normal values are relative to the rover, overall values are relative to the overall y axis
   distance_x = /*md.dx; //*/ convTwosComp(md.dx);
   distance_y = /*md.dy; //*/ convTwosComp(md.dy);
@@ -737,7 +737,10 @@ void loop()
   Serial.println(current_angle, 5);
   Serial.print('\n');
 
-  gyro_rotation = g.gyro.z; // rotation changed in rad/s
+  gyro_rotation = g.gyro.z*(180/M_PI); // rotation changed in rad/s
+  if(gyro_rotation>-2 && gyro_rotation<2){
+    gyro_rotation=0;
+  }
 
   // Serial.println(ADNS3080_PIXELS_X);
   Serial.print("Relative distance_x = ");
@@ -754,7 +757,7 @@ void loop()
   Serial.println("");
   // go_to(0,30, md.dx/correction, md.dy/correction, prev_dx, prev_dy);
 
-  delay(250);
+  // delay(250);
   temp_x = total_x;
   temp_y = total_y;
   prev_dx=md.dx/correction;
