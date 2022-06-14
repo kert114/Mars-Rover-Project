@@ -97,11 +97,11 @@ assign teal_detect = (hue>100 && hue<153 ) && (saturation>30) && (value>35);
 wire fuchsia_detect;
 assign fuchsia_detect = ((hue>357 & hue<20) && (saturation<85) && (value>20));
 wire blue_detect;
-assign blue_detect = ((hue>160 && hue<230) && (saturation>30) && (value>50 && value<90));
+assign blue_detect = ((hue>140 && hue<250) && (saturation<70) && (value>8 && value<72));
 wire green_detect;
-assign green_detect = ((hue>80 && hue<120) && (saturation>50) && (value>70));
+assign green_detect = ((hue>90 && hue<120) && (saturation>40 && saturation<77) && (value>13));
 wire yellow_detect;
-assign yellow_detect = ((hue>45 && hue<70) && (saturation>59) && (value>50));
+assign yellow_detect = ((hue>50 && hue<77) && (saturation<90) && (value>70));
 
 // Find boundary of cursor box
 
