@@ -7,6 +7,8 @@ function Home() {
     return(
        
        <section class="parent">
+        <div class="flier"><img src={require("./rock-removebg-preview.png")} width="200" height="200"/></div>
+
           <div class="parent">
                     <div class="image_animation"><img src="https://www.freepnglogos.com/uploads/moon-png/moon-transparent-png-and-clip-art-images-icons-and-14.png" width="100" height="100" align="left"/></div>
          </div>
