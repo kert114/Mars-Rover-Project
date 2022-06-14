@@ -23,7 +23,7 @@
 #define ADNS3080_PIXELS_Y 30
 
 #define CHA 0
-#define ENA 15 //23 //21 // 19 // this pin must be PWM enabled pin if Arduino board is used
+#define ENA 4 //23 //21 // 19 // this pin must be PWM enabled pin if Arduino board is used
 #define IN1 26 //22 // 18 
 #define IN2 14 // 5
 // motor 2 settings
