@@ -107,6 +107,14 @@ float total_y1_overall = 0;
 float x = 0;
 float y = 0;
 
+int m1 = 36;
+int m2 = 34;
+
+float prev_dx;
+float prev_dy;
+
+float correction = 39.1;
+
 float a = 0;
 float b = 0;
 
@@ -278,39 +286,35 @@ int mousecam_frame_capture(byte *pdata)
 // Finally by using the find current angle changed function - it will be possible to turn to a certain angle allowing for all 
 // direction driving. There is no need to turn on the move as that adds an extra radius that will be unneccessarily hard to calculate.
 
-void move_F(int x = 0)
+void move_F(int x = 0, int m1=42, int m2=40)
 {
-  robot.rotate(motor1, 42, CCW); // turn motor1 with 25% speed in CCW direction
-  robot.rotate(motor2, 40, CW);  // turn motor2 with 25% speed in CW direction
+  robot.rotate(motor1, m1, CCW); // turn motor1 with 25% speed in CCW direction
+  robot.rotate(motor2, m2, CW);  // turn motor2 with 25% speed in CW direction
   delay(x);
 }
-void move_B(int x = 0)
+void move_B(int x = 0, int m1=42, int m2=40)
 {
-  robot.rotate(motor1, 42, CW);  // turn motor1 with 25% speed in CCW direction
-  robot.rotate(motor2, 40, CCW); // turn motor2 with 25% speed in CW direction
+  robot.rotate(motor1, m1, CW);  // turn motor1 with 25% speed in CCW direction
+  robot.rotate(motor2, m2, CCW); // turn motor2 with 25% speed in CW direction
   delay(x);
 }
-void move_R(int x = 90){
-  robot.rotate(motor1, 29, CW);// turn motor1 with 25% speed in CCW direction
-  robot.rotate(motor2, 29, CW);// turn motor2 with 25% speed in CW direction
+void move_R(int x = 0, int m1=30, int m2=30){
+  robot.rotate(motor1, m1, CW);// turn motor1 with 25% speed in CCW direction
+  robot.rotate(motor2, m2, CW);// turn motor2 with 25% speed in CW direction
   delay(x);
 }
-void move_L(int x = 90){
-  robot.rotate(motor1, 29, CCW);// turn motor1 with 25% speed in CCW direction
-  robot.rotate(motor2, 29, CCW);// turn motor2 with 25% speed in CW direction
+void move_L(int x = 0, int m1=30, int m2=30){
+  robot.rotate(motor1, m1, CCW);// turn motor1 with 25% speed in CCW direction
+  robot.rotate(motor2, m2, CCW);// turn motor2 with 25% speed in CW direction
   delay(x);
 }
-void brake_rover(int x = 0)
+void brake_rover()
 {
   robot.brake(1);
   robot.brake(2);
-  delay(x);
-  robot.brake(1);
-  robot.brake(2);
-
 }
 
-void go_to(float x, float y){ // for now just states distance and angle to target destination
+void go_to(float x, float y, float dx, float dy, float prev_dx, float prev_dy){ // for now just states distance and angle to target destination
   float delta_x=x-total_x; // difference in x needed to be moved
   float delta_y=y-total_y; // difference in y needed to be moved
 
@@ -332,7 +336,29 @@ void go_to(float x, float y){ // for now just states distance and angle to targe
   Serial.print("Delta_y: ");
   Serial.println(delta_y,3);
   if(!(delta_y<2 && delta_y>-2)){
-    move_F(500);
+    if(delta_y<10){
+      m1-=10;
+      m2-=10;
+    }
+    else if(dx < 0.5 && prev_dx < 0.5){
+      m1-=1;
+      m2+=1;
+    }else if(dx > -0.5 && prev_dy > -0.5){
+      m1+=1;
+      m2-=1;
+    }else if(dx>-0.5 && dx<0.5 && prev_dx<0.5 && prev_dx>-0.5){
+      m1=42;
+      m2=40;
+    }
+    // }else if(dx > 0.5 && prev_dx < 0.5){
+    //   m1-=2;
+    //   m2+=2;
+    // }else if(dx < -0.5 && prev_dx > -0.5){
+    //   m1+=2;
+    //   m2-=2;
+    move_F(10, m1, m2);
+  }else{
+    brake_rover();
   }
 }
 
@@ -452,25 +478,25 @@ void loop()
   case 1:
     // move straight for 3 sec
     move_F(1000);
-    brake_rover(10);
+    brake_rover();
     break;
 
   case 2:
     // rotate left for 3 sec
     move_L(1000);
-    brake_rover(10);
+    brake_rover();
     break;
 
   case 3:
     // rotate right for 3 sec
     move_R(1000);
-    brake_rover(10);
+    brake_rover();
     break;
 
   case 4:
     // move back for 3 sec
     move_B(1000);
-    brake_rover(10);
+    brake_rover();
     break;
 
   case 5:
@@ -511,7 +537,7 @@ void loop()
     break;
 
   case 9:
-    brake_rover(10);
+    brake_rover();
     break;
 
   // case 0:
@@ -603,9 +629,9 @@ void loop()
   }
 
   // Serial.println(md.max_pix);
-  delay(300);
+  delay(100);
 
-  current_angle=angle_facing(md.dx/39.1, md.dy/39.1, current_angle); // still need to find the right conversion from md values to cm or mm
+  current_angle=angle_facing(md.dx/correction, md.dy/correction, current_angle); // still need to find the right conversion from md values to cm or mm
   // normal values are relative to the rover, overall values are relative to the overall y axis
   distance_x = /*md.dx; //*/ convTwosComp(md.dx);
   distance_y = /*md.dy; //*/ convTwosComp(md.dy);
@@ -617,10 +643,10 @@ void loop()
   total_x1_overall = total_x1_overall + distance_x_overall;
   total_y1_overall = total_y1_overall + distance_y_overall;
 
-  total_x = total_x1 / 39.1;//50.8; // This value is still just temporary - need to properly measure
-  total_y = total_y1 / 39.1;//50.8; // This value is still just temporary - need to properly measure
-  total_x_overall = total_x1_overall / 39.1;//50.8; // This value is still just temporary - need to properly measure
-  total_y_overall = total_y1_overall / 39.1;//50.8; // This value is still just temporary - need to properly measure
+  total_x = total_x1 / correction;//50.8; // This value is still just temporary - need to properly measure
+  total_y = total_y1 / correction;//50.8; // This value is still just temporary - need to properly measure
+  total_x_overall = total_x1_overall / correction;//50.8; // This value is still just temporary - need to properly measure
+  total_y_overall = total_y1_overall / correction;//50.8; // This value is still just temporary - need to properly measure
 
   Serial.print('\n');
   Serial.println(current_angle, 5);
@@ -637,10 +663,12 @@ void loop()
   Serial.print("    Total distance_y = ");
   Serial.println(total_y_overall,5);
   Serial.print('\n');
-  go_to(0,30);
+  go_to(0,30, md.dx/correction, md.dy/correction, prev_dx, prev_dy);
 
-  delay(750);
+  delay(250);
   temp_x = total_x;
   temp_y = total_y;
+  prev_dx=md.dx/correction;
+  prev_dy=md.dy/correction;
   #endif
 }
