@@ -9,16 +9,16 @@ const fs = require('fs');
 
 var xValue;
 var yValue;
-// router.get('/control', (req, res) => { //takes the request and the response. 
-//     //if anyone goes to the tweets page, they wll get back a json response. 
-//     const id = req.params.id;
-//     db2.query("SELECT LAST(Object, xVal, yVal) FROM esp32data WHERE id = ?", id, 
-//     (err,result)=>{
-//         if(err) {
-//         console.log(err)
-//         } 
-//         res.send(result)
-//         });   });
+router.get('/control', (req, res) => { //takes the request and the response. 
+    //if anyone goes to the tweets page, they wll get back a json response. 
+    const id = req.params.id;
+    db2.query("SELECT * FROM sensordata2 ORDER BY id = ? DESC LIMIT 1;", id, 
+    (err,result)=>{
+        if(err) {
+        console.log(err)
+        } 
+        res.send(result)
+        });   });
 var array=[];
 router.post('/directions', (req, res) =>{
    // Route for creating the post
