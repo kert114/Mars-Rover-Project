@@ -97,7 +97,7 @@ const char *host = "192.168.158.30";
 float pi = 3.14159265359;
 float angle = 0;
 float current_angle = 0;
-const float r = 13.2; // the distance from flow sensor to the centre of the axis the rover turns around
+const float r = 12.6; // the distance from flow sensor to the centre of the axis the rover turns around
 
 float total_x = 0;
 float total_y = 0;
@@ -118,7 +118,7 @@ int m2 = 34;
 float prev_dx;
 float prev_dy;
 
-float correction = 39.1;
+float correction = 50;
 
 float a = 0;
 float b = 0;
@@ -369,7 +369,13 @@ void go_to(float x, float y, float dx, float dy, float prev_dx, float prev_dy){ 
   }
 }
 
-float angle_facing(float delta_x, float delta_y, float current_angle){ // still need to measure r and callebrate dx, dy to cm
+float angle_facing(float total_x){ 
+  float delta_angle = (total_x/r); // realised I've been stupid and have gone back to arc lengths
+  delta_angle = atan2(sin(delta_angle), cos(delta_angle)) * (180/pi);
+  Serial.print("Angle: ");
+  Serial.println(delta_angle, 4);
+  return delta_angle;
+  }// still need to callebrate dx, dy to cm
   // this function is to try to determine what angle the rover is facing relative to the y-axis
 
   // Instead thinking about arc length s=r*Theta - if the distance measured between points is the arc 
@@ -383,26 +389,23 @@ float angle_facing(float delta_x, float delta_y, float current_angle){ // still 
   // float delta_y=total_y-temp_y;
   // float dist = sqrt(pow(delta_x,2)+pow(delta_y,2));
   // float delta_angle = (180/pi)*acos((2*pow(r,2)-pow(dist,2))/(2*pow(r,2)));
-  float delta_angle = (delta_x*r)*(180/pi); // realised I've been stupid and have gone back to arc lengths
   // Serial.print("r^2: ");
   // Serial.println(pow(r,2), 4);
   // Serial.print("dist^2: ");
   // Serial.println(pow(dist,2), 4);
-  Serial.print("Change in angle: ");
-  Serial.println(delta_angle, 4);
   // Serial.print("Inside acos: ");
   // Serial.println((2*pow(r,2)-pow(dist,2))/(2*pow(r,2)), 6);
   // if(delta_y>0){ // the y value has to increase if the rover is moving in a circle
-    if(delta_x>0.5){ // put 0.5 as a temp value so we don't change the angle if we are trying to drive forwards
-                     // naturally this only works properly once we have driving in a straight line down correctly
-      current_angle-=delta_angle;
-    }
-    if(delta_x<-0.5){
-      current_angle+=delta_angle;
-    }
+    // if(delta_x>0.5){ // put 0.5 as a temp value so we don't change the angle if we are trying to drive forwards
+    //                  // naturally this only works properly once we have driving in a straight line down correctly
+    //   current_angle-=delta_angle;
+    // }
+    // if(delta_x<-0.5){
+    //   current_angle+=delta_angle;
+    // }
   // }
-  return current_angle;
-}
+  // return current_angle;
+// }
 
 // Need to callebrate the distances along x and y accurately
 // If this gets working then we can accurately measure angle travelled as well as distance travelled so if
@@ -544,13 +547,15 @@ void loop()
 {
 
   /////////////////////////CONTROL THE ROVER USING 123456789
-  int i;
+  int i = 0;
   sensors_event_t a, g, temp;
   mpu.getEvent(&a, &g, &temp);
   // while (Serial.available() == 0)
   // {
   // } // if it breaks, do >= 0 in conditions as per Hepple
-  i = Serial.parseInt();
+  if (Serial.available()) {
+    i = Serial.parseInt();
+  }
   switch (i)
   {
   case 1:
@@ -716,7 +721,7 @@ void loop()
   // Serial.println(md.max_pix);
   // delay(100);
 
-  current_angle=angle_facing(total_x/*md.dx/correction*/, md.dy/correction, current_angle); // still need to find the right conversion from md values to cm or mm
+  current_angle=angle_facing(total_x); // still need to find the right conversion from md values to cm or mm
   // normal values are relative to the rover, overall values are relative to the overall y axis
   distance_x = /*md.dx; //*/ convTwosComp(md.dx);
   distance_y = /*md.dy; //*/ convTwosComp(md.dy);
