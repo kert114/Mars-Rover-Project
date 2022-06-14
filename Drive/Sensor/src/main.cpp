@@ -750,6 +750,8 @@ void loop()
   Serial.print("    Total distance_y = ");
   Serial.println(total_y_overall,5);
   Serial.print('\n');
+  Serial.println(gyro_rotation, 5);
+  Serial.println("");
   // go_to(0,30, md.dx/correction, md.dy/correction, prev_dx, prev_dy);
 
   delay(250);
