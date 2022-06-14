@@ -6,10 +6,9 @@ import {Button} from './button';
 import ToggleSwitch from './toggleswitch';
 import Switch from '@material-ui/core/Switch';
 import { withStyles } from '@material-ui/core/styles';
-import { makeStyles } from '@material-ui/core/styles';
 
 
-
+var checked = false;
 
 const AntSwitch = withStyles((theme) => ({
     root: {
@@ -163,12 +162,14 @@ function Drive() {
     }
 const [control, setControl] = useState(true);
     const SetVar=(event)=>{
+        console.log(checked);
+        console.log("control ", control);
        // event.preventDefault();// the default action will not happen
-            // if(control===true){
+            if(control===true){
             // setControl(!control);
             // event.preventDefault();
             GetkeyPress();
-           // }
+            }
             // else{
             //  setControl(!control);
             // }
@@ -219,7 +220,8 @@ const [control, setControl] = useState(true);
                     </Button>
                 </div>
                 <div>
-                <AntSwitch onChange={SetVar()} />
+                    
+                <AntSwitch onChange={()=>{checked = !checked}} />
                 </div>
             </div>
         </div>

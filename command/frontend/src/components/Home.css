@@ -28,6 +28,7 @@ p1{
     75%  {color: rgb(190, 23, 145);}
     100%  {color: rgb(221, 53, 15);}
 }
+
 .flier {
 	pointer-events: none;
 }
@@ -41,8 +42,6 @@ p1{
 	animation-delay: 1s;
 	z-index: 999999;
 
-    background-image: url("../rover2.png");
-    background-repeat: no-repeat;
 
   }
 @keyframes whoosh{
@@ -78,3 +77,67 @@ p1{
     transform: translateX(10vw) translateY(3000%)
     }
 }
+.div{
+    position: relative;
+}
+.image_animation{
+    position: absolute;
+    top: 50px;
+    left: 51px;
+    z-index: 1;
+    animation: rotation 80s infinite linear;
+
+}
+.rotate {
+  animation: rotation 1s infinite linear;
+}
+
+@keyframes rotation {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(359deg);
+  }
+}
+p2{
+   font-weight: bold;
+   font-style: italic;
+   font-family:" Apple Chancery", cursive;
+   font-size-adjust: 1;
+}   
+
+p3{
+    font-weight: bolder;
+    font-style: italic;
+    font-family:" Apple Chancery", cursive;
+    font-size-adjust: 0.58;
+}   
+p4{
+    font-weight: bolder;
+    font-style: italic;
+    font-family:" Apple Chancery", cursive;
+    font-size-adjust: 0.58;
+}   
+
+.div2{
+    position: relative;
+}
+.hello{
+    position: absolute;
+    top:350px;
+    left: 51px;
+    z-index: 1;
+    animation: myfirst 20s infinite;
+    animation-direction: alternate;
+
+    
+
+}
+@keyframes myfirst {
+    0%   {left: 0px; top: 300px;}
+    25%  {left: 900px; top: 300px;}
+    50%  {left: 900px; top: 300px;}
+    75%  {left: 0px; top: 300px;}
+    100% {left: 0px; top: 300px;}
+  }
