@@ -1,0 +1,18 @@
+
+  body {
+    color: #666666;
+    font-family: "Arial", "Helvetica";
+    font-size: 12px;
+  }
+ .grayBorder {
+    border: 1px solid #CCCCCC;
+    margin: 3px;
+    float: left;
+  }
+#tableView {
+    width: 500px;
+    display: none;
+    margin-left: 0px;
+    max-height: 250px;
+    overflow: scroll;
+  }

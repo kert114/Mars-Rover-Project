@@ -3,13 +3,14 @@ import React, {useEffect, useState} from 'react';//bootstrap
 import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios';
 import Control from './Control';
+import path from './images/path.png';
+import './map.css';
 
 var Component = React.Component;
-var x_value;
-var y_value;
+//2337 x 3555
 var dps = [];   //dataPoints.
-
-
+var variable;
+//var dps_line = [{ x: 0, y: 0 },{ x: 0, y: 2337 }, { x: 3555, y: 2337 },{ x: 3555, y: 0 }, { x: 0, y: 0 }]
  
 export default class Map extends Component {
 	constructor() {
@@ -25,40 +26,66 @@ export default class Map extends Component {
 		const data = await Control();
 		console.log("data ", data);
 		console.log(data[0].xVal);
-		dps.push({x: parseFloat(data[0].xVal) ,y: parseFloat(data[0].yVal)});
+		dps.push({x: parseFloat(data[0].xVal) ,y: parseFloat(data[0].yVal), markerColor: data[0].Object});
+		variable = data[0].Object;
 		console.log("dps ", dps);
 		this.chart.render();
+		console.log(variable);
+
 	}
 	render() {
 		const options = {
+			backgroundColor: null,
+			////2337 x 3555
+			width: 3556/4,
+			height: 2337/6,
+			position: "center",
 			title :{
-				text: "Mapping of Arena"
+				text: "Mapping of the Arena", 
 			},
 			data: [{
 				type: "scatter",
-				dataPoints : dps
+				dataPoints : dps,
+				markerType : "circle",
+				markerSize: 30,
 			}],
 
-			axisY:{
-				display:false,
-				gridThickness :0,
-				//lineThickness:0,
-// need to display colours instead of random points based on id. 
+			scales: {
+				xAxes: [{
+						display: true,
+						ticks: {
+							beginAtZero: true,
+							steps: 10,
+							stepValue: 5,
+							max: 100
+						}
+					}],
+				yAxes: [{
+						display: true,
+						ticks: {
+							min: 0, // minimum value
+							max: 10 // maximum value
+						}
+					}]
 			},
-			axisX:{
-				display:false,
-				//lineThickness:0,
-				gridThickness:0,
-			}
+
+			// data: [{
+			// 	type: "line",
+			// 	dataPoints : dps_line,
+			// 	markerType : "circle"
+			// }],
+
             
 		}
 		return (
-		<div>
-			<CanvasJSChart options = {options}
-				 onRef={ref => this.chart = ref}
-			/>
-			{/*You can get reference to the chart instance as shown above using onRef. This allows you to access all chart properties and methods*/}
-		</div>
+		<section>
+			<div>
+				<CanvasJSChart options = {options}
+					onRef={ref => this.chart = ref}
+				/>
+				  </div>
+				{/*You can get reference to the chart instance as shown above using onRef. This allows you to access all chart properties and methods*/}
+		</section>
 		);
 	}
 }
