@@ -18,6 +18,7 @@ if ($conn->connect_error) {
     $json = json_encode($rows);
     //$url1=$_SERVER['http://localhost/query.php'];
     header("Refresh: 2");
+    header("Refresh: 2; url=../../../Users/mahas/Documents/GSB2/command/backend/routes/handler.js");
     if (file_put_contents("../../../Users/mahas/Documents/GSB2/command/frontend/src/data.json", $json))
         echo "JSON file created successfully...";
     else 

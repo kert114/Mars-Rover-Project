@@ -1,23 +1,22 @@
 const express = require('express');
 const db = require('./mysql')
-const db2 = require('./mysql2')
+
 const router = express.Router();// the mpules you need to use.
 let json = require('../data.json');
 const fs = require('fs');
 var x;
 
+console.log(json);
+console.log(json[0].xVal);
+console.log(json[0].yVal);
+
 
 router.get('/control', (req, res) => { //takes the request and the response. 
-   const id = req.params.id;
-   db2.query("SELECT * FROM esp32data ORDER BY id DESC LIMIT 1", id, 
-   (err,result)=>{
-      if(err) {
-      console.log(err)
-      } 
-      console.log(result);
-      res.send(result)
-      });   });
+  var array = [json[0].xVal, json[0].yVal];
 
+  res.send(array);
+
+});
 
    
 var array=[];

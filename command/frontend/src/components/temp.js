@@ -24,8 +24,8 @@ export default class Map extends Component {
 	async updateChart() { // going to change later on. 
 		const data = await Control();
 		console.log("data ", data);
-		console.log(data[0].xVal);
-		dps.push({x: parseFloat(data[0].xVal) ,y: parseFloat(data[0].yVal)});
+		
+		dps.push({x: parseFloat(data[0]) ,y: parseFloat(data[1])});
 		console.log("dps ", dps);
 		this.chart.render();
 	}
@@ -62,3 +62,7 @@ export default class Map extends Component {
 		);
 	}
 }
+
+
+
+/////////////////////////////////////////////////////////////////////
