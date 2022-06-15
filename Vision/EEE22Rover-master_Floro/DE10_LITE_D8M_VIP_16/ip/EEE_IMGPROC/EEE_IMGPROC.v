@@ -70,7 +70,8 @@ parameter MSG_INTERVAL = 6;
 parameter BB_COL_DEFAULT = 24'h00ff00;
 
 
-wire [7:0]   red, green, blue, grey;
+wire [7:0]   red, green, blue;
+wire signed [7:0] grey;
 wire [7:0]   red_out, green_out, blue_out;
 
 wire         sop, eop, in_valid, out_ready;
@@ -114,6 +115,7 @@ reg g1, g2, g3, g4, g5, g6, g7, g8, g9, g10;
 reg y1, y2, y3, y4, y5, y6, y7, y8, y9, y10;
 
 
+//set initial values
 initial begin
 	r1 <= 0;	r2 <= 0;	r3 <= 0;	r4 <= 0;	r5 <= 0;	r6 <= 0;	r7 <= 0;	r8 <= 0;
 	f1 <= 0;	f2 <= 0;	f3 <= 0;	f4 <= 0;	f5 <= 0;	f6 <= 0;	f7 <= 0;	f8 <= 0;
@@ -123,7 +125,8 @@ initial begin
 	y1 <= 0;	y2 <= 0;	y3 <= 0;	y4 <= 0;	y5 <= 0;	y6 <= 0;	y7 <= 0;	y8 <= 0;
 end
 
-wire red_median, fuchsia_median, teal_median, blue_median, green_median, yellow_median;
+
+//move values every clk cycle 
 always @(negedge clk) begin
 	r8 <= r7;	r7 <= r6;	r6 <= r5;	r5 <= r4;	r4 <= r3;	r3 <= r2;	r2 <= r1;	r1 <= red_detect;
 	f8 <= f7;	f7 <= f6;	f6 <= f5;	f5 <= f4;	f4 <= f3;	f3 <= f2;	f2 <= f1;	f1 <= fuchsia_detect;
@@ -159,12 +162,37 @@ function median;
 
 endfunction
 
+wire red_median, fuchsia_median, teal_median, blue_median, green_median, yellow_median;
+
 assign red_median = median(red_detect, r1, r2, r3, r4, r5, r6, r7, r8);
 assign fuchsia_median = median(fuchsia_detect, f1, f2, f3, f4, f5, f6, f7, f8);
 assign teal_median = median(teal_detect, t1, t2, t3, t4, t5, t6, t7, t8);
 assign blue_median = median(blue_detect, b1, b2, b3, b4, b5, b6, b7, b8);
 assign green_median = median(green_detect, g1, g2, g3, g4, g5, g6, g7, g8);
 assign yellow_median = median(yellow_detect, y1, y2, y3, y4, y5, y6, y7, y8);
+
+//Edge detection
+//store previous grey values
+//use signed values as these need to be mutiplied by -1
+reg signed [7:0] grey1, grey2, grey3;
+wire signed edge_val;
+
+//set initial values
+initial begin
+	grey1 <= 0; grey2 <= 0; grey3 <= 0;
+end
+
+//move grey values every clk cycle
+always @(negedge clk) begin
+	grey3 <= grey2; grey2 <= grey1; grey1 <= grey;
+end
+
+//inspired by sobel operator, instead of 3x3 kernel use 4x1 instead
+assign edge_val=(-1*grey3)+(-1*grey2)+(1*grey1)+(1*grey);
+wire edge_detect;
+assign edge_detect = (edge_val > 8'd128) ? 1'b1 : 1'b0;
+
+
 
 // Highlight detected areas
 wire [23:0] colour_high;
@@ -173,7 +201,8 @@ assign colour_high  =  (red_detect  && red_median && r1 && r2 && r3) ? {8'hff, 8
 (teal_detect  && teal_median && t1 && t2 && t3) ? {8'h00, 8'h80, 8'h80} : (blue_detect && blue_median && b1 && b2 && b3) ? {8'h00, 8'h00, 8'hff} : 
 (green_detect && green_median && g1 && g2 && g3) ? {8'h00, 8'hff, 8'h00} : (yellow_detect && yellow_median && y1 && y2 && y3) ? {8'hff, 8'hff, 8'h00} : {grey, grey, grey};
 
-// Show bounding box
+
+// Show vertical bounding lines, for edge use violet bounding lines
 wire [23:0] new_image;
 wire bb_active_red, bb_active_teal, bb_active_orange, bb_active_fuchsia, bb_active_blue, bb_active_green, bb_active_yellow;
 assign bb_active_red = (x == r_left) | (x == r_right);
@@ -183,7 +212,8 @@ assign bb_active_blue = (x == b_left) | (x == b_right);
 assign bb_active_green = (x == g_left) | (x == g_right);
 assign bb_active_yellow = (x == y_left) | (x == y_right);
 assign new_image = bb_active_red ?{8'hff, 8'h00, 8'h00} : bb_active_teal ? {8'h00, 8'h80, 8'h80} : bb_active_fuchsia ? {8'hff, 8'h00, 8'hff} : 
-bb_active_blue ? {8'h00, 8'h00, 8'hff} : bb_active_green ? {8'h00, 8'hff, 8'h00} : bb_active_yellow ? {8'hff, 8'hff, 8'h00} : colour_high;
+bb_active_blue ? {8'h00, 8'h00, 8'hff} : bb_active_green ? {8'h00, 8'hff, 8'h00} : bb_active_yellow ? {8'hff, 8'hff, 8'h00} : edge_detect ? {8'haa, 8'h00, 8'hff} : 
+colour_high;
 
 
 // Switch output pixels depending on mode switch
@@ -283,6 +313,7 @@ always@(posedge clk) begin
 	if (eop & in_valid & packet_video) begin  //Ignore non-video packets
 		
 		//Latch edges for display overlay on next frame
+		//calculate pixel width and middle pixel and latch these on next frame
 		r_left <= r_x_min;
 		r_right <= r_x_max;
 		r_width <= (r_x_max-r_x_min);
@@ -333,7 +364,7 @@ always@(posedge clk) begin
 	end
 end
 
-
+//distance calclulation, for now treat as linear relation to bound width
 wire [10:0] r_dist, f_dist, y_dist, b_dist, t_dist, g_dist;
 assign r_dist = 2650/r_width;
 assign f_dist = 2650/f_width;
@@ -342,7 +373,8 @@ assign b_dist = 2650/b_width;
 assign t_dist = 2650/t_width;
 assign g_dist = 2650/g_width;
 
-wire [10:0] r_angle, f_angle, y_angle, b_angle, t_angle, g_angle;
+//caluclate angle in relation to center pixel
+wire signed [10:0] r_angle, f_angle, y_angle, b_angle, t_angle, g_angle;
 assign r_angle = ((r_mid*70)/640)-35;
 assign f_angle = ((f_mid*70)/640)-35;
 assign y_angle = ((y_mid*70)/640)-35;
@@ -367,7 +399,7 @@ wire msg_buf_empty;
 `define GREEN_BOX_MSG_ID "GBB"
 `define YELLOW_BOX_MSG_ID "YBB"
 
-always@(*) begin	//Write words to FIFO as state machine advances
+always@(*) begin	//Write words to FIFO as state machine advances, pass only distance and angle
 	case(msg_state)
 		4'b0000: begin
 			msg_buf_in = 32'b0;
