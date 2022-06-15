@@ -8,14 +8,23 @@
 #include <iostream>
 #include <Adafruit_MPU6050.h>
 #include <Adafruit_Sensor.h>
+#include <stdint.h>
+#include <string.h>
+#include <WiFiClient.h>
+#include <HTTPClient.h>
+#include <WiFiUdp.h>
+#include <stdio.h>
 
 // these pins may be different on different boards
 
 ///////////////wifi pins//////////
+#define SCK 18
+#define MISO 19
+#define MOSI 23
 #define CS 5
+// was 2
 #define RST_PIN 4
 #define SS_PIN 2
-// was 2
 
 //////////////// sensor pins/////////////
 #define PIN_SS 5
@@ -32,7 +41,7 @@
 //////////////////////motor 1///////////////
 
 #define CHA 0
-#define ENA 4  // 23 //21 // 19 // this pin must be PWM enabled pin if Arduino board is used
+#define ENA 33 // 4  // 23 //21 // 19 // this pin must be PWM enabled pin if Arduino board is used
 #define IN1 26 // 22 // 18
 #define IN2 14 // 5
 // motor 2 settings
@@ -90,7 +99,12 @@ IPAddress subnet(255, 255, 0, 0);
 IPAddress primaryDNS(8, 8, 8, 8);
 IPAddress secondaryDNS(8, 8, 4, 4);
 WiFiClient client;
-MFRC522 mfrc522(IN2, IN3); //// RANDOM IN2 AND IN3 FOR TESTING
+MFRC522 mfrc522(SS_PIN, RST_PIN); //// RANDOM IN2 AND IN3 FOR TESTING
+
+const char *serverName = "http://192.168.158.188:80/post-esp-data.php"; // replace middle with ipv4 of laptop "http:///post-esp-data.php"
+
+String apiKeyValue = "tPmAT5Ab3j7F9a";
+String object = "Rover";
 
 Adafruit_MPU6050 mpu;
 
@@ -98,8 +112,8 @@ const char *ssid = "Kert12345";
 const char *password = "1234567891";
 // const char *ssid = "AngusiPhone";
 // const char *password = "AngusJames";
-const uint16_t port = 12000;
-const char *host = "192.168.158.30";
+// const uint16_t port = 12000;
+// const char *host = "192.168.158.30";
 
 ///
 float pi = 3.14159265359;
@@ -155,6 +169,9 @@ void initWiFi()
     Serial.print('.');
     delay(1000);
   }
+  Serial.println(ssid);
+  Serial.println();
+  Serial.println("local ip is:");
   Serial.println(WiFi.localIP());
 }
 
@@ -548,18 +565,12 @@ void setup()
   }
 
   Serial.println("");
+  ////wifi stufff
+  mfrc522.PCD_Init();
 
-  // if(!WiFi.config(local_IP,gateway,subnet,primaryDNS,secondaryDNS)){
-
-  //  Serial.println("STA Failed to configure");
-
-  // }
-
-  // initWiFi();
-
-  // Serial.print("RRSI: ");
-
-  // Serial.println(WiFi.RSSI());
+  initWiFi();
+  Serial.print("RRSI: ");
+  Serial.println(WiFi.RSSI());
 }
 
 char asciiart(int k)
@@ -799,4 +810,61 @@ void loop()
   prev_dx = md.dx / correction;
   prev_dy = md.dy / correction;
 #endif
+
+  //////////////////////////////////////wifi stuff loop//////////////////
+  unsigned long previousMillis = 0;
+  unsigned long interval = 30000;
+  unsigned long currentMillis = millis();
+  if ((WiFi.status() != WL_CONNECTED) && (currentMillis - previousMillis >= interval))
+  {
+    Serial.print(millis());
+    Serial.println("Reconnecting to Wifi....");
+    WiFi.disconnect();
+    initWiFi();
+    previousMillis = currentMillis;
+  }
+  if (WiFi.status() == WL_CONNECTED)
+  {
+    WiFiClient client;
+    HTTPClient http;
+    if (client.available() > 0)
+    {
+      Serial.println("DEBUG CLIENT IS AVAILABLE");
+    }
+    else
+    {
+      Serial.println("DOOM");
+    }
+    // Your Domain name with URL path or IP address with path
+    http.begin(client, serverName);
+    // Specify content-type header
+    http.addHeader("Content-Type", "application/x-www-form-urlencoded");
+    // Prepare your HTTP POST request data
+    String httpRequestData = "api_key=" + apiKeyValue + "&object=" + object + "&xvalue=" + String(11) + "&yvalue=" + String(2);
+    Serial.print("httpRequestData: ");
+    Serial.println(httpRequestData);
+    // You can comment the httpRequestData variable above
+    // then, use the httpRequestData variable below (for testing purposes without the BME280 sensor)
+    // String httpRequestData = "api_key=tPmAT5Ab3j7F9&sensor=BME280&location=Office&value1=24.75&value2=49.54&value3=1005.14";
+    // Send HTTP POST request
+    int httpResponseCode = http.POST(httpRequestData);
+    if (httpResponseCode > 0)
+    {
+      Serial.print("HTTP Response code: ");
+      Serial.println(httpResponseCode);
+    }
+    if (httpResponseCode < 0)
+    {
+      Serial.print("Error code: ");
+      Serial.println(httpResponseCode);
+    }
+    // Free resources
+    http.end();
+  }
+  else
+  {
+    Serial.println("WiFi Disconnected");
+  }
+  // Send an HTTP POST request every 30 seconds
+  // delay();
 }
