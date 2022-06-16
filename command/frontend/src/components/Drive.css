@@ -103,6 +103,11 @@
     top: 350px;
 }
 
+.stop_arrowkey{
+    position: absolute;
+    left: 994.5px;
+    top: 280px;
+}
 .div{
     position: relative;
 }

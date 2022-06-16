@@ -7,44 +7,6 @@ import ToggleSwitch from './toggleswitch';
 import Switch from '@material-ui/core/Switch';
 import { withStyles } from '@material-ui/core/styles';
 
-var checked = false;
-
-const AntSwitch = withStyles((theme) => ({
-    root: {
-      width: 28,
-      height: 16,
-      padding: 0,
-      display: 'flex',
-    },
-    switchBase: {
-      padding: 2,
-      color: theme.palette.grey[500],
-      '&$checked': {
-        transform: 'translateX(12px)',
-        color: theme.palette.common.white,
-        '& + $track': {
-          opacity: 1,
-          backgroundColor: theme.palette.primary.main,
-          borderColor: theme.palette.primary.main,
-        },
-      },
-    },
-    thumb: {
-      width: 12,
-      height: 12,
-      boxShadow: 'none',
-    },
-    track: {
-      border: `1px solid ${theme.palette.grey[500]}`,
-      borderRadius: 16 / 2,
-      opacity: 1,
-      backgroundColor: theme.palette.common.white,
-    },
-    checked:{},
-  }))(Switch);
-
-
-
 
 function Drive() {
     const [automated, ManualMethod] = useState(false);
@@ -88,6 +50,10 @@ function Drive() {
     }
 
     function automationMode() {
+        if(automated){
+            alert("already in automation mode");
+        }
+        else{
         ManualMethod(true);
         axios.post('http://localhost:4000/directions', { 'direction': "automate"}) // if automate - then pathfind
             .then(response =>{
@@ -97,7 +63,7 @@ function Drive() {
                 console.log("Received error: " + err);
             })
             console.log("sent");
-        alert("The rover will start investigating!");
+        alert("The rover will start investigating!");}
     }
     function goback() {
         axios.post('http://localhost:4000/directions', { 'direction': "0,0"})// base = 0,0
@@ -123,56 +89,84 @@ function Drive() {
         alert("Automated mode exited");
     }
     var whatkey;
-    function GetkeyPress(){
-        useEffect (()=>{
-            document.addEventListener('keydown', detectKeydown, true)
-        },[])
-        const detectKeydown = (e) => {
-            console.log("clicked key " , e.key);
-            if (e.key === 'ArrowLeft') {
-                whatkey = "left";
-            } 
-            if (e.key === 'ArrowRight'){
-            whatkey = "right";
-            }
-            if (e.key === 'ArrowDown'){
-                whatkey = "backwards";
-            }
-            if (e.key === 'ArrowUp'){
-            whatkey = "forwards";
-            }
-            if(e.key === " "){
-                whatkey = "spacebar";
-            }
+    function GetkeyPressLeft(){
+        if(automated){
+            alert("Automated mode activated")
+        }
+        else{
+            whatkey = "left";
             console.log("whatkey value in keypress is before ", whatkey);
-            if (whatkey == "forwards" || whatkey == "backwards" || whatkey == "right" || whatkey == "left"){
-                axios.post('http://localhost:4000/directions', { 'direction': whatkey})
-                .then(response =>{
-                    console.log("received " + JSON.stringify(response));
-                })
-                .catch(err => {
-                    console.log("Received error: " + err);
-                })
-                console.log("sent");
-            }
+        
+            axios.post('http://localhost:4000/directions', { 'direction': whatkey})
+            .then(response =>{
+                console.log("received " + JSON.stringify(response));
+            })
+            .catch(err => {
+                console.log("Received error: " + err);
+            })
+            console.log("sent");
             var whatkey;
-    
         }
     }
-const [control, setControl] = useState(true);
-    const SetVar=(event)=>{
-        console.log(checked);
-        console.log("control ", control);
-       // event.preventDefault();// the default action will not happen
-            if(control===true){
-            // setControl(!control);
-            // event.preventDefault();
-            GetkeyPress();
-            }
-            // else{
-            //  setControl(!control);
-            // }
+    function GetkeyPressRight(){
+        if(automated){
+            alert("Automated mode activated")
+        }
+        else{
+            whatkey = "right";
+            console.log("whatkey value in keypress is before ", whatkey);
+        
+            axios.post('http://localhost:4000/directions', { 'direction': whatkey})
+            .then(response =>{
+                console.log("received " + JSON.stringify(response));
+            })
+            .catch(err => {
+                console.log("Received error: " + err);
+            })
+            console.log("sent");
+            var whatkey;
+        }
     }
+    
+    function GetkeyPressTop(){
+        if(automated){
+            alert("Automated mode activated")
+        }
+        else{
+            whatkey = "forwards";
+            console.log("whatkey value in keypress is before ", whatkey);
+        
+            axios.post('http://localhost:4000/directions', { 'direction': whatkey})
+            .then(response =>{
+                console.log("received " + JSON.stringify(response));
+            })
+            .catch(err => {
+                console.log("Received error: " + err);
+            })
+            console.log("sent");
+            var whatkey;
+        }
+    }
+    function GetkeyPressDown(){
+        if(automated){
+            alert("Automated mode activated")
+        }
+        else{
+            whatkey = "backwards";
+            console.log("whatkey value in keypress is before ", whatkey);
+        
+            axios.post('http://localhost:4000/directions', { 'direction': whatkey})
+            .then(response =>{
+                console.log("received " + JSON.stringify(response));
+            })
+            .catch(err => {
+                console.log("Received error: " + err);
+            })
+            console.log("sent");
+            var whatkey;
+        }
+    }
+
     return (
         <section>
         <div className='image'></div>
@@ -201,7 +195,7 @@ const [control, setControl] = useState(true);
                 </div>
                 <div className='viewmap'>
                     <Link to='/map'>
-                        <Button name="button" className='btns' buttonStyle='btn-outline' buttonSize='btn--medium' >
+                        <Button name="button" className='btns' buttonStyle='btn-outline' buttonSize='btn--medium'>
                             View map
                         </Button>
                     </Link>
@@ -222,25 +216,30 @@ const [control, setControl] = useState(true);
                 </div>
                 
                 <div className='leftarrow'>
-                    <Button name="button" className='btns' buttonStyle='btn-outline' buttonSize='btn--medium' onClick={sendDistance}>
+                    <Button name="button" className='btns' buttonStyle='btn-outline' buttonSize='btn--medium' onClick={GetkeyPressLeft}>
                     ←
                     </Button>
                 </div>
                 <div className='rightarrow'>
-                    <Button name="button" className='btns' buttonStyle='btn-outline' buttonSize='btn--medium' onClick={sendDistance}>
+                    <Button name="button" className='btns' buttonStyle='btn-outline' buttonSize='btn--medium' onClick={GetkeyPressRight}>
                     →
                     </Button>
                 </div>
                 <div className='toparrow'>
-                    <Button name="button" className='btns' buttonStyle='btn-outline' buttonSize='btn--medium' onClick={sendDistance}>
+                    <Button name="button" className='btns' buttonStyle='btn-outline' buttonSize='btn--medium' onClick={GetkeyPressTop}>
                     ↑
                     </Button>
                 </div>
                 <div className='bottomarrow'>
-                    <Button name="button" className='btns' buttonStyle='btn-outline' buttonSize='btn--medium' onClick={sendDistance}>
+                    <Button name="button" className='btns' buttonStyle='btn-outline' buttonSize='btn--medium' onClick={GetkeyPressDown}>
                     ↓
                     </Button>
-                </div>     
+                </div>   
+                <div className='stop_arrowkey'>
+                    <Button name="button" className='btns' buttonStyle='btn-outline' buttonSize='btn--medium' onClick={stop}>
+                    🛑
+                    </Button>
+                </div>  
 
             </div>
             
