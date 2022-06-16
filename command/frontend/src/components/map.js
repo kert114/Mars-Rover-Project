@@ -10,7 +10,7 @@ var Component = React.Component;
 //2337 x 3555
 var dps = [];   //dataPoints.
 var variable;
-//var dps_line = [{ x: 0, y: 0 },{ x: 0, y: 2337 }, { x: 3555, y: 2337 },{ x: 3555, y: 0 }, { x: 0, y: 0 }]
+var dps_line = [{ x: 0, y: 0 },{ x: 0, y: 2337 }, { x: 3555, y: 2337 },{ x: 3555, y: 0 }, { x: 0, y: 0 }]
  
 export default class Map extends Component {
 	constructor() {
@@ -36,12 +36,14 @@ export default class Map extends Component {
 	
 	render() {
 		const options = {
-			backgroundColor: null,
+			backgroundColor: "white",
 			////2337 x 3555
 			zoomEnabled: true, 
+			visible :true,
+
 			zoomType: "xy",
-			width: 3556/4,
-			height: 2337/6,
+			width: 1260,
+			height: 600,
 			position: "center",
 			title :{
 				text: "Mapping of the Arena", 
@@ -54,36 +56,48 @@ export default class Map extends Component {
 				
 			}],
 
-			axisX:{
-				gridThickness: 0,
-				tickLength: 0,
-				lineThickness: 0,
-				labelFormatter: function(){
-				  return " ";
-				}
-			  },
-			  axisY:{
-				gridThickness: 0,
-				tickLength: 0,
-				lineThickness: 0,
-				labelFormatter: function(){
-				  return " ";
-				}
-			  },
 			// axisX:{
-			// 	lineThickness: 0,
-			// 	tickThickness: 0
-			// },
-			// axisY:{
-			// 	lineThickness: 0,
+			// 	minimum: -200,
+			// 	maximum: 3555,
+			// 	interval:10,
 			// 	gridThickness: 0,
-			// 	tickLength: 0
-			// }
+			// 	tickLength: 0,
+			// 	lineThickness: 0,
+			// 	labelFormatter: function(){
+			// 	  return " ";
+			// 	}
+			//   },
+			//   axisY:{
+			// 	minimum: -200,
+			// 	maximum:2337,
+			// 	interval: 10,
+			// 	gridThickness: 0,
+			// 	tickLength: 0,
+			// 	lineThickness: 0,
+			// 	labelFormatter: function(){
+			// 	  return " ";
+			// 	}
+			//   },
+			axisX:{
+				minimum: -200,
+				maximum: 3555,
+				//interval: 10,
+				lineThickness: 0,
+				tickThickness: 0
+			},
+			axisY:{
+				minimum: -200,
+				maximum:2337,
+				//interval: 10,
+				lineThickness: 0,
+				gridThickness: 0,
+				tickLength: 0
+			},
 
 			// data: [{
 			// 	type: "line",
 			// 	dataPoints : dps_line,
-			// 	markerType : "circle"
+			// 	markerType : null
 			// }],
 
             
