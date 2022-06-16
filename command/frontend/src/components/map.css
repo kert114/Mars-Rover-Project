@@ -1,18 +1,12 @@
-
-  body {
-    color: #666666;
-    font-family: "Arial", "Helvetica";
-    font-size: 12px;
-  }
- .grayBorder {
-    border: 1px solid #CCCCCC;
-    margin: 3px;
-    float: left;
-  }
-#tableView {
-    width: 500px;
-    display: none;
-    margin-left: 0px;
-    max-height: 250px;
-    overflow: scroll;
-  }
+.div{
+    position: relative;
+}
+.image{
+    position: absolute;
+    background-image: url('./terrain.PNG');
+    top: 104px;
+    left: 21px;
+    opacity: 0.8;
+    width: 850px;
+    height: 310px;
+}

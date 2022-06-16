@@ -33,10 +33,13 @@ export default class Map extends Component {
 		console.log(variable);
 
 	}
+	
 	render() {
 		const options = {
 			backgroundColor: null,
 			////2337 x 3555
+			zoomEnabled: true, 
+			zoomType: "xy",
 			width: 3556/4,
 			height: 2337/6,
 			position: "center",
@@ -47,27 +50,35 @@ export default class Map extends Component {
 				type: "scatter",
 				dataPoints : dps,
 				markerType : "circle",
-				markerSize: 30,
+				markerSize: 20,
+				
 			}],
 
-			scales: {
-				xAxes: [{
-						display: true,
-						ticks: {
-							beginAtZero: true,
-							steps: 10,
-							stepValue: 5,
-							max: 100
-						}
-					}],
-				yAxes: [{
-						display: true,
-						ticks: {
-							min: 0, // minimum value
-							max: 10 // maximum value
-						}
-					}]
-			},
+			axisX:{
+				gridThickness: 0,
+				tickLength: 0,
+				lineThickness: 0,
+				labelFormatter: function(){
+				  return " ";
+				}
+			  },
+			  axisY:{
+				gridThickness: 0,
+				tickLength: 0,
+				lineThickness: 0,
+				labelFormatter: function(){
+				  return " ";
+				}
+			  },
+			// axisX:{
+			// 	lineThickness: 0,
+			// 	tickThickness: 0
+			// },
+			// axisY:{
+			// 	lineThickness: 0,
+			// 	gridThickness: 0,
+			// 	tickLength: 0
+			// }
 
 			// data: [{
 			// 	type: "line",
@@ -79,6 +90,7 @@ export default class Map extends Component {
 		}
 		return (
 		<section>
+			<div className='image'></div>
 			<div>
 				<CanvasJSChart options = {options}
 					onRef={ref => this.chart = ref}
