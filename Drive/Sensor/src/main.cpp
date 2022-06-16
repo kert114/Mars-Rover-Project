@@ -146,6 +146,7 @@ float a = 0;
 float b = 0;
 
 float gyro_rotation = 0;
+float angle_gyro = 0;
 
 float distance_x = 0;
 float distance_y = 0;
@@ -783,11 +784,11 @@ void loop()
   Serial.println(current_angle, 5);
   Serial.print('\n');
 
-  gyro_rotation = g.gyro.z * (180 / M_PI); // rotation changed in rad/s
-  if (gyro_rotation > -2 && gyro_rotation < 2)
-  {
-    gyro_rotation = 0;
-  }
+  angle_gyro += g.gyro.z * (180 / M_PI) * 1; // rotation changed in rad/s
+  // if (gyro_rotation > -2 && gyro_rotation < 2)
+  //{
+  //   gyro_rotation = 0;
+  // }
 
   // Serial.println(ADNS3080_PIXELS_X);
   Serial.print("Relative distance_x = ");
