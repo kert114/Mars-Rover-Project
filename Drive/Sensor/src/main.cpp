@@ -43,7 +43,7 @@
 #define CHA 0
 #define ENA 33 // 4  // 23 //21 // 19 // this pin must be PWM enabled pin if Arduino board is used
 #define IN1 26 // 22 // 18
-#define IN2 14 // 5
+#define IN2 25 // 14 // 5
 // motor 2 settings
 #define IN3 17
 #define IN4 16
@@ -116,15 +116,23 @@ const char *password = "1234567891";
 // const char *host = "192.168.158.30";
 
 ///
-float pi = 3.14159265359;
+// float pi = 3.14159265359;
 float angle = 0;
 float current_angle = 0;
+float initial_angle = 0;
+float prev_angle = 0;
 const float r = 12.6; // the distance from flow sensor to the centre of the axis the rover turns around
+
+float dist, target_angle = 0;
 
 float total_x = 0;
 float total_y = 0;
 float total_x_overall = 0;
 float total_y_overall = 0;
+
+bool dest = true;
+bool new_dest = true;
+bool facing_target = false;
 
 float total_x1 = 0;
 float total_y1 = 0;
@@ -140,13 +148,15 @@ int m2 = 34;
 float prev_dx;
 float prev_dy;
 
-float correction = 50;
+float correction = 30;
 
 float a = 0;
 float b = 0;
 
 float gyro_rotation = 0;
 float angle_gyro = 0;
+float currenttimedelay = 0;
+float previoustimedelay = 0;
 
 float distance_x = 0;
 float distance_y = 0;
@@ -318,29 +328,33 @@ int mousecam_frame_capture(byte *pdata)
 // Finally by using the find current angle changed function - it will be possible to turn to a certain angle allowing for all
 // direction driving. There is no need to turn on the move as that adds an extra radius that will be unneccessarily hard to calculate.
 
-void move_F(int x = 0, int m1 = 42, int m2 = 40)
+void move_F(int x = 50, int m1 = 50, int m2 = 50)
 {
   robot.rotate(motor1, m1, CCW); // turn motor1 with 25% speed in CCW direction
   robot.rotate(motor2, m2, CW);  // turn motor2 with 25% speed in CW direction
   delay(x);
 }
-void move_B(int x = 0, int m1 = 42, int m2 = 40)
+void move_B(int x = 50, int m1 = 50, int m2 = 50)
 {
   robot.rotate(motor1, m1, CW);  // turn motor1 with 25% speed in CCW direction
   robot.rotate(motor2, m2, CCW); // turn motor2 with 25% speed in CW direction
   delay(x);
 }
-void move_R(int x = 0, int m1 = 30, int m2 = 30)
+void turn_L(int x = 10, int m1 = 40, int m2 = 40)
 {
   robot.rotate(motor1, m1, CW); // turn motor1 with 25% speed in CCW direction
   robot.rotate(motor2, m2, CW); // turn motor2 with 25% speed in CW direction
   delay(x);
+  // robot.brake(1);
+  // robot.brake(2);
 }
-void move_L(int x = 0, int m1 = 30, int m2 = 30)
+void turn_R(int x = 10, int m1 = 40, int m2 = 40)
 {
   robot.rotate(motor1, m1, CCW); // turn motor1 with 25% speed in CCW direction
   robot.rotate(motor2, m2, CCW); // turn motor2 with 25% speed in CW direction
   delay(x);
+  // robot.brake(1);
+  // robot.brake(2);
 }
 void brake_rover()
 {
@@ -348,109 +362,149 @@ void brake_rover()
   robot.brake(2);
 }
 
+float angle_facing(float total_x)
+{
+  float delta_angle = (total_x / r); 
+  delta_angle = atan2(sin(delta_angle), cos(delta_angle)) * (180 / M_PI);
+  Serial.print("Angle: ");
+  Serial.println(delta_angle, 4);
+  return delta_angle;
+}
+
+void turn_to(float target_angle_temp)
+{
+  float temp_delta_angle;
+  if (current_angle > target_angle_temp)
+  {
+    temp_delta_angle = current_angle - target_angle_temp;
+  }
+  else
+  {
+    temp_delta_angle = target_angle_temp - current_angle;
+  }
+  if (!(target_angle_temp < 0.1 && target_angle_temp > -0.1))
+  {
+    if ((current_angle < target_angle_temp && temp_delta_angle <= 180) || (current_angle > target_angle_temp && temp_delta_angle >= 180))
+    {
+      turn_R();
+    }
+    else
+    {
+      turn_L();
+    }
+  }
+  else
+  {
+    facing_target = true;
+  }
+}
+
 void go_to(float x, float y, float dx, float dy, float prev_dx, float prev_dy)
 {                              // for now just states distance and angle to target destination
   float delta_x = x - total_x; // difference in x needed to be moved
   float delta_y = y - total_y; // difference in y needed to be moved
+  if (new_dest == true)
+  {
+    new_dest = false;
+    target_angle = atan(delta_x / delta_y);
+    if (delta_x < 2)
+    {
+      target_angle = 0;
+    }
+    dist = sqrt(pow(delta_x, 2) + pow(delta_y, 2));
+    angle = angle * 180 / M_PI; // converting angle to degrees
+  }
 
   // aim of this section is to read current position, then find target position's relative distance and angle, then move to that location
-  // at the moment this doesn't do the move part as that requires accurate turning and driving - only theoretically right in our code now
-  // still need to figure out the rate at which motors need to change speeds in order to drive in a straight line on different surfaces
-
   // angle to move is arctan(delta_x/delta_y) and distance is sqrt(x^2 + y^2)
-  angle = atan(delta_x / delta_y);
-  if (delta_x < 2)
-  {
-    angle = 0;
-  }
-  float dist = sqrt(pow(delta_x, 2) + pow(delta_y, 2));
-  angle = angle * 180 / pi; // converting angle to degrees
+
   Serial.print("Angle: ");
   Serial.println(angle, 3);
   Serial.print("Distance: ");
   Serial.println(dist, 3);
   Serial.print("Delta_y: ");
   Serial.println(delta_y, 3);
-  if (!(delta_y < 2 && delta_y > -2))
+  if (facing_target = false)
   {
-    if (delta_y < 10)
-    {
-      m1 -= 10;
-      m2 -= 10;
+    turn_to(target_angle);
+  }else{
+    if (!(delta_y < 0.3 && delta_y > -0.3)){
+      if(delta_y>0){
+        if (delta_y<5 && prev_angle>(current_angle-0.5) && prev_angle<(current_angle+0.5)){
+          m1 = 24;
+          m2 = 24;
+        }else if (delta_y>5 && delta_y < 10 && prev_angle>(current_angle-0.5) && prev_angle<(current_angle+0.5)){
+          m1 = 30;
+          m2 = 30;
+        }else if (prev_angle>(current_angle-0.5) && prev_angle<(current_angle+0.5) && delta_y>10){
+          m1 = 40;
+          m2 = 40;
+        }
+
+        if (initial_angle>(current_angle+0.5)){
+          m1 += 3;
+          m2 -= 3;
+        }
+        else if (initial_angle < (current_angle - 0.5))
+        {
+          m1 -= 3;
+          m2 += 3;
+        }
+        move_F(50, m1, m2);
+      }else if(delta_y<0){
+        if (initial_angle>(current_angle+0.5)){
+          m1 -= 3;
+          m2 += 3;
+        }
+        else if (initial_angle < (current_angle - 0.5))
+        {
+          m1 += 3;
+          m2 -= 3;
+        }
+        else if (delta_y < 5 && initial_angle > (current_angle - 0.5) && initial_angle < (current_angle + 0.5))
+        {
+          m1 = 24;
+          m2 = 24;
+        }
+        else if (delta_y > 5 && delta_y < 10 && initial_angle > (current_angle - 0.5) && initial_angle < (current_angle + 0.5))
+        {
+          m1 = 30;
+          m2 = 30;
+        }
+        else if (initial_angle > (current_angle - 0.5) && initial_angle < (current_angle + 0.5) && delta_y > 10)
+        {
+          m1 = 40;
+          m2 = 40;
+        }
+        move_B(50,m1,m2);
+      }
+      else
+      {
+        brake_rover();
+      }
     }
-    else if (dx < 0.3 && prev_dx < 0.3)
-    {
-      m1 -= 1;
-      m2 += 1;
-    }
-    else if (dx > -0.3 && prev_dy > -0.3)
-    {
-      m1 += 1;
-      m2 -= 1;
-    }
-    else if (dx > -0.3 && dx < 0.3 && prev_dx < 0.3 && prev_dx > -0.3)
-    {
-      m1 = 42;
-      m2 = 40;
-    }
-    // }else if(dx > 0.5 && prev_dx < 0.5){
-    //   m1-=2;
-    //   m2+=2;
-    // }else if(dx < -0.5 && prev_dx > -0.5){
-    //   m1+=2;
-    //   m2-=2;
-    move_F(10, m1, m2);
   }
-  else
+  if (delta_y < 0.3 && delta_y > -0.3)
   {
-    brake_rover();
+    dest = true;
   }
 }
 
 float angle_facing(float total_x)
 {
   float delta_angle = (total_x / r); // realised I've been stupid and have gone back to arc lengths
-  delta_angle = atan2(sin(delta_angle), cos(delta_angle)) * (180 / pi);
-  Serial.print("Angle: ");
-  Serial.println(delta_angle, 4);
+  delta_angle = atan2(sin(delta_angle), cos(delta_angle)) * (180 / M_PI);
+  // Serial.print("Angle: ");
+  // Serial.println(delta_angle, 4);
   return delta_angle;
 } // still need to callebrate dx, dy to cm
 // this function is to try to determine what angle the rover is facing relative to the y-axis
 
-// Instead thinking about arc length s=r*Theta - if the distance measured between points is the arc
-// length then the angle is easy to calculate.
+// Arc length s=r*Theta
 // It also doesn't work hugely well if you turn while moving fast so best to always turn stationary.
 // In order to correct for turns while moving, need to track variations in the x distance moved as the x
 // measured is relative to the motor and adjust motor speeds accordingly - don't want to have to rely on a gyroscope
-// This is separate to finding the current angle as the current angle shouldn't change while driving forwards
-
-// float delta_x=total_x-temp_x;
-// float delta_y=total_y-temp_y;
-// float dist = sqrt(pow(delta_x,2)+pow(delta_y,2));
-// float delta_angle = (180/pi)*acos((2*pow(r,2)-pow(dist,2))/(2*pow(r,2)));
-// Serial.print("r^2: ");
-// Serial.println(pow(r,2), 4);
-// Serial.print("dist^2: ");
-// Serial.println(pow(dist,2), 4);
-// Serial.print("Inside acos: ");
-// Serial.println((2*pow(r,2)-pow(dist,2))/(2*pow(r,2)), 6);
-// if(delta_y>0){ // the y value has to increase if the rover is moving in a circle
-// if(delta_x>0.5){ // put 0.5 as a temp value so we don't change the angle if we are trying to drive forwards
-//                  // naturally this only works properly once we have driving in a straight line down correctly
-//   current_angle-=delta_angle;
-// }
-// if(delta_x<-0.5){
-//   current_angle+=delta_angle;
-// }
-// }
-// return current_angle;
-// }
-
-// Need to callebrate the distances along x and y accurately
-// If this gets working then we can accurately measure angle travelled as well as distance travelled so if
-// driving commands are in the form of final distance to travel that can work but we can also figure out
-// how far the rover travels if the motors are at a set speed for a set time allowing for accurately moving
-// set distances
+// This is separate to finding the current angle as the current angle shouldn't change while driving
 
 void setup()
 {
@@ -569,9 +623,11 @@ void setup()
   ////wifi stufff
   mfrc522.PCD_Init();
 
-  initWiFi();
-  Serial.print("RRSI: ");
-  Serial.println(WiFi.RSSI());
+  // initWiFi();
+  // Serial.print("RRSI: ");
+  // Serial.println(WiFi.RSSI());
+
+  dest = false;
 }
 
 char asciiart(int k)
@@ -606,13 +662,13 @@ void loop()
 
   case 2:
     // rotate left for 3 sec
-    move_L(1000);
+    turn_R(1000);
     brake_rover();
     break;
 
   case 3:
     // rotate right for 3 sec
-    move_R(1000);
+    turn_L(1000);
     brake_rover();
     break;
 
@@ -636,7 +692,7 @@ void loop()
     while (i == 6)
     {
       // continuous case left
-      move_L(3);
+      turn_R(3);
       i = Serial.parseInt();
     }
     break;
@@ -645,7 +701,7 @@ void loop()
     while (i == 7)
     {
       // continuous case right
-      move_R(3);
+      turn_L(3);
       i = Serial.parseInt();
     }
     break;
@@ -730,7 +786,7 @@ void loop()
   float val = mousecam_read_reg(ADNS3080_PIXEL_SUM);
   MD md;
   mousecam_read_motion(&md);
-  if (md.squal <= 16)
+  if (md.squal <= 20)
   { // fixing random increases in x when the rover sees a low quality image (***** or lower)
     md.dx = 0;
     md.dy = 0;
@@ -739,10 +795,10 @@ void loop()
   {
     md.dx = 0;
   }
-  if (md.dy == 255)
-  {
-    md.dy = 0;
-  }
+  // if (md.dy == 255)
+  // {
+  //   md.dy = 0;
+  // }
   for (int i = 0; i < md.squal / 4; i++)
   {
     Serial.print('*');
@@ -762,13 +818,13 @@ void loop()
 
   // Serial.println(md.max_pix);
   // delay(100);
-
+  prev_angle = current_angle;
   current_angle = angle_facing(total_x); // still need to find the right conversion from md values to cm or mm
   // normal values are relative to the rover, overall values are relative to the overall y axis
   distance_x = /*md.dx; //*/ convTwosComp(md.dx);
   distance_y = /*md.dy; //*/ convTwosComp(md.dy);
-  distance_x_overall = /*md.dx; //*/ convTwosComp(md.dx) * cos(current_angle * (pi / 180)) + convTwosComp(md.dy) * sin(current_angle * (pi / 180));
-  distance_y_overall = /*md.dy; //*/ convTwosComp(md.dy) * cos(current_angle * (pi / 180)) + convTwosComp(md.dx) * sin(current_angle * (pi / 180));
+  distance_x_overall = /*md.dx; //*/ convTwosComp(md.dx) * cos(current_angle * (M_PI / 180)) + convTwosComp(md.dy) * sin(current_angle * (M_PI / 180));
+  distance_y_overall = /*md.dy; //*/ convTwosComp(md.dy) * cos(current_angle * (M_PI / 180)) + convTwosComp(md.dx) * sin(current_angle * (M_PI / 180));
 
   total_x1 = total_x1 + distance_x;
   total_y1 = total_y1 + distance_y;
@@ -780,21 +836,35 @@ void loop()
   total_x_overall = total_x1_overall / correction; // 50.8; // This value is still just temporary - need to properly measure
   total_y_overall = total_y1_overall / correction; // 50.8; // This value is still just temporary - need to properly measure
 
-  Serial.print('\n');
-  Serial.println(current_angle, 5);
-  Serial.print('\n');
+  // Serial.print('\n');
+  // Serial.println(current_angle, 5);
+  // Serial.print('\n');
 
-  angle_gyro += g.gyro.z * (180 / M_PI) * 1; // rotation changed in rad/s
-  // if (gyro_rotation > -2 && gyro_rotation < 2)
-  //{
-  //   gyro_rotation = 0;
-  // }
+  currenttimedelay = millis();
+  // Serial.print("time for cycle: "), Serial.println((currenttimedelay - previoustimedelay) / 1000, 5);
+  //  Serial.print("z-angle: "), Serial.print(g.gyro.z * (180 / M_PI));
+
+  // Serial.print("gyro-Z out loop: "), Serial.println(g.gyro.z * (180 / M_PI), 3);
+  if (g.gyro.z * (180 / M_PI) > 2 || g.gyro.z * (180 / M_PI) < -2)
+  {
+    // Serial.print("gyro-Z in loop : "), Serial.println(g.gyro.z * (180 / M_PI), 3);
+    angle_gyro += g.gyro.z * (180 / M_PI) * ((currenttimedelay - previoustimedelay) / 1000);
+  }
+  Serial.print("gyroangle: "), Serial.println(angle_gyro, 5);
+  previoustimedelay = currenttimedelay;
+
+  // Serial.print("gyroangle: "), Serial.print(angle_gyro);
+  //  rotation changed in rad/s
+  //  if (g > -2 && gyro_rotation < 2)
+  // {
+  //    gyro_rotation = 0;
+  //  }
 
   // Serial.println(ADNS3080_PIXELS_X);
-  Serial.print("Relative distance_x = ");
-  Serial.print(total_x, 5);
-  Serial.print("    Total distance_x = ");
-  Serial.println(total_x_overall, 5);
+  // Serial.print("Relative distance_x = ");
+  // Serial.print(total_x, 5);
+  // Serial.print("    Total distance_x = ");
+  // Serial.println(total_x_overall, 5);
 
   Serial.print("Relative distance_y = ");
   Serial.print(total_y, 5);
@@ -803,15 +873,24 @@ void loop()
   Serial.print('\n');
   Serial.println(gyro_rotation, 5);
   Serial.println("");
-  // go_to(0,30, md.dx/correction, md.dy/correction, prev_dx, prev_dy);
+  if (!dest)
+  {
+    go_to(10000, 30, md.dx / correction, md.dy / correction, prev_dx, prev_dy);
+  }
+  else
+  {
+    turn_to(90);
+    Serial.println("Should be turning now...");
+  }
 
-  delay(250);
+  // delay(100);
   temp_x = total_x;
   temp_y = total_y;
   prev_dx = md.dx / correction;
   prev_dy = md.dy / correction;
 #endif
 
+#if 0
   //////////////////////////////////////wifi stuff loop//////////////////
   unsigned long previousMillis = 0;
   unsigned long interval = 30000;
@@ -866,6 +945,7 @@ void loop()
   {
     Serial.println("WiFi Disconnected");
   }
+#endif
   // Send an HTTP POST request every 30 seconds
   // delay();
 }
