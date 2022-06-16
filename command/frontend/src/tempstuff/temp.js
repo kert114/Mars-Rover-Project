@@ -2,7 +2,7 @@ import {CanvasJSChart} from 'canvasjs-react-charts'
 import React, {useEffect, useState} from 'react';//bootstrap
 import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios';
-import Control from './Control';
+import Control from '../components/Control';
 
 var Component = React.Component;
 var x_value;

@@ -7,7 +7,6 @@ import ToggleSwitch from './toggleswitch';
 import Switch from '@material-ui/core/Switch';
 import { withStyles } from '@material-ui/core/styles';
 
-
 var checked = false;
 
 const AntSwitch = withStyles((theme) => ({
@@ -175,13 +174,15 @@ const [control, setControl] = useState(true);
             // }
     }
     return (
+        <section>
+        <div className='image'></div>
         <div class="background">
-            <div class="layer"></div>
-        
+            
         <div className='command-container'>
             <h1>Drive Commands</h1>
             <h4 className="automated header">Automated Driving</h4>
             <h4 className="manual header">Manual Driving</h4>
+            <h4 className="arrow header">Arrow Key Driving</h4>
             <div className='command-btns'>
                 <div className='automationMode'>
                     <Button name="button" className='btns' buttonStyle='btn-outline' buttonSize='btn--medium' onClick={automationMode}>
@@ -219,13 +220,34 @@ const [control, setControl] = useState(true);
                         Send
                     </Button>
                 </div>
-                <div>
-                    
-                <AntSwitch onChange={()=>{checked = !checked}} />
+                
+                <div className='leftarrow'>
+                    <Button name="button" className='btns' buttonStyle='btn-outline' buttonSize='btn--medium' onClick={sendDistance}>
+                    ←
+                    </Button>
                 </div>
+                <div className='rightarrow'>
+                    <Button name="button" className='btns' buttonStyle='btn-outline' buttonSize='btn--medium' onClick={sendDistance}>
+                    →
+                    </Button>
+                </div>
+                <div className='toparrow'>
+                    <Button name="button" className='btns' buttonStyle='btn-outline' buttonSize='btn--medium' onClick={sendDistance}>
+                    ↑
+                    </Button>
+                </div>
+                <div className='bottomarrow'>
+                    <Button name="button" className='btns' buttonStyle='btn-outline' buttonSize='btn--medium' onClick={sendDistance}>
+                    ↓
+                    </Button>
+                </div>     
+
             </div>
+            
         </div>
+        
         </div>
+        </section>
     );
 };
 
