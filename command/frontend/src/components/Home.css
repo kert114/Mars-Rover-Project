@@ -113,6 +113,8 @@ p2{
    font-style: italic;
    font-family:" Apple Chancery", cursive;
    font-size-adjust: 1;
+   background-color: white;
+   padding: 1px;
 }   
 
 p3{
@@ -120,12 +122,16 @@ p3{
     font-style: italic;
     font-family:" Apple Chancery", cursive;
     font-size-adjust: 0.58;
+    background-color: white;
+    padding: 1px;
 }   
 p4{
     font-weight: bolder;
     font-style: italic;
     font-family:" Apple Chancery", cursive;
     font-size-adjust: 0.58;
+    background-color: white;
+    padding: 1px;
 }   
 
 .div2{
@@ -133,7 +139,7 @@ p4{
 }
 .hello{
     position: absolute;
-    top:350px;
+    top:400px;
     left: 51px;
     z-index: 1;
     animation: myfirst 20s infinite;
