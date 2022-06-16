@@ -120,6 +120,7 @@ const char *password = "1234567891";
 float angle = 0;
 float current_angle = 0;
 float initial_angle = 0;
+float prev_angle = 0;
 const float r = 12.6; // the distance from flow sensor to the centre of the axis the rover turns around
 
 float dist, target_angle = 0;
@@ -325,29 +326,33 @@ int mousecam_frame_capture(byte *pdata)
 // Finally by using the find current angle changed function - it will be possible to turn to a certain angle allowing for all
 // direction driving. There is no need to turn on the move as that adds an extra radius that will be unneccessarily hard to calculate.
 
-void move_F(int x = 10, int m1 = 50, int m2 = 50)
+void move_F(int x = 50, int m1 = 50, int m2 = 50)
 {
   robot.rotate(motor1, m1, CCW); // turn motor1 with 25% speed in CCW direction
   robot.rotate(motor2, m2, CW);  // turn motor2 with 25% speed in CW direction
   delay(x);
 }
-void move_B(int x = 10, int m1 = 50, int m2 = 50)
+void move_B(int x = 50, int m1 = 50, int m2 = 50)
 {
   robot.rotate(motor1, m1, CW);  // turn motor1 with 25% speed in CCW direction
   robot.rotate(motor2, m2, CCW); // turn motor2 with 25% speed in CW direction
   delay(x);
 }
-void turn_L(int x = 10, int m1 = 50, int m2 = 50)
+void turn_L(int x = 10, int m1 = 40, int m2 = 40)
 {
   robot.rotate(motor1, m1, CW); // turn motor1 with 25% speed in CCW direction
   robot.rotate(motor2, m2, CW); // turn motor2 with 25% speed in CW direction
   delay(x);
+  // robot.brake(1);
+  // robot.brake(2);
 }
-void turn_R(int x = 10, int m1 = 50, int m2 = 50)
+void turn_R(int x = 10, int m1 = 40, int m2 = 40)
 {
   robot.rotate(motor1, m1, CCW); // turn motor1 with 25% speed in CCW direction
   robot.rotate(motor2, m2, CCW); // turn motor2 with 25% speed in CW direction
   delay(x);
+  // robot.brake(1);
+  // robot.brake(2);
 }
 void brake_rover()
 {
@@ -357,7 +362,7 @@ void brake_rover()
 
 float angle_facing(float total_x)
 {
-  float delta_angle = (total_x / r); // realised I've been stupid and have gone back to arc lengths
+  float delta_angle = (total_x / r); 
   delta_angle = atan2(sin(delta_angle), cos(delta_angle)) * (180 / M_PI);
   Serial.print("Angle: ");
   Serial.println(delta_angle, 4);
@@ -412,23 +417,25 @@ void go_to(float x, float y, float dx, float dy, float prev_dx, float prev_dy){ 
   }else{
     if (!(delta_y < 0.3 && delta_y > -0.3)){
       if(delta_y>0){
+        if (delta_y<5 && prev_angle>(current_angle-0.5) && prev_angle<(current_angle+0.5)){
+          m1 = 24;
+          m2 = 24;
+        }else if (delta_y>5 && delta_y < 10 && prev_angle>(current_angle-0.5) && prev_angle<(current_angle+0.5)){
+          m1 = 30;
+          m2 = 30;
+        }else if (prev_angle>(current_angle-0.5) && prev_angle<(current_angle+0.5) && delta_y>10){
+          m1 = 40;
+          m2 = 40;
+        }
+
         if (initial_angle>(current_angle+0.5)){
           m1 += 3;
           m2 -= 3;
         }else if (initial_angle<(current_angle-0.5)){
           m1 -= 3;
           m2 += 3;
-        }else if (delta_y<5 && initial_angle>(current_angle-0.5) && initial_angle<(current_angle+0.5)){
-          m1 = 24;
-          m2 = 24;
-        }else if (delta_y>5 && delta_y < 10 && initial_angle>(current_angle-0.5) && initial_angle<(current_angle+0.5)){
-          m1 = 30;
-          m2 = 30;
-        }else if (initial_angle>(current_angle-0.5) && initial_angle<(current_angle+0.5) && delta_y>10){
-          m1 = 40;
-          m2 = 40;
         }
-        move_F(10, m1, m2);
+        move_F(50, m1, m2);
       }else if(delta_y<0){
         if (initial_angle>(current_angle+0.5)){
           m1 -= 3;
@@ -446,7 +453,7 @@ void go_to(float x, float y, float dx, float dy, float prev_dx, float prev_dy){ 
           m1 = 40;
           m2 = 40;
         }
-        move_B(10,m1,m2);
+        move_B(50,m1,m2);
       }
       else{
         brake_rover();
@@ -782,7 +789,7 @@ void loop()
 
   // Serial.println(md.max_pix);
   // delay(100);
-  // initial_angle = current_angle;
+  prev_angle = current_angle;
   current_angle = angle_facing(total_x); // still need to find the right conversion from md values to cm or mm
   // normal values are relative to the rover, overall values are relative to the overall y axis
   distance_x = /*md.dx; //*/ convTwosComp(md.dx);
@@ -830,7 +837,7 @@ void loop()
     Serial.println("Should be turning now...");
   }
 
-  delay(250);
+  // delay(250);
   temp_x = total_x;
   temp_y = total_y;
   prev_dx = md.dx / correction;
