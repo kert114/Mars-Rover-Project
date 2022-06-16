@@ -147,6 +147,8 @@ float b = 0;
 
 float gyro_rotation = 0;
 float angle_gyro = 0;
+float currenttimedelay = 0;
+float previoustimedelay = 0;
 
 float distance_x = 0;
 float distance_y = 0;
@@ -411,8 +413,8 @@ float angle_facing(float total_x)
 {
   float delta_angle = (total_x / r); // realised I've been stupid and have gone back to arc lengths
   delta_angle = atan2(sin(delta_angle), cos(delta_angle)) * (180 / pi);
-  Serial.print("Angle: ");
-  Serial.println(delta_angle, 4);
+  // Serial.print("Angle: ");
+  // Serial.println(delta_angle, 4);
   return delta_angle;
 } // still need to callebrate dx, dy to cm
 // this function is to try to determine what angle the rover is facing relative to the y-axis
@@ -780,32 +782,46 @@ void loop()
   total_x_overall = total_x1_overall / correction; // 50.8; // This value is still just temporary - need to properly measure
   total_y_overall = total_y1_overall / correction; // 50.8; // This value is still just temporary - need to properly measure
 
-  Serial.print('\n');
-  Serial.println(current_angle, 5);
-  Serial.print('\n');
+  // Serial.print('\n');
+  // Serial.println(current_angle, 5);
+  // Serial.print('\n');
 
-  angle_gyro += g.gyro.z * (180 / M_PI) * 1; // rotation changed in rad/s
-  // if (gyro_rotation > -2 && gyro_rotation < 2)
-  //{
-  //   gyro_rotation = 0;
-  // }
+  currenttimedelay = millis();
+  // Serial.print("time for cycle: "), Serial.println((currenttimedelay - previoustimedelay) / 1000, 5);
+  //  Serial.print("z-angle: "), Serial.print(g.gyro.z * (180 / M_PI));
+
+  // Serial.print("gyro-Z out loop: "), Serial.println(g.gyro.z * (180 / M_PI), 3);
+  if (g.gyro.z * (180 / M_PI) > 2 || g.gyro.z * (180 / M_PI) < -2)
+  {
+    // Serial.print("gyro-Z in loop : "), Serial.println(g.gyro.z * (180 / M_PI), 3);
+    angle_gyro += g.gyro.z * (180 / M_PI) * ((currenttimedelay - previoustimedelay) / 1000);
+  }
+  Serial.print("gyroangle: "), Serial.println(angle_gyro, 5);
+  previoustimedelay = currenttimedelay;
+
+  // Serial.print("gyroangle: "), Serial.print(angle_gyro);
+  //  rotation changed in rad/s
+  //  if (g > -2 && gyro_rotation < 2)
+  // {
+  //    gyro_rotation = 0;
+  //  }
 
   // Serial.println(ADNS3080_PIXELS_X);
-  Serial.print("Relative distance_x = ");
-  Serial.print(total_x, 5);
-  Serial.print("    Total distance_x = ");
-  Serial.println(total_x_overall, 5);
+  // Serial.print("Relative distance_x = ");
+  // Serial.print(total_x, 5);
+  // Serial.print("    Total distance_x = ");
+  // Serial.println(total_x_overall, 5);
 
-  Serial.print("Relative distance_y = ");
-  Serial.print(total_y, 5);
-  Serial.print("    Total distance_y = ");
-  Serial.println(total_y_overall, 5);
-  Serial.print('\n');
-  Serial.println(gyro_rotation, 5);
-  Serial.println("");
-  // go_to(0,30, md.dx/correction, md.dy/correction, prev_dx, prev_dy);
+  // Serial.print("Relative distance_y = ");
+  // Serial.print(total_y, 5);
+  // Serial.print("    Total distance_y = ");
+  // Serial.println(total_y_overall, 5);
+  // Serial.print('\n');
+  // Serial.println(gyro_rotation, 5);
+  // Serial.println("");
+  // // go_to(0,30, md.dx/correction, md.dy/correction, prev_dx, prev_dy);
 
-  delay(250);
+  // delay(100);
   temp_x = total_x;
   temp_y = total_y;
   prev_dx = md.dx / correction;
@@ -813,59 +829,59 @@ void loop()
 #endif
 
   //////////////////////////////////////wifi stuff loop//////////////////
-  unsigned long previousMillis = 0;
-  unsigned long interval = 30000;
-  unsigned long currentMillis = millis();
-  if ((WiFi.status() != WL_CONNECTED) && (currentMillis - previousMillis >= interval))
-  {
-    Serial.print(millis());
-    Serial.println("Reconnecting to Wifi....");
-    WiFi.disconnect();
-    initWiFi();
-    previousMillis = currentMillis;
-  }
-  if (WiFi.status() == WL_CONNECTED)
-  {
-    WiFiClient client;
-    HTTPClient http;
-    if (client.available() > 0)
-    {
-      Serial.println("DEBUG CLIENT IS AVAILABLE");
-    }
-    else
-    {
-      Serial.println("DOOM");
-    }
-    // Your Domain name with URL path or IP address with path
-    http.begin(client, serverName);
-    // Specify content-type header
-    http.addHeader("Content-Type", "application/x-www-form-urlencoded");
-    // Prepare your HTTP POST request data
-    String httpRequestData = "api_key=" + apiKeyValue + "&object=" + object + "&xvalue=" + String(11) + "&yvalue=" + String(2);
-    Serial.print("httpRequestData: ");
-    Serial.println(httpRequestData);
-    // You can comment the httpRequestData variable above
-    // then, use the httpRequestData variable below (for testing purposes without the BME280 sensor)
-    // String httpRequestData = "api_key=tPmAT5Ab3j7F9&sensor=BME280&location=Office&value1=24.75&value2=49.54&value3=1005.14";
-    // Send HTTP POST request
-    int httpResponseCode = http.POST(httpRequestData);
-    if (httpResponseCode > 0)
-    {
-      Serial.print("HTTP Response code: ");
-      Serial.println(httpResponseCode);
-    }
-    if (httpResponseCode < 0)
-    {
-      Serial.print("Error code: ");
-      Serial.println(httpResponseCode);
-    }
-    // Free resources
-    http.end();
-  }
-  else
-  {
-    Serial.println("WiFi Disconnected");
-  }
+  // unsigned long previousMillis = 0;
+  // unsigned long interval = 30000;
+  // unsigned long currentMillis = millis();
+  // if ((WiFi.status() != WL_CONNECTED) && (currentMillis - previousMillis >= interval))
+  // {
+  //   Serial.print(millis());
+  //   Serial.println("Reconnecting to Wifi....");
+  //   WiFi.disconnect();
+  //   initWiFi();
+  //   previousMillis = currentMillis;
+  // }
+  // if (WiFi.status() == WL_CONNECTED)
+  // {
+  //   WiFiClient client;
+  //   HTTPClient http;
+  //   if (client.available() > 0)
+  //   {
+  //     Serial.println("DEBUG CLIENT IS AVAILABLE");
+  //   }
+  //   else
+  //   {
+  //     Serial.println("DOOM");
+  //   }
+  //   // Your Domain name with URL path or IP address with path
+  //   http.begin(client, serverName);
+  //   // Specify content-type header
+  //   http.addHeader("Content-Type", "application/x-www-form-urlencoded");
+  //   // Prepare your HTTP POST request data
+  //   String httpRequestData = "api_key=" + apiKeyValue + "&object=" + object + "&xvalue=" + String(11) + "&yvalue=" + String(2);
+  //   Serial.print("httpRequestData: ");
+  //   Serial.println(httpRequestData);
+  //   // You can comment the httpRequestData variable above
+  //   // then, use the httpRequestData variable below (for testing purposes without the BME280 sensor)
+  //   // String httpRequestData = "api_key=tPmAT5Ab3j7F9&sensor=BME280&location=Office&value1=24.75&value2=49.54&value3=1005.14";
+  //   // Send HTTP POST request
+  //   int httpResponseCode = http.POST(httpRequestData);
+  //   if (httpResponseCode > 0)
+  //   {
+  //     Serial.print("HTTP Response code: ");
+  //     Serial.println(httpResponseCode);
+  //   }
+  //   if (httpResponseCode < 0)
+  //   {
+  //     Serial.print("Error code: ");
+  //     Serial.println(httpResponseCode);
+  //   }
+  //   // Free resources
+  //   http.end();
+  // }
+  // else
+  // {
+  //   Serial.println("WiFi Disconnected");
+  // }
   // Send an HTTP POST request every 30 seconds
   // delay();
 }
