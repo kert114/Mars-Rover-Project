@@ -12,7 +12,7 @@ function Nav() {
                     <Link to='/' className="nav-item nav-link active">Home</Link>
                     <Link to="/map" className='nav-item nav-link'>Map</Link>
                     <Link to="/drive" className='nav-item nav-link'>Drive</Link>
-                    <Link to="/Control" className='nav-item nav-link'> </Link>
+                    <Link to="/mouseposition" className='nav-item nav-link'>ArrowKey</Link>
                 </div>
             </div>
         </nav>

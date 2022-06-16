@@ -6,9 +6,9 @@ import Nav from './components/Nav';
 import Home from './components/Home';
 import Map from './components/map';
 import Drive from './components/Drive'
-import Control from './components/Control';
 import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
 import React from 'react';
+import GetkeyPress from './components/mouseposition';
 
 
 function App() {
@@ -23,7 +23,7 @@ function App() {
             <Route path="/" exact element={<Home/>} />
             <Route path="/map" exact element={<Map/>}/>
             <Route path='/drive' exact element={<Drive/>}/>
-            <Route path='/Control' exact element={<Control/>}/>
+            <Route path='/mouseposition' exact element={<GetkeyPress/>}/>
           </Routes>
       </div>
     </Router>
