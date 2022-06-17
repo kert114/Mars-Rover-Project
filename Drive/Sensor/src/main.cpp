@@ -397,7 +397,7 @@ void turn_to(float target_angle_temp)
     m1=m2=30;
   }
   m1+=2;
-  if (!(abs(temp_delta_angle) < 3 && facing_target))
+  if (!(abs(temp_delta_angle) < 3))// && facing_target))
   {
     if ((temp_delta_angle>0 && temp_delta_angle<180) || temp_delta_angle<-180)
     {
