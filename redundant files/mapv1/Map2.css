@@ -1,0 +1,129 @@
+.leftrotate {
+    font-size: 28px;
+    margin-top: 100px;
+    margin-left: 181px;
+    background-color: white;
+    border: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 40px;
+    height: 40px;
+    position: absolute;
+  }
+  .leftrotate:hover {
+    background-color: grey;
+    border-radius: 50%;
+  }
+  .leftrotate:active {
+    background-color: rgb(61, 135, 245);
+    box-shadow: 0 5px #666;
+    transform: translateY(4px);
+    position: fixed;
+  }
+  
+  .uparrow {
+    font-size: 45px;
+    margin-top: 50px;
+    margin-left: 230px;
+    background-color: white;
+    border: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 40px;
+    height: 40px;
+    position: absolute;
+    padding-left: 10px;
+  }
+  .uparrow:hover {
+    background-color: grey;
+    border-radius: 50%;
+  }
+  
+  .uparrow:active {
+    background-color: rgb(61, 135, 245);
+    box-shadow: 0 5px #666;
+    transform: translateY(4px);
+    position: fixed;
+  }
+  
+  .downarrow {
+    font-size: 45px;
+    position: fixed;
+    margin-top: 145px;
+    margin-left: 230px;
+    background-color: white;
+    border: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 40px;
+    height: 40px;
+    position: absolute;
+    padding-left: 10px;
+  }
+  .downarrow:hover {
+    background-color: grey;
+    border-radius: 50%;
+  }
+  
+  .downarrow:active {
+    background-color: rgb(61, 135, 245);
+    box-shadow: 0 5px #666;
+    transform: translateY(4px);
+    position: fixed;
+  }
+  
+  .rightrotate {
+    font-size: 45px;
+    position: fixed;
+    margin-top: 100px;
+    margin-left: 279px;
+    background-color: white;
+    border: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 40px;
+    height: 40px;
+    position: absolute;
+  }
+  .rightrotate:hover {
+    background-color: grey;
+    border-radius: 50%;
+  }
+  
+  .rightrotate:active {
+    background-color: rgb(61, 135, 245);
+    box-shadow: 0 5px #666;
+    transform: translateY(4px);
+    position: fixed;
+  }
+  
+  .grid {
+    opacity: 0.3;
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    margin-left: 550px;
+    margin-top: 57px;
+    z-index: 1;
+  }
+  
+  .ground {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    margin-left: 550px;
+    margin-top: 57px;
+  }
+  
+  .header {
+    margin-left: 10px;
+    margin-top: 10px;
+  }
+  
+  .div {
+    padding-bottom: 33.5px;
+  }

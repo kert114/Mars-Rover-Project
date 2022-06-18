@@ -110,27 +110,28 @@ p1{
 }
 p2{
    font-weight: bold;
-   font-style: italic;
-   font-family:" Apple Chancery", cursive;
+   font-family:" San Francisco", cursive;
+   font-size: 20px;
    font-size-adjust: 1;
-   background-color: white;
    padding: 1px;
 }   
 
 p3{
     font-weight: bolder;
-    font-style: italic;
-    font-family:" Apple Chancery", cursive;
+    font-family:" San Francisco", cursive;
     font-size-adjust: 0.58;
-    background-color: white;
+   font-size: 20px;
+    
     padding: 1px;
+   
 }   
 p4{
     font-weight: bolder;
-    font-style: italic;
-    font-family:" Apple Chancery", cursive;
+    font-family:" San Francisco", cursive;
     font-size-adjust: 0.58;
-    background-color: white;
+   font-size: 20px;
+
+   
     padding: 1px;
 }   
 
@@ -155,3 +156,17 @@ p4{
     75%  {left: 0px; top: 300px;}
     100% {left: 0px; top: 300px;}
   }
+
+  .div4{
+    position: relative;
+}
+.image{
+    position: absolute;
+    background-image: url('./white.PNG');
+    top: 200px;
+    left: 890px;
+    opacity: 0.9;
+    width: 1000px;
+    height: 210px;
+
+}

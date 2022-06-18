@@ -7,6 +7,7 @@ function Home() {
     return(
        
        <section class="parent">
+         
         <div class="flier"><img src={require("./rock-removebg-preview.png")} width="200" height="200"/></div>
 
           <div class="parent">
@@ -17,6 +18,8 @@ function Home() {
                 <h1 class="mt-5"> Mars Rover GSB2 </h1>
                 <p1><center>Created by Mahanoor, Angus, Kert, Floro, Anais, Maxime, Yusuf.</center></p1>
             </div>
+           
+            <div4 className='image'></div4>
             <p2> This aim of this project is to create an autonomous Mars Rover that explores the terrain </p2>
             <p3>of Mars. Whilst exploring, it is to avoid aliens and their buildings and plot a map of their</p3>
             <p4>loations. This Mars Rover can also detect and map underground power stations.The mars rover interacts with the web server running in the background, providing information such as location of the encountered obstacles and its own location for the user.  </p4>
