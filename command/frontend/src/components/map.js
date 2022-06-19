@@ -10,8 +10,8 @@ var Component = React.Component;
 //2337 x 3555
 var dps = [];   //dataPoints.
 var variable;
-var dps_line = [{ x: 0, y: 0 },{ x: 0, y: 2337 }, { x: 3555, y: 2337 },{ x: 3555, y: 0 }, { x: 0, y: 0 }]
- 
+//var dps_line = [{ x: 0, y: 0 },{ x: 0, y: 2337 }, { x: 3555, y: 2337 },{ x: 3555, y: 0 }, { x: 0, y: 0 }]
+var rover_position = [];
 export default class Map extends Component {
 	constructor() {
 		super();
@@ -26,22 +26,32 @@ export default class Map extends Component {
 		const data = await Control();
 		console.log("data ", data);
 		console.log(data[0].xVal);
-		dps.push({x: parseFloat(data[0].xVal) ,y: parseFloat(data[0].yVal), markerColor: data[0].Object});
+		if(data[0].Object === "Fuchsia"){
+				dps.push({x: parseFloat(data[0].xVal) ,y: parseFloat(data[0].yVal), markerColor: "purple"});
+
+		}
+		 else{
+			dps.push({x: parseFloat(data[0].xVal) ,y: parseFloat(data[0].yVal), markerColor: data[0].Object});
+		}
+		if(data[0].Object === "rover"){
+			rover_position.shift();
+			rover_position.push({x: parseFloat(data[0].xVal) ,y: parseFloat(data[0].yVal), markerType: "triangle",markerSize: 5 ,markerColor: "black" })
+		}
 		variable = data[0].Object;
 		console.log("dps ", dps);
+		console.log("rover pos ", rover_position);
 		this.chart.render();
 		console.log(variable);
 
 	}
-	
 	render() {
 		const options = {
 			backgroundColor: "white",
 			////2337 x 3555
-			zoomEnabled: true, 
+			//zoomEnabled: true, 
 			visible :true,
 
-			zoomType: "xy",
+			//zoomType: "xy",
 			width: 1260,
 			height: 600,
 			position: "center",
@@ -50,7 +60,7 @@ export default class Map extends Component {
 			},
 			data: [{
 				type: "scatter",
-				dataPoints : dps,
+				dataPoints : dps, rover_position,
 				markerType : "circle",
 				markerSize: 20,
 				
@@ -95,11 +105,10 @@ export default class Map extends Component {
 			},
 
 			// data: [{
-			// 	type: "line",
-			// 	dataPoints : dps_line,
-			// 	markerType : null
+			// 	type: "scatter",
+			// 	dataPoints : rover_position,
 			// }],
-
+			
             
 		}
 		return (
