@@ -16,6 +16,7 @@ export default class Map extends Component {
 	constructor() {
 		super();
 		this.updateChart = this.updateChart.bind(this);
+		//this.state = dps;
 	}
 
 	componentDidMount() {
@@ -23,35 +24,32 @@ export default class Map extends Component {
 	}
 	
 	async updateChart() { // going to change later on. 
+		//var new_data = [];
 		const data = await Control();
 		console.log("data ", data);
 		console.log(data[0].xVal);
-		if(data[0].Object === "Fuchsia"){
+		if(data[0].Object === "Fuchsia" ){
 				dps.push({x: parseFloat(data[0].xVal) ,y: parseFloat(data[0].yVal), markerColor: "purple"});
-
 		}
-		 else{
+		else if(data[0].Object === "rover"){
+			rover_position.shift();
+			rover_position.push({x: parseFloat(data[0].xVal) ,y: parseFloat(data[0].yVal), markerColor: "black" })
+		}
+		else{
 			dps.push({x: parseFloat(data[0].xVal) ,y: parseFloat(data[0].yVal), markerColor: data[0].Object});
 		}
-		if(data[0].Object === "rover"){
-			rover_position.shift();
-			rover_position.push({x: parseFloat(data[0].xVal) ,y: parseFloat(data[0].yVal), markerType: "triangle",markerSize: 5 ,markerColor: "black" })
-		}
+	
 		variable = data[0].Object;
 		console.log("dps ", dps);
 		console.log("rover pos ", rover_position);
-		this.chart.render();
+		this.chart.render()	;
 		console.log(variable);
 
 	}
 	render() {
 		const options = {
 			backgroundColor: "white",
-			////2337 x 3555
-			//zoomEnabled: true, 
 			visible :true,
-
-			//zoomType: "xy",
 			width: 1260,
 			height: 600,
 			position: "center",
@@ -60,12 +58,20 @@ export default class Map extends Component {
 			},
 			data: [{
 				type: "scatter",
-				dataPoints : dps, rover_position,
+				dataPoints : dps,
 				markerType : "circle",
 				markerSize: 20,
 				
-			}],
-
+			}, 
+			{
+				type: "scatter",
+				dataPoints: rover_position,
+				markerType:"triangle",
+				markerSize: 10,
+				markerColor: "black"
+			}
+		],
+			
 			// axisX:{
 			// 	minimum: -200,
 			// 	maximum: 3555,
