@@ -35,6 +35,9 @@ export default class Map extends Component {
 			rover_position.shift();
 			rover_position.push({x: parseFloat(data[0].xVal) ,y: parseFloat(data[0].yVal), markerColor: "black" })
 		}
+		else if(data[0].Object === "radar"){
+			dps.push({x: parseFloat(data[0].xVal) ,y: parseFloat(data[0].yVal), markerColor: "grey"});
+		}
 		else{
 			dps.push({x: parseFloat(data[0].xVal) ,y: parseFloat(data[0].yVal), markerColor: data[0].Object});
 		}
