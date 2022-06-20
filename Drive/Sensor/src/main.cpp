@@ -136,6 +136,8 @@ const float r = 12.6; // the distance from flow sensor to the centre of the axis
 
 float dist, target_angle = 0;
 
+float delta_y = 0;
+
 float total_x = 0;
 float total_y = 0;
 float total_x_overall = 0;
@@ -144,6 +146,7 @@ float total_y_overall = 0;
 bool dest = false;
 bool new_dest = true;
 bool facing_target = false;
+bool turning = false;
 
 int counter = 0;
 
@@ -369,6 +372,7 @@ float angle_facing(float total_x)
 
 void turn_to(float target_angle_temp)
 {
+  turning = true;
   float temp_delta_angle = 0;
   int delay = 10;
   int m1, m2 = 40;
@@ -401,29 +405,11 @@ void turn_to(float target_angle_temp)
       turn_R(delay, m1, m2);
     }
   }
-  // if (angle_gyro > target_angle_temp)
-  // {
-  //   temp_delta_angle = angle_gyro - target_angle_temp;
-  // }
-  // else
-  // {
-  //   temp_delta_angle = target_angle_temp - angle_gyro;
-  // }
-  // if (!(temp_delta_angle < 2 && temp_delta_angle > -2))
-  // {
-  //   if ((angle_gyro < target_angle_temp && temp_delta_angle <= 180) || (angle_gyro > target_angle_temp && temp_delta_angle >= 180))
-  //   {
-  //     turn_L(5);
-  //   }
-  //   else
-  //   {
-  //     turn_R(5);
-  //   }
-  // }
   else
   {
     brake_rover();
     facing_target = true;
+    turning = false;
   }
 }
 

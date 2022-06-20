@@ -3,9 +3,7 @@ import axios from 'axios';
 import './Drive.css';
 import {Link} from 'react-router-dom';
 import {Button} from './button';
-import ToggleSwitch from './toggleswitch';
-import Switch from '@material-ui/core/Switch';
-import { withStyles } from '@material-ui/core/styles';
+
 
 
 function Drive() {
@@ -66,9 +64,11 @@ function Drive() {
         alert("The rover will start investigating!");}
     }
     function goback() {
+        console.time()
         axios.post('http://localhost:4000/directions', { 'direction': "0,0"})// base = 0,0
             .then(response =>{
                 console.log("received " + JSON.stringify(response));
+                console.timeLog();
             })
             .catch(err => {
                 console.log("Received error: " + err);
