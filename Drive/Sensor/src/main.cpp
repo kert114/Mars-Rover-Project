@@ -418,18 +418,10 @@ void turn_gyro_angle(float target_angle)
   facing_target=false;
   float temp_delta_angle = 0;
   int delay = 10;
-  int m1, m2 = 40;
+  int m1 = 42;
+  int m2 = 40;
   temp_delta_angle = temp_gyro_angle - target_angle;
-  if (abs(temp_delta_angle) < 10)
-  {
-    // delay = 4;
-    m1 = m2 = 30;
-  }
-  if(abs(temp_delta_angle) < 5){
-    m1=m2=25;
-  }
-  m1 += 2;
-  if (!(abs(temp_delta_angle) < 2)) // && facing_target))
+  while (!(abs(temp_delta_angle) < 2))
   {
     if ((temp_delta_angle > 0 && temp_delta_angle < 180) || temp_delta_angle < -180)
     {
@@ -439,13 +431,21 @@ void turn_gyro_angle(float target_angle)
     {
       turn_R(delay, m1, m2);
     }
+    if (abs(temp_delta_angle) < 10)
+    {
+      // delay = 4;
+      m1 = 32;
+      m2 = 30;
+    }
+    if(abs(temp_delta_angle) < 5){
+      m1=26;
+      m2=25;
+    }
   }
-  else
-  {
-    brake_rover();
-    facing_target = true;
-    turning = false;
-  }
+  brake_rover();
+  facing_target = true;
+  turning = false;
+  
 }
 void go_forwards(float y)
 { 
@@ -470,8 +470,9 @@ void go_forwards(float y)
   Serial.print("Delta_y: ");
   Serial.println(delta_y, 3);
 
-  if (!(delta_y < 0.3 && delta_y > -0.3))
+  while (!(delta_y < 0.3 && delta_y > -0.3))
   {
+    delta_y = dist - total_y;
     if (delta_y > 0.1)
     {
       if (abs(current_angle) < (initial_angle + 0.5) && delta_y < 5 && abs(prev_angle) < (initial_angle + 0.5)){
@@ -493,7 +494,7 @@ void go_forwards(float y)
         m1 += 2;
         m2 -= 2;
       }
-      move_F(50, m1, m2);
+      move_F(40, m1, m2);
     }
     else if (delta_y < -0.1)
     {
@@ -524,23 +525,15 @@ void go_forwards(float y)
         m2 -= 3;
       }
 
-      move_B(50, m1, m2);
+      move_B(40, m1, m2);
     }
     else
     {
       brake_rover();
     }
   }
-  else{
-    brake_rover();
-  }
-  // }
-  if (delta_y < 0.3 && delta_y > -0.3)
-  {
-    counter += 1;
-    if (counter > 4)
-      dest = true;
-  }
+  brake_rover();
+  dest = true;
 }
 TaskHandle_t Task1;
 TaskHandle_t Task2;
