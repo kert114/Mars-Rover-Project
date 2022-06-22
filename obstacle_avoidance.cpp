@@ -37,6 +37,10 @@ std::string obstacle_avoidance (float distance_to_alien,float angle_from_vision,
   if(!alien_detected && !(dest_angle && dest_distance)){
     forward_by = sqrt(pow((xto - xd),2) + pow((yto - yd),2));
     at_angle = 90 - atan(abs(((yto - yd)/(xto - xd)))); // if no alien detected, drive forward. 
+    turn_gyro_angle(at_angle);
+        if(dest_angle){
+          go_forwards(forward_by);
+        }
   }  
   if(alien_detected && !(dest_angle && dest_distance)){
     // if not at dest and alien in path 
