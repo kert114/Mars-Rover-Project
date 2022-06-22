@@ -78,13 +78,13 @@ void object_interaction(){ // need to call this within the go_forwards function 
       delay(100);
       // to get in centre of LOS
       turn_to_object();
-      delay(100);
+      delay(250);
       // return back to original angle then continue on to the original destination
       turn_gyro_angle(current_angle_saved);
       move_forward_by = sqrt(pow((target_x - total_x_overall),2) + pow((target_y - total_y_overall),2));
       at_angle = 90 - atan(abs(((target_y - total_y_overall)/(target_x - total_x_overall)))); 
       turn_gyro_angle(at_angle);
-      delay(50);
+      delay(150);
       go_forwards(move_forward_by);
       object_noted = true;
     }
