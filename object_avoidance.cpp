@@ -1,9 +1,6 @@
 #include <iostream>
 #include <math.h>
 #include <stdio.h>
-//T90
-//F12.6
-//x:y:A:@TD:@TA
 
 float distance_to_alien = 0;
 float angle_from_vision = 0;
@@ -13,6 +10,7 @@ int target_x = 0;
 int target_y = 0;
 float total_x_overall = 0;
 float total_y_overall = 0;
+float total_y = 0;
 bool facing_target = false;
 bool dest = false;
 bool object_noted = false;
@@ -57,7 +55,7 @@ void object_avoid(int iteration, float temp_angle){
   turn_gyro_angle(initial_angle-temp_angle);
   go_forwards(hypotenuse);
   turn_gyro_angle(initial_angle);
-  // delta_y -= (2*hypotenuse-40); // this would correct the y value so the rover keeps driving to the correct point?
+  total_y -= (2*hypotenuse-40); // this would correct the y value so the rover keeps driving to the correct point?
 }
 
 void object_interaction(){ // need to call this within the go_forwards function within an if(interacting = false);
