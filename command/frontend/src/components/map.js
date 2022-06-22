@@ -27,19 +27,19 @@ export default class Map extends Component {
 		//var new_data = [];
 		const data = await Control();
 		console.log("data ", data);
-		console.log(data[0].xVal);
+		console.log(data[0].xvalue);
 		if(data[0].Object === "Fuchsia" ){
-				dps.push({x: parseFloat(data[0].xVal) ,y: parseFloat(data[0].yVal), markerColor: "purple"});
+				dps.push({x: parseFloat(data[0].xvalue) ,y: parseFloat(data[0].yvalue), markerColor: "purple"});
 		}
 		else if(data[0].Object === "rover"){
 			rover_position.shift();
-			rover_position.push({x: parseFloat(data[0].xVal) ,y: parseFloat(data[0].yVal), markerColor: "black" })
+			rover_position.push({x: parseFloat(data[0].xvalue) ,y: parseFloat(data[0].yvalue), markerColor: "black" })
 		}
 		else if(data[0].Object === "radar"){
-			dps.push({x: parseFloat(data[0].xVal) ,y: parseFloat(data[0].yVal), markerColor: "grey"});
+			dps.push({x: parseFloat(data[0].xvalue) ,y: parseFloat(data[0].yvalue), markerColor: "grey"});
 		}
 		else{
-			dps.push({x: parseFloat(data[0].xVal) ,y: parseFloat(data[0].yVal), markerColor: data[0].Object});
+			dps.push({x: parseFloat(data[0].xvalue) ,y: parseFloat(data[0].yvalue), markerColor: data[0].Object});
 		}
 	
 		variable = data[0].Object;
@@ -98,15 +98,15 @@ export default class Map extends Component {
 			// 	}
 			//   },
 			axisX:{
-				minimum: -200,
-				maximum: 3555,
+				minimum: -10.0,
+				maximum: 355.5,
 				//interval: 10,
 				lineThickness: 0,
 				tickThickness: 0
 			},
 			axisY:{
-				minimum: -200,
-				maximum:2337,
+				minimum: -10.0,
+				maximum:233.7,
 				//interval: 10,
 				lineThickness: 0,
 				gridThickness: 0,
