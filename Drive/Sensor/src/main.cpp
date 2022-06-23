@@ -127,7 +127,6 @@ void initWiFi()
 }
 
 ///
-// float pi = 3.14159265359;
 float angle = 0;
 float current_angle = 0;
 float initial_angle = 0;
