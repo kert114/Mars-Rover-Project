@@ -3,7 +3,6 @@ import React, {useEffect, useState} from 'react';//bootstrap
 import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios';
 import Control from './Control';
-import path from './images/path.png';
 import './map.css';
 
 var Component = React.Component;
@@ -12,6 +11,8 @@ var dps = [];   //dataPoints.
 var variable;
 //var dps_line = [{ x: 0, y: 0 },{ x: 0, y: 2337 }, { x: 3555, y: 2337 },{ x: 3555, y: 0 }, { x: 0, y: 0 }]
 var rover_position = [];
+var radar =[];
+var building = [];
 export default class Map extends Component {
 	constructor() {
 		super();
@@ -27,19 +28,35 @@ export default class Map extends Component {
 		//var new_data = [];
 		const data = await Control();
 		console.log("data ", data);
-		console.log(data[0].xvalue);
+		console.log(data[0].xVal);
 		if(data[0].Object === "Fuchsia" ){
-				dps.push({x: parseFloat(data[0].xvalue) ,y: parseFloat(data[0].yvalue), markerColor: "purple"});
+				dps.push({x: parseFloat(data[0].xVal) ,y: parseFloat(data[0].yVal), markerColor: "purple" });
+		}
+		else if(data[0].Object === "light"){
+			dps.push({x: parseFloat(data[0].xVal) ,y: parseFloat(data[0].yVal), markerColor: "#3CB371" });
+
+		}
+		else if(data[0].Object === "pink"){
+			dps.push({x: parseFloat(data[0].xVal) ,y: parseFloat(data[0].yVal), markerColor: "#FF1493" });
+
+		}
+		else if(data[0].Object === "dark"){
+			dps.push({x: parseFloat(data[0].xVal) ,y: parseFloat(data[0].yVal), markerColor: "green" });
+
+		}
+		else if(data[0].Object === "building"){
+			building.push({x: parseFloat(data[0].xVal) ,y: parseFloat(data[0].yVal), markerColor: "black"});
+
 		}
 		else if(data[0].Object === "rover"){
 			rover_position.shift();
-			rover_position.push({x: parseFloat(data[0].xvalue) ,y: parseFloat(data[0].yvalue), markerColor: "black" })
+			rover_position.push({x: parseFloat(data[0].xVal) ,y: parseFloat(data[0].yVal), markerColor: "black" })
 		}
 		else if(data[0].Object === "radar"){
-			dps.push({x: parseFloat(data[0].xvalue) ,y: parseFloat(data[0].yvalue), markerColor: "grey"});
+			radar.push({x: parseFloat(data[0].xVal) ,y: parseFloat(data[0].yVal), markerColor: "grey" });
 		}
 		else{
-			dps.push({x: parseFloat(data[0].xvalue) ,y: parseFloat(data[0].yvalue), markerColor: data[0].Object});
+			dps.push({x: parseFloat(data[0].xVal) ,y: parseFloat(data[0].yVal), markerColor: data[0].Object});
 		}
 	
 		variable = data[0].Object;
@@ -51,27 +68,55 @@ export default class Map extends Component {
 	}
 	render() {
 		const options = {
-			backgroundColor: "white",
+			backgroundColor: null,
 			visible :true,
 			width: 1260,
 			height: 600,
 			position: "center",
 			title :{
-				text: "Mapping of the Arena", 
+				text: "Mapping of the Arena",
+
 			},
 			data: [{
 				type: "scatter",
 				dataPoints : dps,
 				markerType : "circle",
 				markerSize: 20,
+				showInLegend: true,
+				legendText: "aliens",
+				legendMarkerColor: "black",
 				
 			}, 
 			{
 				type: "scatter",
 				dataPoints: rover_position,
-				markerType:"triangle",
+				markerType:"cross",
 				markerSize: 10,
-				markerColor: "black"
+				markerColor: "black",
+				showInLegend: true,
+				legendText: "rover pos",
+				legendMarkerColor: "black"
+			}, 
+			{
+				type: "scatter",
+				dataPoints: building,
+				markerType: "square",
+				markerSize: 20,
+				markerColor: "black",
+				showInLegend: true,
+				legendText: "building",
+				legendMarkerColor: "black"
+			},
+			{
+				type: "scatter", 
+				dataPoints: radar, 
+				markerType:"triangle",
+				showInLegend: true,
+				legendText: "underground power station",
+				markerSize: 20, 
+				fontColor: "black",
+				legendMarkerColor: "black"
+
 			}
 		],
 			
@@ -122,7 +167,9 @@ export default class Map extends Component {
 		}
 		return (
 		<section>
-			<div className='image'></div>
+
+			<div className='image3'></div>
+			<div className='image2'></div>
 			<div>
 				<CanvasJSChart options = {options}
 					onRef={ref => this.chart = ref}

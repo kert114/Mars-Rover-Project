@@ -1,13 +1,21 @@
 .div{
     position: relative;
 }
-.image{
+.image2{
     position: absolute;
-    background-image: url('./terrain.PNG');
-    top: 104px;
-    left: 21px;
-    opacity: 0.8;
-    width: 200px;
-    height: 310px;
+    background-image: url('./white.PNG');
+    top: 145px;
+    left: 0px;
+    opacity: 0.3;
+    width: 100%;
+    height: 510px;
 }
-
+.image3{
+    position: absolute;
+    background-image: url('./basin.PNG');
+    top: 145px;
+    left: 0px;
+    /* opacity: 0.8; */
+    width: 100%;
+    height: 510px;
+}

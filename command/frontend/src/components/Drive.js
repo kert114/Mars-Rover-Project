@@ -202,7 +202,7 @@ function Drive() {
                 </div>
                 <label for='angle' name='angle' className='angleLabel'><b> Angle (°): </b></label>
                 <input type='number' id='angle' name='angle' className='angleBox'/>
-                <label for='distance' name='distance' className='distanceLabel'> <b>Distance (mm): </b></label>
+                <label for='distance' name='distance' className='distanceLabel'> <b>Distance (cm): </b></label>
                 <input type='number' id='distance' name='distance' className='distanceBox'/>
                 <div className='sendAngle'>
                     <Button name="button" className='btns' buttonStyle='btn-outline' buttonSize='btn--medium' onClick={sendAngle}>
