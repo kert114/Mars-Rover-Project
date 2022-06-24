@@ -499,37 +499,39 @@ void go_forwards(float y)
         m1 += 0.5*abs(angle_error);
         m2 -= 0.5*abs(angle_error);
       }
-      move_F(40, m1, m2);
+      move_F(20, m1, m2);
     }
     else if (delta_y < -0.1)
     {
-      if (abs(current_angle) < (initial_angle + 0.5) && delta_y < 5 && abs(prev_angle) < (initial_angle + 0.5))
+      if (abs(current_angle) < (initial_angle + 1) && delta_y < 5 && abs(prev_angle) < (initial_angle + 1))
       {
         m1 = 24;
         m2 = 24;
       }
-      else if (abs(current_angle) < (initial_angle + 0.5) && delta_y > 5 && delta_y < 10 && abs(prev_angle) < (initial_angle + 0.5))
+      else if (abs(current_angle) < (initial_angle + 1) && delta_y > 5 && delta_y < 10 && abs(prev_angle) < (initial_angle + 1))
       {
         m1 = 30;
         m2 = 30;
       }
-      else if (abs(current_angle) < (initial_angle + 0.5) && abs(prev_angle) < (initial_angle + 0.5) && delta_y > 10)
+      else if (abs(current_angle) < (initial_angle + 1) && abs(prev_angle) < (initial_angle + 1) && delta_y > 10)
       {
         m1 = 40;
         m2 = 40;
       }
 
-      if (angle_gyro > (initial_angle + 0.5))
+      if (angle_gyro > (initial_angle + 1))
       {
-        m1 += 2;
-        m2 -= 2;
+        angle_error = angle_gyro-initial_angle;
+        m1 += 0.5*abs(angle_error);
+        m2 -= 0.5*abs(angle_error);
       }
-      else if (angle_gyro < (initial_angle - 0.5))
+      else if (angle_gyro < (initial_angle - 1))
       {
-        m1 -= 2;
-        m2 += 2;
+        angle_error = angle_gyro-initial_angle;
+        m1 -= 0.5*abs(angle_error);
+        m2 += 0.5*abs(angle_error);
       }
-      move_B(40, m1, m2);
+      move_B(20, m1, m2);
     }
   }
   brake_rover();
