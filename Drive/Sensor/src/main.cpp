@@ -490,14 +490,14 @@ void go_forwards(float y)
       if (angle_gyro > (initial_angle + 1))
       {
         angle_error = angle_gyro-initial_angle;
-        m1 -= 2*abs(angle_error);
-        m2 += 2*abs(angle_error);
+        m1 -= 0.5*abs(angle_error);
+        m2 += 0.5*abs(angle_error);
       }
       else if (angle_gyro < (initial_angle - 1))
       {
         angle_error = angle_gyro-initial_angle;
-        m1 += 2*abs(angle_error);
-        m2 -= 2*abs(angle_error);
+        m1 += 0.5*abs(angle_error);
+        m2 -= 0.5*abs(angle_error);
       }
       move_F(40, m1, m2);
     }
