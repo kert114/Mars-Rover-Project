@@ -482,6 +482,12 @@ void go_forwards(float y)
   while (!(delta_y < 0.3 && delta_y > -0.3))
   {
     delta_y = dist - total_y;
+    Serial.print("delta_y: ");
+    Serial.println(delta_y);
+    Serial.print("dist: ");
+    Serial.println(dist);
+    Serial.print("total_y: ");
+    Serial.println(total_y);
     angle_error = angle_gyro - initial_angle;
     prev_angle_error = prev_angle - initial_angle;
     if (delta_y > 0.3)
@@ -492,13 +498,13 @@ void go_forwards(float y)
         m2 = 24;
         if (angle_error > 1)
           {
-            m1 = 24 - 0.25*sqrt(abs(angle_error));
-            m2 = 24 + 0.25*sqrt(abs(angle_error));
+            m1 = 24 - sqrt(abs(angle_error));
+            m2 = 24 + sqrt(abs(angle_error));
           }
           else if (angle_error < 1)
           {
-            m1 = 24 + 0.25*sqrt(abs(angle_error));
-            m2 = 24 - 0.25*sqrt(abs(angle_error));
+            m1 = 24 + abs(angle_error);
+            m2 = 24 - abs(angle_error);
           }
       }
       else if (delta_y > 5 && delta_y < 10)
@@ -507,13 +513,13 @@ void go_forwards(float y)
         m2 = 30;
         if (angle_error > 1)
           {
-            m1 = 31 - 0.25*sqrt(abs(angle_error));
-            m2 = 30 + 0.25*sqrt(abs(angle_error));
+            m1 = 31 - abs(angle_error);
+            m2 = 30 + abs(angle_error);
           }
           else if (angle_error < 1)
           {
-            m1 = 31 + 0.25*sqrt(abs(angle_error));
-            m2 = 30 - 0.25*sqrt(abs(angle_error));
+            m1 = 31 + abs(angle_error);
+            m2 = 30 - abs(angle_error);
           }
       }
       else if (delta_y > 10)
@@ -531,7 +537,7 @@ void go_forwards(float y)
             m2 = 40 - 0.25*sqrt(abs(angle_error));
           }
       }
-      move_F(10, m1, m2);
+      move_F(100, m1, m2);
     }
     else if (delta_y < -0.3)
     {
@@ -580,7 +586,7 @@ void go_forwards(float y)
             m2 = 40 + 0.25*sqrt(abs(angle_error));
           }
       }
-      move_B(10, m1, m2);
+      move_B(100, m1, m2);
     }
   }
   angle_error = 0;
@@ -621,7 +627,7 @@ void Task1code(void *pvParameters)
     case 1:
       // move straight for 3 sec
       go_forwards(50);
-      brake_rover();
+      // brake_rover();
       break;
 
     case 2:
@@ -741,13 +747,15 @@ void Task2code(void *pvParameters)
 
     total_x = total_x1 / correction;
     total_y = total_y1 / correction;
+    Serial.print("other loop total_y: ");
+    Serial.println(total_y);
     total_x_overall = total_x1_overall / correction;
     total_y_overall = total_y1_overall / correction;
 
     currenttimedelay = millis();
     Serial.print("time for cycle: "), Serial.println((currenttimedelay - previoustimedelay) / 1000, 5);
 
-    if (g.gyro.z * (180 / M_PI) > 2 || g.gyro.z * (180 / M_PI) < -2)
+    if (abs(g.gyro.z * (180 / M_PI)) > 4)
     {
       angle_gyro += ((g.gyro.z * (180 / M_PI)) * ((currenttimedelay - previoustimedelay) / 1000));
     }
@@ -812,12 +820,12 @@ void setup()
   mfrc522.PCD_Init();
 
   // Try to initialize the mpu6050
-  if (!mpu.begin())
+  while (!mpu.begin())
   {
     Serial.println("Failed to find MPU6050 chip");
-    while (1)
+    // while (1)
     {
-      delay(10);
+      delay(100);
     }
   }
   Serial.println("MPU6050 Found!");
