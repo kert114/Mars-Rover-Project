@@ -492,13 +492,13 @@ void go_forwards(float y)
 
       if (angle_error > 1)
       {
-        m1 -= 0.25*abs(angle_error);
-        m2 += 0.25*abs(angle_error);
+        m1 -= 0.25*sqrt(abs(angle_error));
+        m2 += 0.25*sqrt(abs(angle_error));
       }
       else if (angle_error < 1)
       {
-        m1 += 0.25*abs(angle_error);
-        m2 -= 0.25*abs(angle_error);
+        m1 += 0.25*sqrt(abs(angle_error));
+        m2 -= 0.25*sqrt(abs(angle_error));
       }
       move_F(10, m1, m2);
     }
@@ -522,13 +522,13 @@ void go_forwards(float y)
 
       if (angle_gyro > (initial_angle + 1))
       {
-        m1 += 0.5*abs(angle_error);
-        m2 -= 0.5*abs(angle_error);
+        m1 += 0.25*sqrt(abs(angle_error));
+        m2 -= 0.25*sqrt(abs(angle_error));
       }
       else if (angle_gyro < (initial_angle - 1))
       {
-        m1 -= 0.5*abs(angle_error);
-        m2 += 0.5*abs(angle_error);
+        m1 -= 0.25*sqrt(abs(angle_error));
+        m2 += 0.25*sqrt(abs(angle_error));
       }
       move_B(10, m1, m2);
     }
