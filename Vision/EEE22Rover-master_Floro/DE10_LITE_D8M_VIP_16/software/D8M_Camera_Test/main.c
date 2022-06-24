@@ -10,6 +10,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <sys/alt_stdio.h>
+//#include "altera_avalon_uart_regs.h"
+//#include "altera_avalon_uart.h"
 
 //EEE_IMGPROC defines
 #define EEE_IMGPROC_MSG_START ('R'<<16 | 'B'<<8 | 'B')
@@ -25,6 +27,10 @@
 #define GAIN_INIT 0x300
 #define GAIN_STEP 0x040
 #define DEFAULT_LEVEL 3
+
+#define HUE_STEP 0x1
+#define SAT_STEP 0x1
+#define VAL_STEP 0x1
 
 #define MIPI_REG_PHYClkCtl		0x0056
 #define MIPI_REG_PHYData0Ctl	0x0058
@@ -172,6 +178,10 @@ int main() {
 	int boundingBoxColour = 0;
 	alt_u32 exposureTime = EXPOSURE_INIT;
 	alt_u16 gain = 0x600;
+	alt_u32 min_hue = 0;
+	alt_u32 max_hue = 1;
+	alt_u32 sat = 100;
+	alt_u32 val = 100;
 
 	OV8865SetExposure(exposureTime);
 	OV8865SetGain(gain);
@@ -247,28 +257,37 @@ int main() {
 			printf("%08x ", word);
 		}
 
+
+
 		//Update the bounding box colour
-//       printf(boundingBoxColour);
+       //printf(boundingBoxColour);
 		boundingBoxColour = ((boundingBoxColour + 1) & 0xff);
-//       printf(boundingBoxColour);
-		printf("\n");
-		IOWR(0x42000, EEE_IMGPROC_BBCOL,
-				(boundingBoxColour << 8) | (0xff - boundingBoxColour));
+       //printf(boundingBoxColour);
+		//printf("\n");
+		//IOWR(0x42000, EEE_IMGPROC_BBCOL, (boundingBoxColour << 8) | (0xff - boundingBoxColour));
 
 		//Process input commands
 		int in = getchar();
 		switch (in) {
 		case 'e': {
-			exposureTime += EXPOSURE_STEP;
+			min_hue += HUE_STEP;
+			IOWR(0x42000, 3, min_hue);
+			printf("\nmin Hue = %d ", min_hue);
+			break;
+			/*exposureTime += EXPOSURE_STEP;
 			OV8865SetExposure(exposureTime);
 			printf("\nExposure = %x ", exposureTime);
-			break;
+			break;*/
 		}
 		case 'd': {
-			exposureTime -= EXPOSURE_STEP;
+			min_hue -= HUE_STEP;
+			IOWR(0x42000, 3, min_hue);
+			printf("\nmin Hue = %d ", min_hue);
+			break;
+			/*exposureTime -= EXPOSURE_STEP;
 			OV8865SetExposure(exposureTime);
 			printf("\nExposure = %x ", exposureTime);
-			break;
+			break;*/
 		}
 		case 't': {
 			gain += GAIN_STEP;
@@ -283,18 +302,41 @@ int main() {
 			break;
 		}
 		case 'r': {
-			current_focus += manual_focus_step;
-			if (current_focus > 1023)
-				current_focus = 1023;
-			OV8865_FOCUS_Move_to(current_focus);
-			printf("\nFocus = %x ", current_focus);
+			max_hue-= HUE_STEP;
+			IOWR(0x42000, 4, max_hue);
+			printf("\nmax Hue = %d", max_hue);
 			break;
+			
 		}
 		case 'f': {
-			if (current_focus > manual_focus_step)
-				current_focus -= manual_focus_step;
-			OV8865_FOCUS_Move_to(current_focus);
-			printf("\nFocus = %x ", current_focus);
+			max_hue += HUE_STEP;
+			IOWR(0x42000, 4, max_hue);
+			printf("\nmax Hue = %d", max_hue);
+			break;
+			
+		}
+		case 'w': {
+			sat-= SAT_STEP;
+			IOWR(0x42000, 5, sat);
+			printf("\nsat= %d", sat);
+			break;
+		}
+		case 's': {
+			sat += SAT_STEP;
+			IOWR(0x42000, 5, sat);
+			printf("\nsat = %d", sat);
+			break;
+		}
+		case 'q': {
+			val-= VAL_STEP;
+			IOWR(0x42000, 6, val);
+			printf("\nval = %d", val);
+			break;
+		}
+		case 'a': {
+			val += VAL_STEP;
+			IOWR(0x42000, 6, val);
+			printf("\nval = %d", val);
 			break;
 		}
 		}
