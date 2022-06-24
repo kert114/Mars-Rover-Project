@@ -173,6 +173,7 @@ float b = 0;
 float gyro_rotation = 0;
 float angle_gyro = 0;
 float angle_error = 0;
+float prev_angle_error = 0;
 
 float currenttimedelay = 0;
 float previoustimedelay = 0;
@@ -469,6 +470,8 @@ void go_forwards(float y)
   while (!(delta_y < 0.3 && delta_y > -0.3))
   {
     delta_y = dist - total_y;
+    angle_error = angle_gyro-initial_angle;
+    prev_angle_error = prev_angle-initial_angle;
     if (delta_y > 0.1)
     {
       if (abs(current_angle) < (initial_angle + 1) && delta_y < 5 && abs(prev_angle) < (initial_angle + 1))
@@ -487,19 +490,17 @@ void go_forwards(float y)
         m2 = 40;
       }
 
-      if (angle_gyro > (initial_angle + 1))
+      if (angle_error > 1)
       {
-        angle_error = angle_gyro-initial_angle;
-        m1 -= 0.5*abs(angle_error);
-        m2 += 0.5*abs(angle_error);
+        m1 -= 0.25*abs(angle_error);
+        m2 += 0.25*abs(angle_error);
       }
-      else if (angle_gyro < (initial_angle - 1))
+      else if (angle_error < 1)
       {
-        angle_error = angle_gyro-initial_angle;
-        m1 += 0.5*abs(angle_error);
-        m2 -= 0.5*abs(angle_error);
+        m1 += 0.25*abs(angle_error);
+        m2 -= 0.25*abs(angle_error);
       }
-      move_F(20, m1, m2);
+      move_F(10, m1, m2);
     }
     else if (delta_y < -0.1)
     {
@@ -521,19 +522,19 @@ void go_forwards(float y)
 
       if (angle_gyro > (initial_angle + 1))
       {
-        angle_error = angle_gyro-initial_angle;
         m1 += 0.5*abs(angle_error);
         m2 -= 0.5*abs(angle_error);
       }
       else if (angle_gyro < (initial_angle - 1))
       {
-        angle_error = angle_gyro-initial_angle;
         m1 -= 0.5*abs(angle_error);
         m2 += 0.5*abs(angle_error);
       }
-      move_B(20, m1, m2);
+      move_B(10, m1, m2);
     }
   }
+  angle_error = 0;
+  prev_angle_error = 0;
   brake_rover();
   dest = true;
   new_dest=true;
