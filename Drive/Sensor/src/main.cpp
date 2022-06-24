@@ -472,7 +472,7 @@ void go_forwards(float y)
     delta_y = dist - total_y;
     angle_error = angle_gyro-initial_angle;
     prev_angle_error = prev_angle-initial_angle;
-    if (delta_y > 0.1)
+    if (delta_y > 0.3)
     {
       if (abs(current_angle) < (initial_angle + 1) && delta_y < 5 && abs(prev_angle) < (initial_angle + 1))
       {
@@ -502,7 +502,7 @@ void go_forwards(float y)
       }
       move_F(10, m1, m2);
     }
-    else if (delta_y < -0.1)
+    else if (delta_y < -0.3)
     {
       if (abs(current_angle) < (initial_angle + 1) && delta_y < 5 && abs(prev_angle) < (initial_angle + 1))
       {
