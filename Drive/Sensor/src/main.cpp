@@ -420,10 +420,9 @@ void turn_gyro_angle(float target_angle)
   int delay = 10;
   int m1 = 42;
   int m2 = 40;
-
-  while ((abs(temp_gyro_angle - target_angle) > 2))
+  temp_delta_angle = temp_gyro_angle - target_angle;
+  while (abs(temp_delta_angle) > 1.5)
   {
-    temp_delta_angle = temp_gyro_angle - target_angle;
     Serial.print(temp_delta_angle);
     if (temp_gyro_angle > target_angle)
     {
@@ -433,10 +432,11 @@ void turn_gyro_angle(float target_angle)
     {
       turn_R(delay, m1, m2);
     }
-    else if (abs(temp_delta_angle) <= 2)
+    else if (abs(temp_delta_angle) <= 1.5)
     {
       brake_rover();
     }
+    temp_delta_angle = temp_gyro_angle - target_angle;
   }
 
   brake_rover();
@@ -537,6 +537,7 @@ void go_forwards(float y)
   }
   brake_rover();
   dest = true;
+  new_dest=true;
 }
 TaskHandle_t Task1;
 TaskHandle_t Task2;
@@ -569,7 +570,7 @@ void Task1code(void *pvParameters)
     {
     case 1:
       // move straight for 3 sec
-      move_F(1000);
+      go_forwards(50);
       brake_rover();
       break;
 
