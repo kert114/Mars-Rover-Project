@@ -78,31 +78,31 @@ wire         sop, eop, in_valid, out_ready;
 ////////////////////////////////////////////////////////////////////////
 
 // Conversion for HSV from RGB
-wire [7:0] hue, saturation, value, delta, max, min;
+wire [8:0] delta, max, min;
+wire [8:0] hue, saturation, value;
 
 assign max = (red[7:0]>green[7:0]) ? ((red[7:0]>blue[7:0]) ? red[7:0] : blue[7:0]) : (green[7:0]>blue[7:0]) ? green[7:0] : blue[7:0];
 assign min = (red[7:0]<green[7:0]) ? ((red[7:0]<blue[7:0]) ? red[7:0] : blue[7:0]) : (green[7:0]<blue[7:0]) ? green[7:0] : blue[7:0];
 assign delta = (max[7:0]-min[7:0]);
 
-// HSV
 
-assign hue = delta[7:0]==8'h0 ? 0 : max[7:0]==red[7:0] ? 60*(green[7:0] - blue[7:0])/delta[7:0] : max[7:0]==green[7:0] ? 60*(((blue[7:0]-red[7:0])/delta[7:0])+2) : 60*(((red[7:0]-green[7:0])/delta[7:0])+4);
-assign saturation = max==0 ? 8'h0 : 100*delta[7:0]/max;
-assign value = 100*max[7:0]/255;
+assign hue = delta[7:0]==8'h0 ? 0 : max[7:0]==red[7:0] ? 60*(green[7:0] - blue[7:0])/delta[7:0] : max[7:0]==green[7:0] ? 60*(((blue[7:0]-red[7:0])/delta[7:0])+2) : 60*(((red[7:0]-green[7:0])/delta[7:0])+4);// range 0 to  360
+assign saturation = max==0 ? 8'h0 : 100*delta[7:0]/max; //range 0 to 100
+assign value = max[7:0];//range 0 to 255
 
 // Detect coloured areas
 wire red_detect;
-assign red_detect = ((hue>10 && hue<35) && (saturation>70) && (value>50));
+assign red_detect = ((hue>h_min && hue<h_max) && (saturation>sat) && (value>val));
 wire teal_detect;
-assign teal_detect = (hue>100 && hue<153 ) && (saturation>30) && (value>35);
+assign teal_detect = (hue>100 && hue<153 ) && (saturation>30) && (value>90);
 wire fuchsia_detect;
-assign fuchsia_detect = ((hue>357 & hue<20) && (saturation<85) && (value>20));
+assign fuchsia_detect = ((hue>357 & hue<20) && (saturation<85) && (value>51));
 wire blue_detect;
-assign blue_detect = ((hue>140 && hue<250) && (saturation<70) && (value>8 && value<72));
+assign blue_detect = ((hue>140 && hue<250) && (saturation<70) && (value>20 && value<184));
 wire green_detect;
-assign green_detect = ((hue>90 && hue<120) && (saturation>40 && saturation<77) && (value>13));
+assign green_detect = ((hue>90 && hue<120) && (saturation>40 && saturation<77) && (value>33));
 wire yellow_detect;
-assign yellow_detect = ((hue>50 && hue<77) && (saturation<90) && (value>70));
+assign yellow_detect = ((hue>50 && hue<77) && (saturation<90) && (value>179));
 
 // Find boundary of cursor box
 
@@ -127,7 +127,7 @@ end
 
 
 //move values every clk cycle 
-always @(negedge clk) begin
+always @(posedge clk && in_valid) begin
 	r8 <= r7;	r7 <= r6;	r6 <= r5;	r5 <= r4;	r4 <= r3;	r3 <= r2;	r2 <= r1;	r1 <= red_detect;
 	f8 <= f7;	f7 <= f6;	f6 <= f5;	f5 <= f4;	f4 <= f3;	f3 <= f2;	f2 <= f1;	f1 <= fuchsia_detect;
 	t8 <= t7;	t7 <= t6;	t6 <= t5;	t5 <= t4;	t4 <= t3;	t3 <= t2;	t2 <= t1;	t1 <= teal_detect;
@@ -174,8 +174,7 @@ assign yellow_median = median(yellow_detect, y1, y2, y3, y4, y5, y6, y7, y8);
 //Edge detection
 //store previous grey values
 //use signed values as these need to be mutiplied by -1
-reg signed [7:0] grey1, grey2, grey3;
-wire signed edge_val;
+reg signed [7:0] grey1, grey2, grey3, edge_val;
 
 //set initial values
 initial begin
@@ -183,36 +182,43 @@ initial begin
 end
 
 //move grey values every clk cycle
-always @(negedge clk) begin
+always @(posedge clk && in_valid) begin
 	grey3 <= grey2; grey2 <= grey1; grey1 <= grey;
 end
 
+always @(negedge clk && in_valid) begin
+	edge_val<=((-1)*grey3)+((-2)*grey2)+(2*grey1)+(1*grey);
+	if (edge_val[7]==1) begin
+		edge_val <= -edge_val;
+	end
+end
+
 //inspired by sobel operator, instead of 3x3 kernel use 4x1 instead
-assign edge_val=(-1*grey3)+(-1*grey2)+(1*grey1)+(1*grey);
-wire edge_detect;
-assign edge_detect = (edge_val > 8'd128) ? 1'b1 : 1'b0;
+wire signed edge_detect;
+assign edge_detect = (edge_val >= 700 && edge_val <= 1) ? 1'b1 : 1'b0;
 
 
 
 // Highlight detected areas
 wire [23:0] colour_high;
 assign grey = green[7:1] + red[7:2] + blue[7:2]; //Grey = green/2 + red/4 + blue/4
-assign colour_high  =  (red_detect  && red_median && r1 && r2 && r3) ? {8'hff, 8'h00, 8'h00} :  (fuchsia_detect && fuchsia_median && f1 && f2 && f3) ? {8'hff, 8'h00, 8'hff} : 
-(teal_detect  && teal_median && t1 && t2 && t3) ? {8'h00, 8'h80, 8'h80} : (blue_detect && blue_median && b1 && b2 && b3) ? {8'h00, 8'h00, 8'hff} : 
-(green_detect && green_median && g1 && g2 && g3) ? {8'h00, 8'hff, 8'h00} : (yellow_detect && yellow_median && y1 && y2 && y3) ? {8'hff, 8'hff, 8'h00} : {grey, grey, grey};
+assign colour_high  =  (red_detect  && red_median && r1 && r2 && r3 && in_valid) ? {8'hff, 8'h00, 8'h00} :  (fuchsia_detect && fuchsia_median && f1 && f2 && f3 && in_valid) ? {8'hff, 8'h00, 8'hff} : 
+(teal_detect  && teal_median && t1 && t2 && t3 && in_valid) ? {8'h00, 8'h80, 8'h80} : (blue_detect && blue_median && b1 && b2 && b3 && in_valid) ? {8'h00, 8'h00, 8'hff} : 
+(green_detect && green_median && g1 && g2 && g3 && in_valid) ? {8'h00, 8'hff, 8'h00} : (yellow_detect && yellow_median && y1 && y2 && y3 && in_valid) ? {8'hff, 8'hff, 8'h00} : {grey, grey, grey};
 
 
 // Show vertical bounding lines, for edge use violet bounding lines
 wire [23:0] new_image;
-wire bb_active_red, bb_active_teal, bb_active_orange, bb_active_fuchsia, bb_active_blue, bb_active_green, bb_active_yellow;
+wire bb_active_red, bb_active_teal, bb_active_orange, bb_active_fuchsia, bb_active_blue, bb_active_green, bb_active_yellow, bb_active_edge;
 assign bb_active_red = (x == r_left) | (x == r_right);
 assign bb_active_fuchsia =(x == f_left) | (x == f_right);
 assign bb_active_teal = (x == t_left) | (x == t_right);
 assign bb_active_blue = (x == b_left) | (x == b_right);
 assign bb_active_green = (x == g_left) | (x == g_right);
 assign bb_active_yellow = (x == y_left) | (x == y_right);
+assign bb_active_edge = (x == e_left) | (x == e_right);
 assign new_image = bb_active_red ?{8'hff, 8'h00, 8'h00} : bb_active_teal ? {8'h00, 8'h80, 8'h80} : bb_active_fuchsia ? {8'hff, 8'h00, 8'hff} : 
-bb_active_blue ? {8'h00, 8'h00, 8'hff} : bb_active_green ? {8'h00, 8'hff, 8'h00} : bb_active_yellow ? {8'hff, 8'hff, 8'h00} : edge_detect ? {8'haa, 8'h00, 8'hff} : 
+bb_active_blue ? {8'h00, 8'h00, 8'hff} : bb_active_green ? {8'h00, 8'hff, 8'h00} : bb_active_yellow ? {8'hff, 8'hff, 8'h00} : edge_detect ? {8'h8f, 8'h00, 8'hff} : 
 colour_high;
 
 
@@ -243,8 +249,8 @@ end
 
 
 
-reg [10:0] r_x_min, r_x_max, f_x_min, f_x_max, t_x_min, t_x_max, b_x_max, b_x_min, g_x_min, g_x_max, y_x_min, y_x_max;
-always@(posedge clk) begin
+reg [10:0] r_x_min, r_x_max, f_x_min, f_x_max, t_x_min, t_x_max, b_x_max, b_x_min, g_x_min, g_x_max, y_x_min, y_x_max, e_x_min, e_x_max;
+always@(posedge clk ) begin
 	//Find first and last red pixels
 	if (red_detect && r1 && r2 && r3 && r4 && r5 && red_median && in_valid && (y>240)) begin	//Update bounds when the pixel is red
 		if (x < r_x_min) r_x_min <= x;
@@ -281,6 +287,12 @@ always@(posedge clk) begin
 		if (x > y_x_max) y_x_max <= x;
 	end
 
+	//Find first and last edge pixels
+	if (edge_detect && in_valid) begin	//Update bounds when the pixel is edge
+		if (x < e_x_min) e_x_min <= x;
+		if (x > e_x_max) e_x_max <= x;
+	end
+
 	if (sop & in_valid) begin	//Reset bounds on start of packet
 		r_x_min <= IMAGE_W-11'h1;
 		r_x_max <= 0;
@@ -294,6 +306,8 @@ always@(posedge clk) begin
 		g_x_max <= 0;
 		y_x_min <= IMAGE_W-11'h1;
 		y_x_max <= 0;
+		e_x_min <= IMAGE_W-11'h1;
+		e_x_max <= 0;
 
 	end
 end
@@ -307,6 +321,33 @@ reg [10:0] t_left, t_right, t_mid, t_width;
 reg [10:0] b_left, b_right, b_mid, b_width;
 reg [10:0] g_left, g_right, g_mid, g_width;
 reg [10:0] y_left, y_right, y_mid, y_width;
+reg [10:0] e_left, e_right, e_mid, e_width;
+
+
+
+//distance calclulation, for now treat as linear relation to bound width
+reg [10:0] r_dist, f_dist, y_dist, b_dist, t_dist, g_dist, e_dist;
+always @(posedge clk && in_valid) begin
+	r_dist <= 2650/r_width;
+	f_dist <= 2650/f_width;
+	y_dist <= 2650/y_width;
+	b_dist <= 2650/b_width;
+	t_dist <= 2650/t_width;
+	g_dist <= 2650/g_width;
+	e_dist <= 2650/e_width;
+end
+
+//caluclate angle in relation to center pixel, note that the angle value is mutiplied by a factor of 640
+reg signed [10:0] r_angle, f_angle, y_angle, b_angle, t_angle, g_angle, e_angle;
+always @(posedge clk && in_valid) begin
+	r_angle <= (r_mid*70)-22400;
+	f_angle <= (f_mid*70)-22400;
+	y_angle <= (y_mid*70)-22400;
+	b_angle <= (b_mid*70)-22400;
+	t_angle <= (t_mid*70)-22400;
+	g_angle <= (g_mid*70)-22400;
+	e_angle <= (e_mid*70)-22400;
+end
 
 reg [7:0] frame_count;
 always@(posedge clk) begin
@@ -343,6 +384,11 @@ always@(posedge clk) begin
 		y_right <= y_x_max;
 		y_width <= (y_x_max-y_x_min);
 		y_mid <= (y_x_max-(y_width>>1));
+
+		e_left <= e_x_min;
+		e_right <= e_x_max;
+		e_width <= (e_x_max-e_x_min);
+		e_mid <= (e_x_max-(e_width>>1));
 		
 		//Start message writer FSM once every MSG_INTERVAL frames, if there is room in the FIFO
 		frame_count <= frame_count - 1;
@@ -355,7 +401,7 @@ always@(posedge clk) begin
 	
 	//Cycle through message writer states once started
 	if (msg_state != 4'b0000) begin
-		if (msg_state == 4'b0110) begin
+		if (msg_state == 4'b0111) begin
 			msg_state <= 4'b0000;
 		end
 		else begin
@@ -363,24 +409,6 @@ always@(posedge clk) begin
 		end
 	end
 end
-
-//distance calclulation, for now treat as linear relation to bound width
-wire [10:0] r_dist, f_dist, y_dist, b_dist, t_dist, g_dist;
-assign r_dist = 2650/r_width;
-assign f_dist = 2650/f_width;
-assign y_dist = 2650/y_width;
-assign b_dist = 2650/b_width;
-assign t_dist = 2650/t_width;
-assign g_dist = 2650/g_width;
-
-//caluclate angle in relation to center pixel
-wire signed [10:0] r_angle, f_angle, y_angle, b_angle, t_angle, g_angle;
-assign r_angle = ((r_mid*70)/640)-35;
-assign f_angle = ((f_mid*70)/640)-35;
-assign y_angle = ((y_mid*70)/640)-35;
-assign b_angle = ((b_mid*70)/640)-35;
-assign t_angle = ((t_mid*70)/640)-35;
-assign g_angle = ((g_mid*70)/640)-35;
 
 	
 //Generate output messages for CPU
@@ -398,6 +426,7 @@ wire msg_buf_empty;
 `define BLUE_BOX_MSG_ID "BBB"
 `define GREEN_BOX_MSG_ID "GBB"
 `define YELLOW_BOX_MSG_ID "YBB"
+`define EDGE_BOX_MSG_ID "EBB"
 
 always@(*) begin	//Write words to FIFO as state machine advances, pass only distance and angle
 	case(msg_state)
@@ -407,32 +436,37 @@ always@(*) begin	//Write words to FIFO as state machine advances, pass only dist
 		end
 		//red
 		4'b0001: begin
-			msg_buf_in = {5'b0, r_dist, 5'b0, r_angle};
+			msg_buf_in = {4'ha, 1'b0, r_dist, 4'ha, 1'b0, r_angle};
 			msg_buf_wr = 1'b1;
 		end
 		//teal
 		4'b0010: begin
-			msg_buf_in = {5'b0, t_dist, 5'b0, t_angle};	
+			msg_buf_in = {4'hb, 1'b0, t_dist, 4'hb, 1'b0, t_angle};	
 			msg_buf_wr = 1'b1;
 		end
 		//fuchsia
 		4'b0011: begin
-			msg_buf_in = {5'b0, f_dist, 5'b0, f_angle};
+			msg_buf_in = {4'hc, 1'b0, f_dist, 4'hc, 1'b0, f_angle};
 			msg_buf_wr = 1'b1;
 		end
 		//blue
 		4'b0100: begin
-			msg_buf_in = {5'b0, b_dist, 5'b0, b_angle};	
+			msg_buf_in = {4'hd, 1'b0, b_dist, 4'hd, 1'b0, b_angle};	
 			msg_buf_wr = 1'b1;
 		end
 		//green
 		4'b0101: begin
-			msg_buf_in = {5'b0, g_dist, 5'b0, g_angle};	
+			msg_buf_in = {4'he, 1'b0, g_dist, 4'he, 1'b0, g_angle};	
 			msg_buf_wr = 1'b1;
 		end
 		//yellow
 		4'b0110: begin
-			msg_buf_in = {5'b0, y_dist, 5'b0, y_angle};
+			msg_buf_in = {4'hf, 1'b0, y_dist, 4'hf, 1'b0, y_angle};
+			msg_buf_wr = 1'b1;
+		end
+		//edge
+		4'b0111: begin
+			msg_buf_in = {4'h0, 4'b0, edge_val, 4'h0, 1'b0, e_angle};
 			msg_buf_wr = 1'b1;
 		end
 	endcase
@@ -484,7 +518,11 @@ STREAM_REG #(.DATA_WIDTH(26)) out_reg (
 `define REG_STATUS    			0
 `define READ_MSG    			1
 `define READ_ID    				2
-`define REG_BBCOL				3
+`define HUE_MIN					3
+`define HUE_MAX					4
+`define SAT						5
+`define VAL						6
+
 
 //Status register bits
 // 31:16 - unimplemented
@@ -497,7 +535,8 @@ STREAM_REG #(.DATA_WIDTH(26)) out_reg (
 // Process write
 
 reg  [7:0]   reg_status;
-reg	[23:0]	bb_col;
+reg	[23:0]	bb_col, h_max, h_min, sat, val;
+
 
 always @ (posedge clk)
 begin
@@ -505,11 +544,18 @@ begin
 	begin
 		reg_status <= 8'b0;
 		bb_col <= BB_COL_DEFAULT;
+		h_min <= 0;
+		h_max <= 1;
+		sat <= 100;
+		val <= 100;
 	end
 	else begin
 		if(s_chipselect & s_write) begin
 		   if      (s_address == `REG_STATUS)	reg_status <= s_writedata[7:0];
-		   if      (s_address == `REG_BBCOL)	bb_col <= s_writedata[23:0];
+		   if      (s_address == `HUE_MIN)	h_min <= s_writedata[23:0];
+		   if      (s_address == `HUE_MAX)	h_max <= s_writedata[23:0];
+		   if      (s_address == `SAT)	sat <= s_writedata[23:0];
+		   if      (s_address == `VAL)	val <= s_writedata[23:0];
 		end
 	end
 end
@@ -534,7 +580,11 @@ begin
 		if   (s_address == `REG_STATUS) s_readdata <= {16'b0,msg_buf_size,reg_status};
 		if   (s_address == `READ_MSG) s_readdata <= {msg_buf_out};
 		if   (s_address == `READ_ID) s_readdata <= 32'h1234EEE2;
-		if   (s_address == `REG_BBCOL) s_readdata <= {8'h0, bb_col};
+		if   (s_address == `HUE_MIN) s_readdata <= {8'h0, h_min};
+		if   (s_address == `HUE_MAX) s_readdata <= {8'h0, h_max};
+		if   (s_address == `SAT) s_readdata <= {8'h0, sat};
+		if   (s_address == `VAL) s_readdata <= {8'h0, val};
+
 	end
 	
 	read_d <= s_read;
