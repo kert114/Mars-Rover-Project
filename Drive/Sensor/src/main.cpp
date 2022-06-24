@@ -374,7 +374,7 @@ float angle_facing(float total_x)
 void turn_to(float target_angle_temp)
 {
   turning = true;
-  facing_target=false;
+  facing_target = false;
   float temp_delta_angle = 0;
   int delay = 10;
   int m1, m2 = 40;
@@ -388,8 +388,9 @@ void turn_to(float target_angle_temp)
     // delay = 4;
     m1 = m2 = 30;
   }
-  if(abs(temp_delta_angle) < 5){
-    m1=m2=25;
+  if (abs(temp_delta_angle) < 5)
+  {
+    m1 = m2 = 25;
   }
   m1 += 2;
   if (!(abs(temp_delta_angle) < 2)) // && facing_target))
@@ -413,41 +414,37 @@ void turn_to(float target_angle_temp)
 
 void turn_gyro_angle(float target_angle)
 {
-  turning = true;
-  facing_target=false;
+  // turning = true;
+  // facing_target = false;
   float temp_delta_angle = 0;
   int delay = 10;
   int m1 = 42;
   int m2 = 40;
-  temp_delta_angle = temp_gyro_angle - target_angle;
-  while (!(abs(temp_delta_angle) < 2))
+
+  while ((abs(temp_gyro_angle - target_angle) > 2))
   {
-    if ((temp_delta_angle > 0 && temp_delta_angle < 180) || temp_delta_angle < -180)
+    temp_delta_angle = temp_gyro_angle - target_angle;
+    Serial.print(temp_delta_angle);
+    if (temp_gyro_angle > target_angle)
     {
       turn_L(delay, m1, m2);
     }
-    else if ((temp_delta_angle < 0 && temp_delta_angle > -180) || temp_delta_angle > 180)
+    else if (temp_gyro_angle < target_angle)
     {
       turn_R(delay, m1, m2);
     }
-    if (abs(temp_delta_angle) < 10)
+    else if (abs(temp_delta_angle) <= 2)
     {
-      // delay = 4;
-      m1 = 32;
-      m2 = 30;
-    }
-    if(abs(temp_delta_angle) < 5){
-      m1=26;
-      m2=25;
+      brake_rover();
     }
   }
+
   brake_rover();
   facing_target = true;
   turning = false;
-  
 }
 void go_forwards(float y)
-{ 
+{
   if (new_dest == true)
   {
     new_dest = false;
@@ -474,22 +471,29 @@ void go_forwards(float y)
     delta_y = dist - total_y;
     if (delta_y > 0.1)
     {
-      if (abs(current_angle) < (initial_angle + 0.5) && delta_y < 5 && abs(prev_angle) < (initial_angle + 0.5)){
+      if (abs(current_angle) < (initial_angle + 0.5) && delta_y < 5 && abs(prev_angle) < (initial_angle + 0.5))
+      {
         m1 = 24;
         m2 = 24;
-      }else if (abs(current_angle) < (initial_angle + 0.5) && delta_y > 5 && delta_y < 10 && abs(prev_angle) < (initial_angle + 0.5)){
+      }
+      else if (abs(current_angle) < (initial_angle + 0.5) && delta_y > 5 && delta_y < 10 && abs(prev_angle) < (initial_angle + 0.5))
+      {
         m1 = 30;
         m2 = 30;
-      }else if (abs(current_angle) < (initial_angle + 0.5) && abs(prev_angle) < (initial_angle + 0.5) && delta_y > 10){
+      }
+      else if (abs(current_angle) < (initial_angle + 0.5) && abs(prev_angle) < (initial_angle + 0.5) && delta_y > 10)
+      {
         m1 = 40;
         m2 = 40;
       }
 
-      if (angle_gyro > (initial_angle + 0.5)){
+      if (angle_gyro > (initial_angle + 0.5))
+      {
         m1 -= 2;
         m2 += 2;
       }
-      else if (angle_gyro < (initial_angle - 0.5)){
+      else if (angle_gyro < (initial_angle - 0.5))
+      {
         m1 += 2;
         m2 -= 2;
       }
@@ -607,29 +611,24 @@ void Task1code(void *pvParameters)
       break;
 
     case 7:
-      while (i == 7)
-      {
-        // continuous case right
-        turn_L(3);
-        i = Serial.parseInt();
-      }
+      turn_gyro_angle(-90);
+      brake_rover();
       break;
 
     case 8:
-      while (i == 8)
-      {
-        // continuous case back
-        move_B(3);
-        i = Serial.parseInt();
-      }
+      turn_gyro_angle(60);
+      brake_rover();
       break;
 
     case 9:
       brake_rover();
       break;
     }
+    // turn_gyro_angle(90);
+    // brake_rover();
   }
 }
+
 //////////////////////////////////// core 2 for sensor readings
 void Task2code(void *pvParameters)
 {
@@ -681,10 +680,11 @@ void Task2code(void *pvParameters)
     // normal values are relative to the rover, overall values are relative to the overall y axis
     distance_x = /*md.dx; //*/ convTwosComp(md.dx);
     distance_y = /*md.dy; //*/ convTwosComp(md.dy);
-    if(!turning){
-        distance_x_overall = convTwosComp(md.dy)*sin(temp_gyro_angle*(M_PI/180));
-        distance_y_overall = convTwosComp(md.dy)*cos(temp_gyro_angle*(M_PI/180));
-    } 
+    if (!turning)
+    {
+      distance_x_overall = convTwosComp(md.dy) * sin(temp_gyro_angle * (M_PI / 180));
+      distance_y_overall = convTwosComp(md.dy) * cos(temp_gyro_angle * (M_PI / 180));
+    }
     // distance_x_overall = /*md.dx; //*/ convTwosComp(md.dy) * sin(current_angle * (M_PI / 180));
     // distance_y_overall = /*md.dy; //*/ convTwosComp(md.dy) * cos(current_angle * (M_PI / 180));
 
@@ -705,10 +705,13 @@ void Task2code(void *pvParameters)
     {
       temp_gyro_angle += ((g.gyro.z * (180 / M_PI)) * ((currenttimedelay - previoustimedelay) / 1000));
     }
-    if(temp_gyro_angle>180){
-      temp_gyro_angle-=360;
-    }else if(temp_gyro_angle<-180){
-      temp_gyro_angle+=360;
+    if (temp_gyro_angle > 180)
+    {
+      temp_gyro_angle -= 360;
+    }
+    else if (temp_gyro_angle < -180)
+    {
+      temp_gyro_angle += 360;
     }
     Serial.print("gyroangle: "), Serial.println(temp_gyro_angle, 5);
     previoustimedelay = currenttimedelay;
