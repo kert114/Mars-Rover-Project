@@ -424,14 +424,26 @@ void turn_angle_gyro(float target_angle)
   temp_delta_angle = angle_gyro - target_angle;
   while (abs(temp_delta_angle) > 1.5)
   {
-    Serial.print(temp_delta_angle);
+    temp_delta_angle = angle_gyro - target_angle;
+    // Serial.print(temp_delta_angle);
     if (angle_gyro > target_angle)
     {
       turn_L(delay, m1, m2);
+      if (abs(temp_delta_angle) < 10)
+      {
+        m1 = 22;
+        m2 = 20;
+      }
     }
-    else if (angle_gyro < target_angle)
+
+    if (angle_gyro < target_angle)
     {
       turn_R(delay, m1, m2);
+      if (abs(temp_delta_angle) < 10)
+      {
+        m1 = 22;
+        m2 = 20;
+      }
     }
     else if (abs(temp_delta_angle) <= 1.5)
     {
@@ -470,8 +482,8 @@ void go_forwards(float y)
   while (!(delta_y < 0.3 && delta_y > -0.3))
   {
     delta_y = dist - total_y;
-    angle_error = angle_gyro-initial_angle;
-    prev_angle_error = prev_angle-initial_angle;
+    angle_error = angle_gyro - initial_angle;
+    prev_angle_error = prev_angle - initial_angle;
     if (delta_y > 0.3)
     {
       if (delta_y < 5)
@@ -575,7 +587,7 @@ void go_forwards(float y)
   prev_angle_error = 0;
   brake_rover();
   dest = true;
-  new_dest=true;
+  new_dest = true;
 }
 TaskHandle_t Task1;
 TaskHandle_t Task2;
@@ -641,12 +653,7 @@ void Task1code(void *pvParameters)
       break;
 
     case 6:
-      while (i == 6)
-      {
-        // continuous case left
-        turn_R(3);
-        i = Serial.parseInt();
-      }
+      go_forwards(100);
       break;
 
     case 7:
