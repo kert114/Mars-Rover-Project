@@ -18,21 +18,28 @@ uint8_t buf[36];
 
 void loop()
 { // Choose Serial1 or Serial2 as required
-  while (Serial1.available())
+  // Serial.print("hey");
+  if (Serial1.available() >= 36)
   {
 
-
-    Serial.print(Serial1)
-    // // Serial.println(Serial2.read(), BIN);
-    // // Serial.print(char(Serial2.read()));
-    // int len = (Serial1.readBytes(buf, 28));
-    // for (int i = 0; i < 36; i++)
-    // {
-    //   Serial.print(buf[i]);
-    // }
+    // Serial.print(Serial1.read());
+    // Serial1.write(555);
+    // Serial.print("\n");
+    //  // Serial.println(Serial2.read(), BIN);
+    //  // Serial.print(char(Serial2.read()));
+    Serial.print(Serial1.available());
+    int len = (Serial1.readBytes(buf, 36));
+    for (int i = 0; i < 36; i++)
+    {
+      Serial.print(buf[i], HEX);
+      Serial.print(" ");
+    }
+    Serial.println();
   }
-  //     if (Serial1.available() < 36)
-  // {
-  //   Serial1.read();
-  // }
+  // Serial1.flush();
+  // Serial1.begin(115200, SERIAL_8N1, RXD2, TXD2);
 }
+//     if (Serial1.available() < 36)
+// {
+//   Serial1.read();
+// }
