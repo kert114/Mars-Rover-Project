@@ -53,7 +53,7 @@ function Drive() {
         }
         else{
         ManualMethod(true);
-        axios.post('http://localhost:4000/directions', { 'direction': "automate"}) // if automate - then pathfind
+        axios.post('http://localhost:4000/mode', { 'mode': "automated"}) // if automate - then pathfind
             .then(response =>{
                 console.log("received " + JSON.stringify(response));
             })
@@ -64,17 +64,17 @@ function Drive() {
         alert("The rover will start investigating!");}
     }
     function goback() {
-        console.time()
-        axios.post('http://localhost:4000/directions', { 'direction': "0,0"})// base = 0,0
-            .then(response =>{
-                console.log("received " + JSON.stringify(response));
-                console.timeLog();
-            })
-            .catch(err => {
-                console.log("Received error: " + err);
-            })
-            console.log("sent");
-        alert("The rover will head back to the base.");
+        // console.time()
+        // axios.post('http://localhost:4000/directions', { 'direction': "rettobase"})// base = 0,0
+        //     .then(response =>{
+        //         console.log("received " + JSON.stringify(response));
+        //         console.timeLog();
+        //     })
+        //     .catch(err => {
+        //         console.log("Received error: " + err);
+        //     })
+        //     console.log("sent");
+        // alert("The rover will head back to the base.");
     }
     function stop() {
     axios.post('http://localhost:4000/directions', { 'direction': "stop"})
@@ -110,7 +110,7 @@ function Drive() {
     }
     function Overide(){
         automated = false;
-        axios.post('http://localhost:4000/directions', { 'direction': "override"})
+        axios.post('http://localhost:4000/directions', { 'mode': "manual"})
         .then(response =>{
             console.log("received " + JSON.stringify(response));
         })
