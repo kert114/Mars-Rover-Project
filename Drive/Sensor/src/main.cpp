@@ -413,6 +413,18 @@ void turn_to(float target_angle_temp)
   }
 }
 
+float angle_between_points(float x, float y){
+  float cx = total_x_overall;
+  float cy = total_y_overall;
+  float angle_temp = cx*(cx+x)+(cy+1)*(cy+y);
+  float x_dist = sqrt(pow(cx,2)+pow((cy+1),2));
+  float y_dist = sqrt(pow((cx+x),2)+pow((cy+y),2));
+  angle_temp = angle_temp/(x_dist*y_dist);
+  angle_temp = acos(angle_temp)*180/M_PI;
+  float angle_to_turn = angle_temp-current_angle;
+  return angle_to_turn;
+}
+
 void turn_by_angle_gyro(float extra_angle)
 {
   // turning = true;
