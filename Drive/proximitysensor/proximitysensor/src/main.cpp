@@ -13,9 +13,9 @@ void loop()
   Serial.begin(115200);
   int statusSensor = digitalRead(IRSensor);
   // Serial.print("in the loop");
-  if (statusSensor == 1)
+  if (statusSensor == 0)
   {
-    Serial.println("Sensor = High");
+    Serial.println("Sensor = Low");
   }
   else
   {
