@@ -33,9 +33,9 @@ void loop()
     
     for (int i = 0; i < 36; i++)
     {
-      Serial.print(buf[i], HEX);
+     // Serial.print(buf[i], HEX);
     //  buf2 = {Serial.println((buf[4*i + 3] <<24)+(buf[4*i + 2] << 16) + (buf[4*i + 1] << 8) + (buf[4*i]))};
-      Serial.println((buf[4*i + 3] <<24)+(buf[4*i + 2] << 16) + (buf[4*i + 1] << 8) + (buf[4*i]));
+     Serial.println((buf[4*i + 3] <<24)+(buf[4*i + 2] << 16) + (buf[4*i + 1] << 8) + (buf[4*i]), HEX);
       Serial.println();
       // Serial.print(" ");
     }
