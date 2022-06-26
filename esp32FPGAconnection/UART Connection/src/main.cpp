@@ -31,11 +31,10 @@ void loop()
     //  Serial.print(Serial1.available());
    int len = (Serial1.readBytes(buf, 36)); 
     
-    for (int i = 0; i < 36; i++)
+    for (int i = 0; i < 8; i++)
     {
-     // Serial.print(buf[i], HEX);
-    //  buf2 = {Serial.println((buf[4*i + 3] <<24)+(buf[4*i + 2] << 16) + (buf[4*i + 1] << 8) + (buf[4*i]))};
-     Serial.println((buf[4*i + 3] <<24)+(buf[4*i + 2] << 16) + (buf[4*i + 1] << 8) + (buf[4*i]), HEX);
+      //Serial.print(buf[i], HEX);
+    Serial.println((buf[((4*i) + 3)] <<24) +(buf[((4*i) + 2)] << 16)+(buf[((4*i) + 1)] << 8) +(buf[(4*i)]), HEX);
       Serial.println();
       // Serial.print(" ");
     }
