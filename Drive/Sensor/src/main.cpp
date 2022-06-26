@@ -426,7 +426,7 @@ void turn_angle_gyro(float target_angle)
   {
     // temp_delta_angle = current_angle - target_angle;
     // Serial.print(temp_delta_angle);
-    if (current_angle > target_angle)
+    if ((temp_delta_angle > 0 && temp_delta_angle < 180) || temp_delta_angle < -180)
     {
       turn_L(delay, m1, m2);
       if (abs(temp_delta_angle) < 10)
@@ -435,8 +435,8 @@ void turn_angle_gyro(float target_angle)
         m2 = 20;
       }
     }
-
-    if (current_angle < target_angle)
+  
+    else if ((temp_delta_angle < 0 && temp_delta_angle > -180) || temp_delta_angle > 180)
     {
       turn_R(delay, m1, m2);
       if (abs(temp_delta_angle) < 10)
