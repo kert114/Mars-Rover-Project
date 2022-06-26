@@ -497,45 +497,45 @@ void go_forwards(float y)
         m1 = 24;
         m2 = 24;
         if (angle_error > 1)
-          {
-            m1 = 24 - sqrt(abs(angle_error));
-            m2 = 24 + sqrt(abs(angle_error));
-          }
-          else if (angle_error < 1)
-          {
-            m1 = 24 + abs(angle_error);
-            m2 = 24 - abs(angle_error);
-          }
+        {
+          m1 = 24 - sqrt(abs(angle_error));
+          m2 = 24 + sqrt(abs(angle_error));
+        }
+        else if (angle_error < 1)
+        {
+          m1 = 24 + abs(angle_error);
+          m2 = 24 - abs(angle_error);
+        }
       }
       else if (delta_y > 5 && delta_y < 10)
       {
         m1 = 31;
         m2 = 30;
         if (angle_error > 1)
-          {
-            m1 = 31 - abs(angle_error);
-            m2 = 30 + abs(angle_error);
-          }
-          else if (angle_error < 1)
-          {
-            m1 = 31 + abs(angle_error);
-            m2 = 30 - abs(angle_error);
-          }
+        {
+          m1 = 31 - abs(angle_error);
+          m2 = 30 + abs(angle_error);
+        }
+        else if (angle_error < 1)
+        {
+          m1 = 31 + abs(angle_error);
+          m2 = 30 - abs(angle_error);
+        }
       }
       else if (delta_y > 10)
       {
         m1 = 42;
         m2 = 40;
         if (angle_error > 1)
-          {
-            m1 = 42 - 0.25*sqrt(abs(angle_error));
-            m2 = 40 + 0.25*sqrt(abs(angle_error));
-          }
-          else if (angle_error < 1)
-          {
-            m1 = 42 + 0.25*sqrt(abs(angle_error));
-            m2 = 40 - 0.25*sqrt(abs(angle_error));
-          }
+        {
+          m1 = 42 - 0.25 * sqrt(abs(angle_error));
+          m2 = 40 + 0.25 * sqrt(abs(angle_error));
+        }
+        else if (angle_error < 1)
+        {
+          m1 = 42 + 0.25 * sqrt(abs(angle_error));
+          m2 = 40 - 0.25 * sqrt(abs(angle_error));
+        }
       }
       move_F(100, m1, m2);
     }
@@ -546,45 +546,45 @@ void go_forwards(float y)
         m1 = 24;
         m2 = 24;
         if (angle_error > 1)
-          {
-            m1 = 24 + 0.25*sqrt(abs(angle_error));
-            m2 = 24 - 0.25*sqrt(abs(angle_error));
-          }
-          else if (angle_error < 1)
-          {
-            m1 = 24 - 0.25*sqrt(abs(angle_error));
-            m2 = 24 + 0.25*sqrt(abs(angle_error));
-          }
+        {
+          m1 = 24 + 0.25 * sqrt(abs(angle_error));
+          m2 = 24 - 0.25 * sqrt(abs(angle_error));
+        }
+        else if (angle_error < 1)
+        {
+          m1 = 24 - 0.25 * sqrt(abs(angle_error));
+          m2 = 24 + 0.25 * sqrt(abs(angle_error));
+        }
       }
       else if (delta_y < -5 && delta_y > -10)
       {
         m1 = 31;
         m2 = 30;
         if (angle_error > 1)
-          {
-            m1 = 31 + 0.25*sqrt(abs(angle_error));
-            m2 = 30 - 0.25*sqrt(abs(angle_error));
-          }
-          else if (angle_error < 1)
-          {
-            m1 = 31 - 0.25*sqrt(abs(angle_error));
-            m2 = 30 + 0.25*sqrt(abs(angle_error));
-          }
+        {
+          m1 = 31 + 0.25 * sqrt(abs(angle_error));
+          m2 = 30 - 0.25 * sqrt(abs(angle_error));
+        }
+        else if (angle_error < 1)
+        {
+          m1 = 31 - 0.25 * sqrt(abs(angle_error));
+          m2 = 30 + 0.25 * sqrt(abs(angle_error));
+        }
       }
       else if (delta_y < -10)
       {
         m1 = 42;
         m2 = 40;
         if (angle_error > 1)
-          {
-            m1 = 42 + 0.25*sqrt(abs(angle_error));
-            m2 = 40 - 0.25*sqrt(abs(angle_error));
-          }
-          else if (angle_error < 1)
-          {
-            m1 = 42 - 0.25*sqrt(abs(angle_error));
-            m2 = 40 + 0.25*sqrt(abs(angle_error));
-          }
+        {
+          m1 = 42 + 0.25 * sqrt(abs(angle_error));
+          m2 = 40 - 0.25 * sqrt(abs(angle_error));
+        }
+        else if (angle_error < 1)
+        {
+          m1 = 42 - 0.25 * sqrt(abs(angle_error));
+          m2 = 40 + 0.25 * sqrt(abs(angle_error));
+        }
       }
       move_B(100, m1, m2);
     }
@@ -649,13 +649,8 @@ void Task1code(void *pvParameters)
       break;
 
     case 5:
-      while (i == 5)
-      {
-        // continuous case forward
-        move_F(3);
-        // Serial.println("We are a go");
-        i = Serial.parseInt();
-      }
+      turn_angle_gyro(180);
+      brake_rover();
       break;
 
     case 6:
@@ -668,7 +663,7 @@ void Task1code(void *pvParameters)
       break;
 
     case 8:
-      turn_angle_gyro(60);
+      turn_angle_gyro(90);
       brake_rover();
       break;
 
@@ -769,7 +764,7 @@ void Task2code(void *pvParameters)
     }
     Serial.print("gyroangle: "), Serial.println(angle_gyro, 5);
     previoustimedelay = currenttimedelay;
-    delay(100);
+    delay(150);
     temp_x = total_x;
     temp_y = total_y;
     prev_dx = md.dx / correction;
@@ -933,316 +928,4 @@ byte frame[ADNS3080_PIXELS_X * ADNS3080_PIXELS_Y];
 ////////////////////////////////////////////////////////////////////////VOID LOOP
 void loop()
 {
-  /*
-    dest = true;
-    /////////////////////////CONTROL THE ROVER USING 123456789
-    int i = 0;
-    sensors_event_t a, g, temp;
-    mpu.getEvent(&a, &g, &temp);
-    // while (Serial.available() == 0)
-    // {
-    // } // if it breaks, do >= 0 in conditions as per Hepple
-    if (Serial.available())
-    {
-      i = Serial.parseInt();
-    }
-    switch (i)
-    {
-    case 1:
-      // move straight for 3 sec
-      move_F(1000);
-      brake_rover();
-      break;
-
-    case 2:
-      // rotate left for 3 sec
-      turn_R(1000);
-      brake_rover();
-      break;
-
-    case 3:
-      // rotate right for 3 sec
-      turn_L(1000);
-      brake_rover();
-      break;
-
-    case 4:
-      // move back for 3 sec
-      move_B(1000);
-      brake_rover();
-      break;
-
-    case 5:
-      while (i == 5)
-      {
-        // continuous case forward
-        move_F(3);
-        // Serial.println("We are a go");
-        i = Serial.parseInt();
-      }
-      break;
-
-    case 6:
-      while (i == 6)
-      {
-        // continuous case left
-        turn_R(3);
-        i = Serial.parseInt();
-      }
-      break;
-
-    case 7:
-      while (i == 7)
-      {
-        // continuous case right
-        turn_L(3);
-        i = Serial.parseInt();
-      }
-      break;
-
-    case 8:
-      while (i == 8)
-      {
-        // continuous case back
-        move_B(3);
-        i = Serial.parseInt();
-      }
-      break;
-
-    case 9:
-      brake_rover();
-      break;
-
-      // case 0:
-      //   while (i == 0)
-      //   {
-
-      //     // adjust to the right
-      //     robot.rotate(motor1, 80, CCW); // run motor1 at 60% speed in CCW direction
-      //     robot.rotate(motor2, 75, CW);  // run motor1 at 60% speed in CW direction
-      //     delay(10);
-      //     i = Serial.parseInt();
-      //   }
-      //   break;
-
-    default:
-      // brake
-      // brake_rover();
-      // Serial.println("We are a go0");
-      break;
-    }
-    // acceleration test
-    //  for(int i=0; i<=100; i++)
-    //  {
-    //    robot.rotate(motor1, i, CW);// turn motor1 with i% speed in CW direction (whatever is i)
-    //    robot.rotate(motor2, i, CCW);// turn motor1 with i% speed in CW direction (whatever is i)
-    //    delay(100);
-    //  }
-    //  delay(2000);
-    //  robot.brake(1);
-    //  robot.brake(2);
-    //  delay(2000);
-
-  #if 0
-
-      if(movementflag){
-
-      tdistance = tdistance + convTwosComp(xydat[0]);
-      Serial.println("Distance = " + String(tdistance));
-      movementflag=0;
-      delay(3);
-      }
-
-
-    // if enabled this section grabs frames and outputs them as ascii art
-
-    if(mousecam_frame_capture(frame)==0)
-    {
-      int i,j,k;
-      for(i=0, k=0; i<ADNS3080_PIXELS_Y; i++)
-      {
-        for(j=0; j<ADNS3080_PIXELS_X; j++, k++)
-        {
-          Serial.print(asciiart(frame[k]));
-          Serial.print(' ');
-        }
-        Serial.println();
-      }
-    }
-    Serial.println();
-    delay(250);
-
-  #else
-
-    // if enabled this section produces a bar graph of the surface quality that can be used to focus the camera
-    // also drawn is the average pixel value 0-63 and the shutter speed and the motion dx,dy.
-
-    float val = mousecam_read_reg(ADNS3080_PIXEL_SUM);
-    MD md;
-    mousecam_read_motion(&md);
-    if (md.squal <= 20)
-    { // fixing random increases in x when the rover sees a low quality image (***** or lower)
-      md.dx = 0;
-      md.dy = 0;
-    }
-    if (md.dx == 255)
-    {
-      md.dx = 0;
-    }
-    // if (md.dy == 255)
-    // {
-    //   md.dy = 0;
-    // }
-    for (int i = 0; i < md.squal / 4; i++)
-    {
-      Serial.print('*');
-    }
-    Serial.print(md.squal);
-    Serial.print(' ');
-    Serial.print(md.squal / 4);
-    Serial.print(' ');
-    Serial.print((val * 100) / 351);
-    Serial.print(' ');
-    Serial.print(md.shutter);
-    Serial.print(" (");
-    Serial.print((int)md.dx);
-    Serial.print(',');
-    Serial.print((int)md.dy);
-    Serial.println(')');
-
-    // Serial.println(md.max_pix);
-    // delay(100);
-    prev_angle = current_angle;
-    current_angle = angle_facing(total_x); // still need to find the right conversion from md values to cm or mm
-    // normal values are relative to the rover, overall values are relative to the overall y axis
-    distance_x = /*md.dx; //*/
-  /* convTwosComp(md.dx);
-   distance_y = convTwosComp(md.dy);
-   distance_x_overall = convTwosComp(md.dy) * sin(current_angle * (M_PI / 180));
-   distance_y_overall = convTwosComp(md.dy) * cos(current_angle * (M_PI / 180));
-
-   total_x1 = total_x1 + distance_x;
-   total_y1 = total_y1 + distance_y;
-   total_x1_overall = total_x1_overall + distance_x_overall;
-   total_y1_overall = total_y1_overall + distance_y_overall;
-
-   total_x = total_x1 / correction;
-   total_y = total_y1 / correction;
-   total_x_overall = total_x1_overall / correction;
-   total_y_overall = total_y1_overall / correction;
-
-   // Serial.print('\n');
-   // Serial.print("Current angle: ");
-   // Serial.println(current_angle, 5);
-   // Serial.print('\n');
-   currenttimedelay = millis();
-   Serial.print("time for cycle: "), Serial.println((currenttimedelay - previoustimedelay) / 1000, 5);
-
-   if (g.gyro.z * (180 / M_PI) > 2 || g.gyro.z * (180 / M_PI) < -2)
-   {
-     angle_gyro += ((g.gyro.z * (180 / M_PI)) * ((currenttimedelay - previoustimedelay) / 1000));
-   }
-   Serial.print("gyroangle: "), Serial.println(angle_gyro, 5);
-   previoustimedelay = currenttimedelay;
-
-   // turn_angle_gyro(90);
-
-   turn_to(90);
-   //  Serial.print("gyroangle: "), Serial.print(angle_gyro);
-   //   rotation changed in rad/s
-   //   if (g > -2 && gyro_rotation < 2)
-   //  {
-   //     gyro_rotation = 0;
-   //   }
-
-   // Serial.println(ADNS3080_PIXELS_X);
-   // Serial.print("Relative distance_x = ");
-   // Serial.print(total_x, 5);
-   // Serial.print("    Total distance_x = ");
-   // Serial.println(total_x_overall, 5);
-
-   // Serial.print("Relative distance_y = ");
-   // Serial.print(total_y, 5);
-   // Serial.print("    Total distance_y = ");
-   // Serial.println(total_y_overall, 5);
-   // Serial.print('\n');
-   // Serial.println(gyro_rotation, 5);
-   // Serial.println("");
-   // // if (!dest)
-   // {
-   //   go_forwards(30);
-   //   Serial.println("Should be going forwards...");
-   // }
-   // else if (dest) // && stop)
-   // {
-   //   turn_to(90);
-   //   Serial.println("Should be turning now...");
-   // }
-
-   delay(100);
-   temp_x = total_x;
-   temp_y = total_y;
-   prev_dx = md.dx / correction;
-   prev_dy = md.dy / correction;
- #endif
-
- #if 0
-   //////////////////////////////////////wifi stuff loop//////////////////
-   unsigned long previousMillis = 0;
-   unsigned long interval = 30000;
-   unsigned long currentMillis = millis();
-   if ((WiFi.status() != WL_CONNECTED) && (currentMillis - previousMillis >= interval))
-   {
-     Serial.print(millis());
-     Serial.println("Reconnecting to Wifi....");
-     WiFi.disconnect();
-     initWiFi();
-     previousMillis = currentMillis;
-   }
-   if (WiFi.status() == WL_CONNECTED)
-   {
-     WiFiClient client;
-     HTTPClient http;
-     if (client.available() > 0)
-     {
-       Serial.println("DEBUG CLIENT IS AVAILABLE");
-     }
-     else
-     {
-       Serial.println("DOOM");
-     }
-     // Your Domain name with URL path or IP address with path
-     http.begin(client, serverName);
-     // Specify content-type header
-     http.addHeader("Content-Type", "application/x-www-form-urlencoded");
-     // Prepare your HTTP POST request data
-     String httpRequestData = "api_key=" + apiKeyValue + "&object=" + object + "&xvalue=" + String(11) + "&yvalue=" + String(2);
-     Serial.print("httpRequestData: ");
-     Serial.println(httpRequestData);
-     // You can comment the httpRequestData variable above
-     // then, use the httpRequestData variable below (for testing purposes without the BME280 sensor)
-     // String httpRequestData = "api_key=tPmAT5Ab3j7F9&sensor=BME280&location=Office&value1=24.75&value2=49.54&value3=1005.14";
-     // Send HTTP POST request
-     int httpResponseCode = http.POST(httpRequestData);
-     if (httpResponseCode > 0)
-     {
-       Serial.print("HTTP Response code: ");
-       Serial.println(httpResponseCode);
-     }
-     if (httpResponseCode < 0)
-     {
-       Serial.print("Error code: ");
-       Serial.println(httpResponseCode);
-     }
-     // Free resources
-     http.end();
-   }
-   else
-   {
-     Serial.println("WiFi Disconnected");
-   }
- #endif
-   // Send an HTTP POST request every 30 seconds
-   // delay();
-   */
 }
