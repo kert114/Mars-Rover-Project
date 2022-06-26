@@ -47,10 +47,6 @@ const int CW = 1;  // do not change
 Robojax_L298N_DC_motor robot(IN1, IN2, ENA, CHA, IN3, IN4, ENB, CHB);
 // for two motors with debug information
 // Robojax_L298N_DC_motor robot(IN1, IN2, ENA, CHA, IN3, IN4, ENB, CHB, true);
-
-// IR sensor pin
-int IRSensor = 32; // connect ir sensor to arduino pin 2
-
 #define PIN_SS 5
 #define PIN_MISO 19
 #define PIN_MOSI 23
@@ -317,36 +313,11 @@ int mousecam_frame_capture(byte *pdata)
 // sensor is out front for it.
 // Finally by using the find current angle changed function - it will be possible to turn to a certain angle allowing for all
 // direction driving. There is no need to turn on the move as that adds an extra radius that will be unneccessarily hard to calculate.
-int statusSensor = digitalRead(IRSensor);
-void IRSensorStop()
-{
-  if (statusSensor == 0)
-  {
-    robot.brake(1);
-    robot.brake(2);
-  }
-}
-
-void brake_rover()
-{
-  robot.brake(1);
-  robot.brake(2);
-  // delay(1000);
-}
-
 void move_F(int x = 50, int m1 = 25, int m2 = 25)
 {
-  Serial.print("Sensor status: "), Serial.println(statusSensor);
-  if (statusSensor = 0)
-  {
-    robot.rotate(motor1, m1, CCW); // turn motor1 with 25% speed in CCW direction
-    robot.rotate(motor2, m2, CW);  // turn motor2 with 25% speed in CW direction
-    delay(x);
-  }
-  else
-  {
-    brake_rover();
-  }
+  robot.rotate(motor1, m1, CCW); // turn motor1 with 25% speed in CCW direction
+  robot.rotate(motor2, m2, CW);  // turn motor2 with 25% speed in CW direction
+  delay(x);
 }
 void move_B(int x = 50, int m1 = 25, int m2 = 25)
 {
@@ -501,7 +472,7 @@ void turn_angle_gyro(float target_angle)
   // turning = true;
   // facing_target = false;
   float temp_delta_angle = 0;
-  int delay = 100;
+  int delay = 10;
   int m1 = 42;
   int m2 = 42;
   temp_delta_angle = current_angle - target_angle;
@@ -809,12 +780,6 @@ void Task2code(void *pvParameters)
  // Serial.println(xPortGetCoreID());
   for (;;)
   {
-    /////////IR sensor //////////
-    int statusSensor = digitalRead(IRSensor);
-    if (statusSensor == 0)
-    {
-      Serial.println("Sensor = object");
-    }
     sensors_event_t a, g, temp;
     mpu.getEvent(&a, &g, &temp);
     float val = mousecam_read_reg(ADNS3080_PIXEL_SUM);
@@ -891,6 +856,60 @@ void Task2code(void *pvParameters)
     temp_y = total_y;
     prev_dx = md.dx / correction;
     prev_dy = md.dy / correction;
+    // Serial.println("total x "),Serial.println(total_x_overall);
+    //Serial.println("total y " ),Serial.println(total_y_overall);
+    /////////ADD IN HTTP POST REQUEST FOR ROVER POSITION CONTINOUSLY///////////
+  /*  String object = "Rover";
+    unsigned long previousMillis=0;
+    unsigned long interval = 30000;
+    unsigned long currentMillis = millis();
+  if((WiFi.status() !=WL_CONNECTED)&& (currentMillis - previousMillis >=interval)){
+  Serial.print(millis());
+ // Serial.println("Reconnecting to Wifi....");
+  WiFi.disconnect();
+  initWiFi();
+  previousMillis=currentMillis;
+}
+  if(WiFi.status()== WL_CONNECTED){
+    WiFiClient client;
+    HTTPClient http;
+    if (client.available()>0){
+//  Serial.println("DEBUG CLIENT IS AVAILABLE");
+}
+else{
+ // Serial.println("DOOM");
+}
+    // Your Domain name with URL path or IP address with path
+    http.begin(client, serverName);
+    // Specify content-type header
+    http.addHeader("Content-Type", "application/x-www-form-urlencoded");
+    // Prepare your HTTP POST request data
+    String httpRequestData = "api_key=" + apiKeyValue + "&object=" + object
+                          + "&xvalue=" + String(total_x_overall) + "&yvalue=" + String(total_y_overall)
+                          ;
+ //   Serial.print("httpRequestData: ");
+   // Serial.println(httpRequestData);
+    int httpResponseCode = http.POST(httpRequestData);
+   if (httpResponseCode>0) {
+ //     Serial.print("HTTP Response code: ");
+  //    Serial.println(httpResponseCode);
+    }
+    if (httpResponseCode<0) {
+    //  Serial.print("Error code: ");
+     // Serial.println(httpResponseCode);
+    } 
+    // Free resources
+    http.end();
+  }
+  else {
+  //  Serial.println("WiFi Disconnected");
+  }
+  delay(300);
+  */
+// Serial.println(temp_gyro_angle);
+//Serial.println(temp_gyro_angle);
+//Serial.print("current x"),Serial.println(total_x_overall);
+  //    Serial.print("current y"),Serial.println(total_y_overall);
   }
 }
 void setup()
@@ -924,13 +943,6 @@ void setup()
       ;
   }
   Serial.println("INIT");
-  ///////////////IR Sensor///////////////
-  pinMode(IRSensor, INPUT); // sensor pin INPUT
-
-  /////////////WIFI STUFF IN SETUP///////////
-
-  // Serial.begin(115200);
-
   SPI.begin();
   mfrc522.PCD_Init();
   //initWiFi();                   //initiallises wifi connection
