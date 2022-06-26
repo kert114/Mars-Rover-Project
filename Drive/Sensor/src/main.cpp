@@ -413,10 +413,19 @@ void turn_to(float target_angle_temp)
   }
 }
 
-void turn_angle_gyro(float target_angle)
+void turn_by_angle_gyro(float extra_angle)
 {
   // turning = true;
   // facing_target = false;
+  if(facing_target = true){
+    target_angle = current_angle+extra_angle;
+    if (target_angle>180){
+      target_angle-=360;
+    }else if(target_angle<-180){
+      target_angle+=360;
+    }
+    facing_target = false;
+  }
   float temp_delta_angle = 0;
   int delay = 10;
   int m1 = 42;
@@ -456,6 +465,51 @@ void turn_angle_gyro(float target_angle)
   facing_target = true;
   turning = false;
 }
+
+void turn_angle_gyro(float target_angle)
+{
+  // turning = true;
+  // facing_target = false;
+  float temp_delta_angle = 0;
+  int delay = 10;
+  int m1 = 42;
+  int m2 = 42;
+  temp_delta_angle = current_angle - target_angle;
+  while (abs(temp_delta_angle) > 1.5)
+  {
+    // temp_delta_angle = current_angle - target_angle;
+    // Serial.print(temp_delta_angle);
+    if ((temp_delta_angle > 0 && temp_delta_angle < 180) || temp_delta_angle < -180)
+    {
+      turn_L(delay, m1, m2);
+      if (abs(temp_delta_angle) < 10)
+      {
+        m1 = 22;
+        m2 = 20;
+      }
+    }
+
+    else if ((temp_delta_angle < 0 && temp_delta_angle > -180) || temp_delta_angle > 180)
+    {
+      turn_R(delay, m1, m2);
+      if (abs(temp_delta_angle) < 10)
+      {
+        m1 = 22;
+        m2 = 20;
+      }
+    }
+    else if (abs(temp_delta_angle) <= 1.5)
+    {
+      brake_rover();
+    }
+    temp_delta_angle = current_angle - target_angle;
+  }
+
+  brake_rover();
+  facing_target = true;
+  turning = false;
+}
+
 void go_forwards(float y)
 {
   if (new_dest == true)
