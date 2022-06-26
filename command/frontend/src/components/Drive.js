@@ -108,6 +108,19 @@ function Drive() {
             var whatkey;
         }
     }
+    function Overide(){
+        automated = false;
+        axios.post('http://localhost:4000/directions', { 'direction': "override"})
+        .then(response =>{
+            console.log("received " + JSON.stringify(response));
+        })
+        .catch(err => {
+            console.log("Received error: " + err);
+        })
+        console.log("sent");
+    ManualMethod(false);
+    alert("Automated mode exited");
+    }
     function GetkeyPressRight(){
         if(automated){
             alert("Automated mode activated")
@@ -189,8 +202,8 @@ function Drive() {
                     </Button>
                 </div>
                 <div className='stop'>
-                    <Button name="button" className='btns' buttonStyle='btn-outline' buttonSize='btn--medium' onClick={stop}>
-                        Stop
+                    <Button name="button" className='btns' buttonStyle='btn-outline' buttonSize='btn--medium' onClick={Overide}>
+                        Override
                     </Button>
                 </div>
                 <div className='viewmap'>
