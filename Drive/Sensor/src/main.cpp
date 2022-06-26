@@ -18,10 +18,11 @@
 #include <cmath>
 #include <vector>
 #include <iostream>
-struct Point{
-    double x;
-    double y;
-}; 
+struct Point
+{
+  double x;
+  double y;
+};
 ///////////////wifi pins//////////
 #define SCK 18
 #define MISO 19
@@ -93,10 +94,10 @@ int IRSensor = 32; // connect ir sensor to arduino pin 2
 #define ADNS3080_PRODUCT_ID_VAL 0x17
 //  WIFI STUFF
 WiFiClient client;
-MFRC522 mfrc522(SS_PIN, RST_PIN); //// RANDOM IN2 AND IN3 FOR TESTING
+MFRC522 mfrc522(SS_PIN, RST_PIN);                                       //// RANDOM IN2 AND IN3 FOR TESTING
 const char *serverName = "http://192.168.158.188:80/post-map-data.php"; // replace middle with ipv4 of laptop "http:///post-esp-data.php"
 String apiKeyValue = "tPmAT5Ab3j7F9";
-//String object = "Rover";
+// String object = "Rover";
 Adafruit_MPU6050 mpu;
 const char *ssid = "Kert12345";
 const char *password = "1234567891";
@@ -104,33 +105,40 @@ const char *password = "1234567891";
 // const char *password = "AngusJames";
 // const uint16_t port = 12000;
 // const char *host = "192.168.158.30";
-const int arenasizex =250; //actual 2337mm
-const int arenasizey =250; //actual 3555mm
-const int safetymargin=2;
-int numberofnodes=5;
+const int arenasizex = 250; // actual 2337mm
+const int arenasizey = 250; // actual 3555mm
+const int safetymargin = 2;
+int numberofnodes = 5;
 Point currentposition;
-std::vector<Point> nodelist(int numberofnodes, const int arenasizex, const int arenasizey, const int safetymargin){
-    Point temp;
-    std::vector<Point> nodes;
-    for(int i=0; i<numberofnodes;i++){
-      //rand() % ((highestNumber - lowestNumber) + 1) + lowestNumber
-        temp.x= rand() % ((arenasizex-safetymargin)-safetymargin+1)+safetymargin;
-        temp.y= rand() % ((arenasizey-safetymargin)-safetymargin+1)+safetymargin;
-        nodes.push_back(temp);
-    }
-    return nodes;
+std::vector<Point> nodelist(int numberofnodes, const int arenasizex, const int arenasizey, const int safetymargin)
+{
+  Point temp;
+  std::vector<Point> nodes;
+  for (int i = 0; i < numberofnodes; i++)
+  {
+    // rand() % ((highestNumber - lowestNumber) + 1) + lowestNumber
+    temp.x = rand() % ((arenasizex - safetymargin) - safetymargin + 1) + safetymargin;
+    temp.y = rand() % ((arenasizey - safetymargin) - safetymargin + 1) + safetymargin;
+    nodes.push_back(temp);
+  }
+  return nodes;
 }
-int search_v(const std::vector<Point>&vin,int x, int y){
-for(int i=0;i<vin.size();i++){
-  if(vin[i].x==x){
-    if(vin[i].y==y){
-    return i;
+int search_v(const std::vector<Point> &vin, int x, int y)
+{
+  for (int i = 0; i < vin.size(); i++)
+  {
+    if (vin[i].x == x)
+    {
+      if (vin[i].y == y)
+      {
+        return i;
       }
     }
   }
-    return -1;
+  return -1;
 }
-std::vector<Point> deletenode(std::vector<Point>&vin,int index){
+std::vector<Point> deletenode(std::vector<Point> &vin, int index)
+{
   vin.erase(vin.begin() + index);
   return vin;
 }
@@ -186,6 +194,7 @@ float angle_gyro = 0;
 float angle_error = 0;
 float prev_angle_error = 0;
 float temp_gyro_angle = 0;
+float temp_temp_gyro_angle = 0;
 float currenttimedelay = 0;
 float previoustimedelay = 0;
 float distance_x = 0;
@@ -376,37 +385,45 @@ void brake_rover()
   robot.brake(2);
   // delay(1000);
 }
-double distance_points(Point p1, Point p2){
-    return std::sqrt(std::pow((p1.x - p2.x), 2) + std::pow((p1.y - p2.y), 2));
+double distance_points(Point p1, Point p2)
+{
+  return std::sqrt(std::pow((p1.x - p2.x), 2) + std::pow((p1.y - p2.y), 2));
 }
-float angle_between_points(float bx, float by){
+float angle_between_points(float bx, float by)
+{
   float ax = total_x_overall;
   float ay = total_y_overall;
-  float abx = bx-ax;
-  float aby = by-ay;
+  float abx = bx - ax;
+  float aby = by - ay;
   // acx = 0, acy = 1
-  float ab_dist = sqrt(pow((abx),2)+pow((aby),2));
-  float angle_temp = aby/ab_dist;
-  angle_temp = acos(angle_temp) * 180/M_PI;
-  if(abx<0){
+  float ab_dist = sqrt(pow((abx), 2) + pow((aby), 2));
+  float angle_temp = aby / ab_dist;
+  angle_temp = acos(angle_temp) * 180 / M_PI;
+  if (abx < 0)
+  {
     angle_temp = -angle_temp;
   }
-  float angle_to_turn = angle_temp-current_angle;
+  float angle_to_turn = angle_temp - current_angle;
   return angle_to_turn;
 }
-std::string point_to_s(Point p){
-    return "(" + std::to_string(p.x) + ", " + std::to_string(p.y) + ")";
+std::string point_to_s(Point p)
+{
+  return "(" + std::to_string(p.x) + ", " + std::to_string(p.y) + ")";
 }
 void turn_by_angle_gyro(float extra_angle)
 {
   // turning = true;
   // facing_target = false;
-  if(facing_target = true){
-    target_angle = current_angle+extra_angle;
-    if (target_angle>180){
-      target_angle-=360;
-    }else if(target_angle<-180){
-      target_angle+=360;
+  if (facing_target = true)
+  {
+    target_angle = current_angle + extra_angle;
+    if (target_angle > 180)
+    {
+      target_angle -= 360;
+    }
+    else if (target_angle < -180)
+    {
+      target_angle += 360;
     }
     facing_target = false;
   }
@@ -441,7 +458,7 @@ void turn_by_angle_gyro(float extra_angle)
     else if (abs(temp_delta_angle) <= 1.5)
     {
       brake_rover();
-      counter+=1;
+      counter += 1;
     }
     temp_delta_angle = current_angle - target_angle;
   }
@@ -453,29 +470,30 @@ float angle_facing(float total_x)
 {
   float delta_angle = (-total_x / r);
   delta_angle = atan2(sin(delta_angle), cos(delta_angle)) * (180 / M_PI);
-  //Serial.print("Angle: ");
-  //Serial.println(delta_angle, 4);
+  // Serial.print("Angle: ");
+  // Serial.println(delta_angle, 4);
   return delta_angle;
 }
 void turn_to(float target_angle_temp)
 {
   turning = true;
-  facing_target=false;
+  facing_target = false;
   float temp_delta_angle = 0;
   int delay = 10;
   int m1, m2 = 40;
   temp_delta_angle = current_angle - target_angle_temp;
-  //Serial.println('\n');
-  //Serial.print("temp_delta_angle = ");
-  //Serial.println(temp_delta_angle);
-  //Serial.println('\n');
+  // Serial.println('\n');
+  // Serial.print("temp_delta_angle = ");
+  // Serial.println(temp_delta_angle);
+  // Serial.println('\n');
   if (abs(temp_delta_angle) < 10)
   {
     // delay = 4;
     m1 = m2 = 30;
   }
-  if(abs(temp_delta_angle) < 5){
-    m1=m2=25;
+  if (abs(temp_delta_angle) < 5)
+  {
+    m1 = m2 = 25;
   }
   m1 += 2;
   if (!(abs(temp_delta_angle) < 2)) // && facing_target))
@@ -578,45 +596,45 @@ void go_forwards(float y)
         m1 = 24;
         m2 = 24;
         if (angle_error > 0.3)
-          {
-            m1 = 24 + abs(angle_error);
-            m2 = 24 - abs(angle_error);
-          }
-          else if (angle_error < 0.3)
-          {
-            m1 = 24 - abs(angle_error);
-            m2 = 24 + abs(angle_error);
-          }
+        {
+          m1 = 24 + abs(angle_error);
+          m2 = 24 - abs(angle_error);
+        }
+        else if (angle_error < 0.3)
+        {
+          m1 = 24 - abs(angle_error);
+          m2 = 24 + abs(angle_error);
+        }
       }
       else if (delta_y > 5 && delta_y < 10)
       {
         m1 = 30;
         m2 = 31;
         if (angle_error > 0.3)
-          {
-            m1 = 30 + abs(angle_error);
-            m2 = 31 - abs(angle_error);
-          }
-          else if (angle_error < 0.3)
-          {
-            m1 = 30 - abs(angle_error);
-            m2 = 31 + abs(angle_error);
-          }
+        {
+          m1 = 30 + abs(angle_error);
+          m2 = 31 - abs(angle_error);
+        }
+        else if (angle_error < 0.3)
+        {
+          m1 = 30 - abs(angle_error);
+          m2 = 31 + abs(angle_error);
+        }
       }
       else if (delta_y > 10)
       {
         m1 = 40;
         m2 = 42;
         if (angle_error > 0.3)
-          {
-            m1 = 40 + abs(angle_error);
-            m2 = 42 - abs(angle_error);
-          }
-          else if (angle_error < 0.3)
-          {
-            m1 = 40 - abs(angle_error);
-            m2 = 42 + abs(angle_error);
-          }
+        {
+          m1 = 40 + abs(angle_error);
+          m2 = 42 - abs(angle_error);
+        }
+        else if (angle_error < 0.3)
+        {
+          m1 = 40 - abs(angle_error);
+          m2 = 42 + abs(angle_error);
+        }
       }
       move_F(100, m1, m2);
     }
@@ -627,49 +645,51 @@ void go_forwards(float y)
         m1 = 24;
         m2 = 24;
         if (angle_error > 0.3)
-          {
-            m1 = 24 - abs(angle_error);
-            m2 = 24 + abs(angle_error);
-          }
-          else if (angle_error < 0.3)
-          {
-            m1 = 24 + abs(angle_error);
-            m2 = 24 - abs(angle_error);
-          }
+        {
+          m1 = 24 - abs(angle_error);
+          m2 = 24 + abs(angle_error);
+        }
+        else if (angle_error < 0.3)
+        {
+          m1 = 24 + abs(angle_error);
+          m2 = 24 - abs(angle_error);
+        }
       }
       else if (delta_y < -5 && delta_y > -10)
       {
         m1 = 31;
         m2 = 31;
         if (angle_error > 0.3)
-          {
-            m1 = 31 - abs(angle_error);
-            m2 = 31 + abs(angle_error);
-          }
-          else if (angle_error < 0.3)
-          {
-            m1 = 31 + abs(angle_error);
-            m2 = 31 - abs(angle_error);
-          }
+        {
+          m1 = 31 - abs(angle_error);
+          m2 = 31 + abs(angle_error);
+        }
+        else if (angle_error < 0.3)
+        {
+          m1 = 31 + abs(angle_error);
+          m2 = 31 - abs(angle_error);
+        }
       }
       else if (delta_y < -10)
       {
         m1 = 42;
         m2 = 42;
         if (angle_error > 0.3)
-          {
-            m1 = 42 - abs(angle_error);
-            m2 = 42 + abs(angle_error);
-          }
-          else if (angle_error < 0.3)
-          {
-            m1 = 42 + abs(angle_error);
-            m2 = 42 - abs(angle_error);
-          }
+        {
+          m1 = 42 - abs(angle_error);
+          m2 = 42 + abs(angle_error);
+        }
+        else if (angle_error < 0.3)
+        {
+          m1 = 42 + abs(angle_error);
+          m2 = 42 - abs(angle_error);
+        }
       }
       move_B(100, m1, m2);
-    } else{
-      counter+=1;
+    }
+    else
+    {
+      counter += 1;
       brake_rover();
     }
   }
@@ -702,15 +722,15 @@ void Task1code(void *pvParameters)
     switch (i)
     {
     case 1:
-    Serial.println("0");
-    turn_angle_gyro(0);
-    brake_rover();
-     break;
-    //
-    //brake_rover();
-   // Serial.println(temp_gyro_angle);
-    //turn_angle_gyro(-60);
-   // brake_rover();
+      Serial.println("0");
+      turn_angle_gyro(0);
+      brake_rover();
+      break;
+      //
+      // brake_rover();
+      // Serial.println(temp_gyro_angle);
+      // turn_angle_gyro(-60);
+      // brake_rover();
     case 2:
       // rotate left for 3 sec
       Serial.println("90");
@@ -724,89 +744,89 @@ void Task1code(void *pvParameters)
       brake_rover();
       break;
     case 4:
-      Point a,b,c,d,current;
-      a.x=30;
-      a.y=0;
-      b.x=30;
-      b.y=30;
-      c.x=0;
-      c.y=30;
-      d.x=0;
-      d.y=0;
-      float dist,angle;
+      Point a, b, c, d, current;
+      a.x = 30;
+      a.y = 0;
+      b.x = 30;
+      b.y = 30;
+      c.x = 0;
+      c.y = 30;
+      d.x = 0;
+      d.y = 0;
+      float dist, angle;
       Serial.println("at start");
-      current.x=total_x_overall;
-      current.y=total_y_overall;
-      Serial.print("current x"),Serial.println(current.x);
-      Serial.print("current y"),Serial.println(current.y);
-      Serial.print("current angle"),Serial.println(current_angle);
-      dist=distance_points(current,a);
+      current.x = total_x_overall;
+      current.y = total_y_overall;
+      Serial.print("current x"), Serial.println(current.x);
+      Serial.print("current y"), Serial.println(current.y);
+      Serial.print("current angle"), Serial.println(current_angle);
+      dist = distance_points(current, a);
       Serial.println(dist);
-      angle=angle_between_points(a.x,a.y);
+      angle = angle_between_points(a.x, a.y);
       Serial.println(angle);
       turn_by_angle_gyro(angle);
       brake_rover();
       go_forwards(dist);
       brake_rover();
       Serial.println("at a");
-      current.x=total_x_overall;
-      current.y=total_y_overall;
-      Serial.print("current x"),Serial.println(current.x);
-      Serial.print("current y"),Serial.println(current.y);
-      Serial.print("current angle"),Serial.println(current_angle);
-      dist=distance_points(current,b);
+      current.x = total_x_overall;
+      current.y = total_y_overall;
+      Serial.print("current x"), Serial.println(current.x);
+      Serial.print("current y"), Serial.println(current.y);
+      Serial.print("current angle"), Serial.println(current_angle);
+      dist = distance_points(current, b);
       Serial.println(dist);
-      angle=angle_between_points(b.x,b.y);
+      angle = angle_between_points(b.x, b.y);
       Serial.println(angle);
       turn_by_angle_gyro(angle);
       brake_rover();
       go_forwards(dist);
       brake_rover();
       Serial.println("at b");
-      current.x=total_x_overall;
-      current.y=total_y_overall;
-      Serial.print("current x"),Serial.println(current.x);
-      Serial.print("current y"),Serial.println(current.y);
-      Serial.print("current angle"),Serial.println(current_angle);
-      dist=distance_points(current,c);
+      current.x = total_x_overall;
+      current.y = total_y_overall;
+      Serial.print("current x"), Serial.println(current.x);
+      Serial.print("current y"), Serial.println(current.y);
+      Serial.print("current angle"), Serial.println(current_angle);
+      dist = distance_points(current, c);
       Serial.println(dist);
-      angle=angle_between_points(c.x,c.y);
+      angle = angle_between_points(c.x, c.y);
       Serial.println(angle);
       turn_by_angle_gyro(angle);
       brake_rover();
       go_forwards(dist);
       brake_rover();
       Serial.println("at c");
-      current.x=total_x_overall;
-      current.y=total_y_overall;
-      Serial.print("current x"),Serial.println(current.x);
-      Serial.print("current y"),Serial.println(current.y);
-      Serial.print("current angle"),Serial.println(current_angle);
-      dist=distance_points(current,d);
+      current.x = total_x_overall;
+      current.y = total_y_overall;
+      Serial.print("current x"), Serial.println(current.x);
+      Serial.print("current y"), Serial.println(current.y);
+      Serial.print("current angle"), Serial.println(current_angle);
+      dist = distance_points(current, d);
       Serial.println(dist);
-      angle=angle_between_points(d.x,d.y);
+      angle = angle_between_points(d.x, d.y);
       Serial.println(angle);
       turn_by_angle_gyro(angle);
       brake_rover();
       go_forwards(dist);
       brake_rover();
       Serial.println("at d");
-      current.x=total_x_overall;
-      current.y=total_y_overall;
-      Serial.print("current x"),Serial.println(current.x);
-      Serial.print("current y"),Serial.println(current.y);
-      Serial.print("current angle"),Serial.println(current_angle);
+      current.x = total_x_overall;
+      current.y = total_y_overall;
+      Serial.print("current x"), Serial.println(current.x);
+      Serial.print("current y"), Serial.println(current.y);
+      Serial.print("current angle"), Serial.println(current_angle);
       break;
-    // turn_angle_gyro(90);
-    // brake_rover(); 
+      // turn_angle_gyro(90);
+      // brake_rover();
+    }
   }
-}
 }
 //////////////////////////////////// core 2 for sensor readings
 void Task2code(void *pvParameters)
 {
- // Serial.print("Task2 running on core ");
- // Serial.println(xPortGetCoreID());
+  // Serial.print("Task2 running on core ");
+  // Serial.println(xPortGetCoreID());
   for (;;)
   {
     /////////IR sensor //////////
@@ -835,22 +855,22 @@ void Task2code(void *pvParameters)
     // }
     for (int i = 0; i < md.squal / 4; i++)
     {
-   //   Serial.print('*');
+      //   Serial.print('*');
     }
- /*
-    Serial.print(md.squal);
-    Serial.print(' ');
-    Serial.print(md.squal / 4);
-    Serial.print(' ');
-    Serial.print((val * 100) / 351);
-    Serial.print(' ');
-    Serial.print(md.shutter);
-    Serial.print(" (");
-    Serial.print((int)md.dx);
-    Serial.print(',');
-    Serial.print((int)md.dy);
-    Serial.println(')');
-  */
+    /*
+       Serial.print(md.squal);
+       Serial.print(' ');
+       Serial.print(md.squal / 4);
+       Serial.print(' ');
+       Serial.print((val * 100) / 351);
+       Serial.print(' ');
+       Serial.print(md.shutter);
+       Serial.print(" (");
+       Serial.print((int)md.dx);
+       Serial.print(',');
+       Serial.print((int)md.dy);
+       Serial.println(')');
+     */
     // Serial.println(md.max_pix);
     // delay(100);
     prev_angle = current_angle;
@@ -859,10 +879,11 @@ void Task2code(void *pvParameters)
     // normal values are relative to the rover, overall values are relative to the overall y axis
     distance_x = /*md.dx; //*/ convTwosComp(md.dx);
     distance_y = /*md.dy; //*/ convTwosComp(md.dy);
-    if(!turning){
-        distance_x_overall = convTwosComp(md.dy)*sin(-temp_gyro_angle*(M_PI/180));
-        distance_y_overall = convTwosComp(md.dy)*cos(-temp_gyro_angle*(M_PI/180));
-    } 
+    if (!turning)
+    {
+      distance_x_overall = convTwosComp(md.dy) * sin(-temp_gyro_angle * (M_PI / 180));
+      distance_y_overall = convTwosComp(md.dy) * cos(-temp_gyro_angle * (M_PI / 180));
+    }
     // distance_x_overall = /*md.dx; //*/ convTwosComp(md.dy) * sin(current_angle * (M_PI / 180));
     // distance_y_overall = /*md.dy; //*/ convTwosComp(md.dy) * cos(current_angle * (M_PI / 180));
     total_x1 = total_x1 + distance_x;
@@ -873,18 +894,23 @@ void Task2code(void *pvParameters)
     total_y = total_y1 / correction;
     total_x_overall = total_x1_overall / correction;
     total_y_overall = total_y1_overall / correction;
+
+    ////////////////////////////////////////gyro anngle calculation
+    float avgrateofgyro = 0;
     currenttimedelay = millis();
-   // Serial.print("time for cycle: "), Serial.println((currenttimedelay - previoustimedelay) / 1000, 5);
+    // Serial.print("time for cycle: "), Serial.println((currenttimedelay - previoustimedelay) / 1000, 5);
     if (g.gyro.z * (180 / M_PI) > 2 || g.gyro.z * (180 / M_PI) < -2)
     {
       temp_gyro_angle += ((g.gyro.z * (180 / M_PI)) * ((currenttimedelay - previoustimedelay) / 1000));
     }
-    if(temp_gyro_angle>180){
-      temp_gyro_angle-=360;
-    }else if(temp_gyro_angle<-180){
-      temp_gyro_angle+=360;
-    }
-   // Serial.print("gyroangle: "), Serial.println(temp_gyro_angle, 5);
+    avgrateofgyro = temp_gyro_angle - temp_temp_gyro_angle;
+
+    // if(temp_gyro_angle>180){
+    //   temp_gyro_angle-=360;
+    // }else if(temp_gyro_angle<-180){
+    //   temp_gyro_angle+=360;
+    // }
+    // Serial.print("gyroangle: "), Serial.println(temp_gyro_angle, 5);
     previoustimedelay = currenttimedelay;
     delay(100);
     temp_x = total_x;
@@ -933,10 +959,10 @@ void setup()
 
   SPI.begin();
   mfrc522.PCD_Init();
-  //initWiFi();                   //initiallises wifi connection
-  //Serial.print("RRSI: ");       //prints wifi strength
-  //Serial.println(WiFi.RSSI());
-  // Try to initialize the mpu6050
+  // initWiFi();                   //initiallises wifi connection
+  // Serial.print("RRSI: ");       //prints wifi strength
+  // Serial.println(WiFi.RSSI());
+  //  Try to initialize the mpu6050
   if (!mpu.begin())
   {
     Serial.println("Failed to find MPU6050 chip");
