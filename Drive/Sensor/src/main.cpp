@@ -129,7 +129,7 @@ void initWiFi()
 ///
 float angle = 0;
 float current_angle = 0;
-float initial_angle = 0;
+// float initial_angle = 0;
 float prev_angle = 0;
 const float r = 12.6; // the distance from flow sensor to the centre of the axis the rover turns around
 
@@ -165,7 +165,7 @@ int m2 = 34;
 float prev_dx;
 float prev_dy;
 
-float correction = 30;
+float correction = 40;
 
 float a = 0;
 float b = 0;
@@ -378,7 +378,7 @@ void turn_to(float target_angle_temp)
   facing_target = false;
   float temp_delta_angle = 0;
   int delay = 10;
-  int m1, m2 = 40;
+  int m1, m2 = 42;
   temp_delta_angle = current_angle - target_angle_temp;
   Serial.println('\n');
   Serial.print("temp_delta_angle = ");
@@ -387,7 +387,7 @@ void turn_to(float target_angle_temp)
   if (abs(temp_delta_angle) < 10)
   {
     // delay = 4;
-    m1 = m2 = 30;
+    m1 = m2 = 31;
   }
   if (abs(temp_delta_angle) < 5)
   {
@@ -420,7 +420,7 @@ void turn_angle_gyro(float target_angle)
   float temp_delta_angle = 0;
   int delay = 10;
   int m1 = 42;
-  int m2 = 40;
+  int m2 = 42;
   temp_delta_angle = current_angle - target_angle;
   while (abs(temp_delta_angle) > 1.5)
   {
@@ -488,54 +488,54 @@ void go_forwards(float y)
     Serial.println(dist);
     Serial.print("total_y: ");
     Serial.println(total_y);
-    angle_error = current_angle - initial_angle;
-    prev_angle_error = prev_angle - initial_angle;
+    angle_error = current_angle - target_angle;
+    prev_angle_error = prev_angle - target_angle;
     if (delta_y > 0.3)
     {
       if (delta_y < 5)
       {
         m1 = 24;
         m2 = 24;
-        if (angle_error > 1)
-        {
-          m1 = 24 - sqrt(abs(angle_error));
-          m2 = 24 + sqrt(abs(angle_error));
-        }
-        else if (angle_error < 1)
-        {
-          m1 = 24 + abs(angle_error);
-          m2 = 24 - abs(angle_error);
-        }
+        if (angle_error > 0.3)
+          {
+            m1 = 24 - abs(angle_error);
+            m2 = 24 + abs(angle_error);
+          }
+          else if (angle_error < 0.3)
+          {
+            m1 = 24 + abs(angle_error);
+            m2 = 24 - abs(angle_error);
+          }
       }
       else if (delta_y > 5 && delta_y < 10)
       {
-        m1 = 31;
-        m2 = 30;
-        if (angle_error > 1)
-        {
-          m1 = 31 - abs(angle_error);
-          m2 = 30 + abs(angle_error);
-        }
-        else if (angle_error < 1)
-        {
-          m1 = 31 + abs(angle_error);
-          m2 = 30 - abs(angle_error);
-        }
+        m1 = 30;
+        m2 = 31;
+        if (angle_error > 0.3)
+          {
+            m1 = 30 - abs(angle_error);
+            m2 = 31 + abs(angle_error);
+          }
+          else if (angle_error < 0.3)
+          {
+            m1 = 30 + abs(angle_error);
+            m2 = 31 - abs(angle_error);
+          }
       }
       else if (delta_y > 10)
       {
-        m1 = 42;
-        m2 = 40;
-        if (angle_error > 1)
-        {
-          m1 = 42 - 0.25 * sqrt(abs(angle_error));
-          m2 = 40 + 0.25 * sqrt(abs(angle_error));
-        }
-        else if (angle_error < 1)
-        {
-          m1 = 42 + 0.25 * sqrt(abs(angle_error));
-          m2 = 40 - 0.25 * sqrt(abs(angle_error));
-        }
+        m1 = 40;
+        m2 = 42;
+        if (angle_error > 0.3)
+          {
+            m1 = 40 - abs(angle_error);
+            m2 = 42 + abs(angle_error);
+          }
+          else if (angle_error < 0.3)
+          {
+            m1 = 40 + abs(angle_error);
+            m2 = 42 - abs(angle_error);
+          }
       }
       move_F(100, m1, m2);
     }
@@ -545,46 +545,46 @@ void go_forwards(float y)
       {
         m1 = 24;
         m2 = 24;
-        if (angle_error > 1)
-        {
-          m1 = 24 + 0.25 * sqrt(abs(angle_error));
-          m2 = 24 - 0.25 * sqrt(abs(angle_error));
-        }
-        else if (angle_error < 1)
-        {
-          m1 = 24 - 0.25 * sqrt(abs(angle_error));
-          m2 = 24 + 0.25 * sqrt(abs(angle_error));
-        }
+        if (angle_error > 0.3)
+          {
+            m1 = 24 + abs(angle_error);
+            m2 = 24 - abs(angle_error);
+          }
+          else if (angle_error < 0.3)
+          {
+            m1 = 24 - abs(angle_error);
+            m2 = 24 + abs(angle_error);
+          }
       }
       else if (delta_y < -5 && delta_y > -10)
       {
         m1 = 31;
-        m2 = 30;
-        if (angle_error > 1)
-        {
-          m1 = 31 + 0.25 * sqrt(abs(angle_error));
-          m2 = 30 - 0.25 * sqrt(abs(angle_error));
-        }
-        else if (angle_error < 1)
-        {
-          m1 = 31 - 0.25 * sqrt(abs(angle_error));
-          m2 = 30 + 0.25 * sqrt(abs(angle_error));
-        }
+        m2 = 31;
+        if (angle_error > 0.3)
+          {
+            m1 = 31 + abs(angle_error);
+            m2 = 31 - abs(angle_error);
+          }
+          else if (angle_error < 0.3)
+          {
+            m1 = 31 - abs(angle_error);
+            m2 = 31 + abs(angle_error);
+          }
       }
       else if (delta_y < -10)
       {
         m1 = 42;
-        m2 = 40;
-        if (angle_error > 1)
-        {
-          m1 = 42 + 0.25 * sqrt(abs(angle_error));
-          m2 = 40 - 0.25 * sqrt(abs(angle_error));
-        }
-        else if (angle_error < 1)
-        {
-          m1 = 42 - 0.25 * sqrt(abs(angle_error));
-          m2 = 40 + 0.25 * sqrt(abs(angle_error));
-        }
+        m2 = 42;
+        if (angle_error > 0.3)
+          {
+            m1 = 42 + abs(angle_error);
+            m2 = 42 - abs(angle_error);
+          }
+          else if (angle_error < 0.3)
+          {
+            m1 = 42 - abs(angle_error);
+            m2 = 42 + abs(angle_error);
+          }
       }
       move_B(100, m1, m2);
     }
@@ -719,10 +719,8 @@ void Task2code(void *pvParameters)
     Serial.print((int)md.dy);
     Serial.println(')');
 
-    // Serial.println(md.max_pix);
-    // delay(100);
     prev_angle = current_angle;
-    current_angle = angle_facing(total_x); // still need to find the right conversion from md values to cm or mm
+    current_angle = angle_facing(total_x);
     // current_angle = angle_gyro;
     // normal values are relative to the rover, overall values are relative to the overall y axis
     distance_x = /*md.dx; //*/ convTwosComp(md.dx);
