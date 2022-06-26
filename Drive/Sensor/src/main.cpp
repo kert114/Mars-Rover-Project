@@ -421,12 +421,12 @@ void turn_angle_gyro(float target_angle)
   int delay = 10;
   int m1 = 42;
   int m2 = 40;
-  temp_delta_angle = angle_gyro - target_angle;
+  temp_delta_angle = current_angle - target_angle;
   while (abs(temp_delta_angle) > 1.5)
   {
-    temp_delta_angle = angle_gyro - target_angle;
+    // temp_delta_angle = current_angle - target_angle;
     // Serial.print(temp_delta_angle);
-    if (angle_gyro > target_angle)
+    if (current_angle > target_angle)
     {
       turn_L(delay, m1, m2);
       if (abs(temp_delta_angle) < 10)
@@ -436,7 +436,7 @@ void turn_angle_gyro(float target_angle)
       }
     }
 
-    if (angle_gyro < target_angle)
+    if (current_angle < target_angle)
     {
       turn_R(delay, m1, m2);
       if (abs(temp_delta_angle) < 10)
@@ -449,7 +449,7 @@ void turn_angle_gyro(float target_angle)
     {
       brake_rover();
     }
-    temp_delta_angle = angle_gyro - target_angle;
+    temp_delta_angle = current_angle - target_angle;
   }
 
   brake_rover();
@@ -488,7 +488,7 @@ void go_forwards(float y)
     Serial.println(dist);
     Serial.print("total_y: ");
     Serial.println(total_y);
-    angle_error = angle_gyro - initial_angle;
+    angle_error = current_angle - initial_angle;
     prev_angle_error = prev_angle - initial_angle;
     if (delta_y > 0.3)
     {
@@ -723,14 +723,14 @@ void Task2code(void *pvParameters)
     // delay(100);
     prev_angle = current_angle;
     current_angle = angle_facing(total_x); // still need to find the right conversion from md values to cm or mm
-    current_angle = angle_gyro;
+    // current_angle = angle_gyro;
     // normal values are relative to the rover, overall values are relative to the overall y axis
     distance_x = /*md.dx; //*/ convTwosComp(md.dx);
     distance_y = /*md.dy; //*/ convTwosComp(md.dy);
     if (!turning)
     {
-      distance_x_overall = convTwosComp(md.dy) * sin(angle_gyro * (M_PI / 180));
-      distance_y_overall = convTwosComp(md.dy) * cos(angle_gyro * (M_PI / 180));
+      distance_x_overall = convTwosComp(md.dy) * sin(current_angle * (M_PI / 180));
+      distance_y_overall = convTwosComp(md.dy) * cos(current_angle * (M_PI / 180));
     }
     // distance_x_overall = /*md.dx; //*/ convTwosComp(md.dy) * sin(current_angle * (M_PI / 180));
     // distance_y_overall = /*md.dy; //*/ convTwosComp(md.dy) * cos(current_angle * (M_PI / 180));

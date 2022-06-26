@@ -9,7 +9,6 @@ import Drive from './components/Drive'
 import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
 import React from 'react';
 import GetkeyPress from './components/mouseposition';
-import Battery from './components/battery';
 
 
 function App() {
@@ -25,7 +24,6 @@ function App() {
             <Route path="/map" exact element={<Map/>}/>
             <Route path='/drive' exact element={<Drive/>}/>
             <Route path='/mouseposition' exact element={<GetkeyPress/>}/>
-            <Route path='/battery' exact element={<Battery/>}/>
           </Routes>
       </div>
     </Router>

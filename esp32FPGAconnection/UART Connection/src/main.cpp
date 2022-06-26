@@ -29,12 +29,13 @@ void loop()
     //  // Serial.println(Serial2.read(), BIN);
     //  // Serial.print(char(Serial2.read()));
     //  Serial.print(Serial1.available());
-    int len = (Serial1.readBytes(buf, 36));
-
+   int len = (Serial1.readBytes(buf, 36)); 
+    
     for (int i = 0; i < 36; i++)
     {
-      Serial.print(buf[i], HEX);
-      Serial.print(std::reverse(buf, buf + buf.size()));
+     // Serial.print(buf[i], HEX);
+    //  buf2 = {Serial.println((buf[4*i + 3] <<24)+(buf[4*i + 2] << 16) + (buf[4*i + 1] << 8) + (buf[4*i]))};
+     Serial.println((buf[4*i + 3] <<24)+(buf[4*i + 2] << 16) + (buf[4*i + 1] << 8) + (buf[4*i]), HEX);
       Serial.println();
       // Serial.print(" ");
     }
