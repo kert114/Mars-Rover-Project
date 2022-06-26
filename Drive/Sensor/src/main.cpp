@@ -42,6 +42,9 @@ Robojax_L298N_DC_motor robot(IN1, IN2, ENA, CHA, IN3, IN4, ENB, CHB);
 // for two motors with debug information
 // Robojax_L298N_DC_motor robot(IN1, IN2, ENA, CHA, IN3, IN4, ENB, CHB, true);
 
+// IR sensor pin
+int IRSensor = 32; // connect ir sensor to arduino pin 2
+
 #define PIN_SS 5
 #define PIN_MISO 19
 #define PIN_MOSI 23
@@ -327,12 +330,36 @@ int mousecam_frame_capture(byte *pdata)
 // sensor is out front for it.
 // Finally by using the find current angle changed function - it will be possible to turn to a certain angle allowing for all
 // direction driving. There is no need to turn on the move as that adds an extra radius that will be unneccessarily hard to calculate.
+int statusSensor = digitalRead(IRSensor);
+void IRSensorStop()
+{
+  if (statusSensor == 0)
+  {
+    robot.brake(1);
+    robot.brake(2);
+  }
+}
+
+void brake_rover()
+{
+  robot.brake(1);
+  robot.brake(2);
+  // delay(1000);
+}
 
 void move_F(int x = 50, int m1 = 25, int m2 = 25)
 {
-  robot.rotate(motor1, m1, CCW); // turn motor1 with 25% speed in CCW direction
-  robot.rotate(motor2, m2, CW);  // turn motor2 with 25% speed in CW direction
-  delay(x);
+  Serial.print("Sensor status: "), Serial.println(statusSensor);
+  if (statusSensor = 0)
+  {
+    robot.rotate(motor1, m1, CCW); // turn motor1 with 25% speed in CCW direction
+    robot.rotate(motor2, m2, CW);  // turn motor2 with 25% speed in CW direction
+    delay(x);
+  }
+  else
+  {
+    brake_rover();
+  }
 }
 void move_B(int x = 50, int m1 = 25, int m2 = 25)
 {
@@ -355,12 +382,6 @@ void turn_R(int x = 10, int m1 = 25, int m2 = 25)
   delay(x);
   // robot.brake(1);
   // robot.brake(2);
-}
-void brake_rover()
-{
-  robot.brake(1);
-  robot.brake(2);
-  // delay(1000);
 }
 
 float angle_facing(float total_x)
@@ -497,45 +518,45 @@ void go_forwards(float y)
         m1 = 24;
         m2 = 24;
         if (angle_error > 0.3)
-          {
-            m1 = 24 - abs(angle_error);
-            m2 = 24 + abs(angle_error);
-          }
-          else if (angle_error < 0.3)
-          {
-            m1 = 24 + abs(angle_error);
-            m2 = 24 - abs(angle_error);
-          }
+        {
+          m1 = 24 - abs(angle_error);
+          m2 = 24 + abs(angle_error);
+        }
+        else if (angle_error < 0.3)
+        {
+          m1 = 24 + abs(angle_error);
+          m2 = 24 - abs(angle_error);
+        }
       }
       else if (delta_y > 5 && delta_y < 10)
       {
         m1 = 30;
         m2 = 31;
         if (angle_error > 0.3)
-          {
-            m1 = 30 - abs(angle_error);
-            m2 = 31 + abs(angle_error);
-          }
-          else if (angle_error < 0.3)
-          {
-            m1 = 30 + abs(angle_error);
-            m2 = 31 - abs(angle_error);
-          }
+        {
+          m1 = 30 - abs(angle_error);
+          m2 = 31 + abs(angle_error);
+        }
+        else if (angle_error < 0.3)
+        {
+          m1 = 30 + abs(angle_error);
+          m2 = 31 - abs(angle_error);
+        }
       }
       else if (delta_y > 10)
       {
         m1 = 40;
         m2 = 42;
         if (angle_error > 0.3)
-          {
-            m1 = 40 - abs(angle_error);
-            m2 = 42 + abs(angle_error);
-          }
-          else if (angle_error < 0.3)
-          {
-            m1 = 40 + abs(angle_error);
-            m2 = 42 - abs(angle_error);
-          }
+        {
+          m1 = 40 - abs(angle_error);
+          m2 = 42 + abs(angle_error);
+        }
+        else if (angle_error < 0.3)
+        {
+          m1 = 40 + abs(angle_error);
+          m2 = 42 - abs(angle_error);
+        }
       }
       move_F(100, m1, m2);
     }
@@ -546,45 +567,45 @@ void go_forwards(float y)
         m1 = 24;
         m2 = 24;
         if (angle_error > 0.3)
-          {
-            m1 = 24 + abs(angle_error);
-            m2 = 24 - abs(angle_error);
-          }
-          else if (angle_error < 0.3)
-          {
-            m1 = 24 - abs(angle_error);
-            m2 = 24 + abs(angle_error);
-          }
+        {
+          m1 = 24 + abs(angle_error);
+          m2 = 24 - abs(angle_error);
+        }
+        else if (angle_error < 0.3)
+        {
+          m1 = 24 - abs(angle_error);
+          m2 = 24 + abs(angle_error);
+        }
       }
       else if (delta_y < -5 && delta_y > -10)
       {
         m1 = 31;
         m2 = 31;
         if (angle_error > 0.3)
-          {
-            m1 = 31 + abs(angle_error);
-            m2 = 31 - abs(angle_error);
-          }
-          else if (angle_error < 0.3)
-          {
-            m1 = 31 - abs(angle_error);
-            m2 = 31 + abs(angle_error);
-          }
+        {
+          m1 = 31 + abs(angle_error);
+          m2 = 31 - abs(angle_error);
+        }
+        else if (angle_error < 0.3)
+        {
+          m1 = 31 - abs(angle_error);
+          m2 = 31 + abs(angle_error);
+        }
       }
       else if (delta_y < -10)
       {
         m1 = 42;
         m2 = 42;
         if (angle_error > 0.3)
-          {
-            m1 = 42 + abs(angle_error);
-            m2 = 42 - abs(angle_error);
-          }
-          else if (angle_error < 0.3)
-          {
-            m1 = 42 - abs(angle_error);
-            m2 = 42 + abs(angle_error);
-          }
+        {
+          m1 = 42 + abs(angle_error);
+          m2 = 42 - abs(angle_error);
+        }
+        else if (angle_error < 0.3)
+        {
+          m1 = 42 - abs(angle_error);
+          m2 = 42 + abs(angle_error);
+        }
       }
       move_B(100, m1, m2);
     }
@@ -626,8 +647,10 @@ void Task1code(void *pvParameters)
     {
     case 1:
       // move straight for 3 sec
-      go_forwards(50);
-      // brake_rover();
+
+      move_F(2000);
+
+      brake_rover();
       break;
 
     case 2:
@@ -644,7 +667,7 @@ void Task1code(void *pvParameters)
 
     case 4:
       // move back for 3 sec
-      move_B(1000);
+      move_F(1000);
       brake_rover();
       break;
 
@@ -684,6 +707,12 @@ void Task2code(void *pvParameters)
 
   for (;;)
   {
+    /////////IR sensor //////////
+    int statusSensor = digitalRead(IRSensor);
+    if (statusSensor == 0)
+    {
+      Serial.println("Sensor = object");
+    }
     sensors_event_t a, g, temp;
     mpu.getEvent(&a, &g, &temp);
     float val = mousecam_read_reg(ADNS3080_PIXEL_SUM);
@@ -804,6 +833,9 @@ void setup()
   }
 
   Serial.println("INIT");
+  ///////////////IR Sensor///////////////
+  pinMode(IRSensor, INPUT); // sensor pin INPUT
+
   /////////////WIFI STUFF IN SETUP///////////
 
   // Serial.begin(115200);
