@@ -472,7 +472,7 @@ void turn_angle_gyro(float target_angle)
   // turning = true;
   // facing_target = false;
   float temp_delta_angle = 0;
-  int delay = 100;
+  int delay = 10;
   int m1 = 42;
   int m2 = 42;
   temp_delta_angle = current_angle - target_angle;
@@ -856,6 +856,60 @@ void Task2code(void *pvParameters)
     temp_y = total_y;
     prev_dx = md.dx / correction;
     prev_dy = md.dy / correction;
+    // Serial.println("total x "),Serial.println(total_x_overall);
+    //Serial.println("total y " ),Serial.println(total_y_overall);
+    /////////ADD IN HTTP POST REQUEST FOR ROVER POSITION CONTINOUSLY///////////
+  /*  String object = "Rover";
+    unsigned long previousMillis=0;
+    unsigned long interval = 30000;
+    unsigned long currentMillis = millis();
+  if((WiFi.status() !=WL_CONNECTED)&& (currentMillis - previousMillis >=interval)){
+  Serial.print(millis());
+ // Serial.println("Reconnecting to Wifi....");
+  WiFi.disconnect();
+  initWiFi();
+  previousMillis=currentMillis;
+}
+  if(WiFi.status()== WL_CONNECTED){
+    WiFiClient client;
+    HTTPClient http;
+    if (client.available()>0){
+//  Serial.println("DEBUG CLIENT IS AVAILABLE");
+}
+else{
+ // Serial.println("DOOM");
+}
+    // Your Domain name with URL path or IP address with path
+    http.begin(client, serverName);
+    // Specify content-type header
+    http.addHeader("Content-Type", "application/x-www-form-urlencoded");
+    // Prepare your HTTP POST request data
+    String httpRequestData = "api_key=" + apiKeyValue + "&object=" + object
+                          + "&xvalue=" + String(total_x_overall) + "&yvalue=" + String(total_y_overall)
+                          ;
+ //   Serial.print("httpRequestData: ");
+   // Serial.println(httpRequestData);
+    int httpResponseCode = http.POST(httpRequestData);
+   if (httpResponseCode>0) {
+ //     Serial.print("HTTP Response code: ");
+  //    Serial.println(httpResponseCode);
+    }
+    if (httpResponseCode<0) {
+    //  Serial.print("Error code: ");
+     // Serial.println(httpResponseCode);
+    } 
+    // Free resources
+    http.end();
+  }
+  else {
+  //  Serial.println("WiFi Disconnected");
+  }
+  delay(300);
+  */
+// Serial.println(temp_gyro_angle);
+//Serial.println(temp_gyro_angle);
+//Serial.print("current x"),Serial.println(total_x_overall);
+  //    Serial.print("current y"),Serial.println(total_y_overall);
   }
 }
 void setup()
