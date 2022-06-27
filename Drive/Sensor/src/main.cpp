@@ -379,12 +379,12 @@ void turn_R(int x = 10, int m1 = 25, int m2 = 25)
   // robot.brake(1);
   // robot.brake(2);
 }
-void brake_rover()
-{
-  robot.brake(1);
-  robot.brake(2);
-  // delay(1000);
-}
+// void brake_rover()
+// {
+//   robot.brake(1);
+//   robot.brake(2);
+//   // delay(1000);
+// }
 double distance_points(Point p1, Point p2)
 {
   return std::sqrt(std::pow((p1.x - p2.x), 2) + std::pow((p1.y - p2.y), 2));
@@ -443,12 +443,13 @@ void turn_by_angle_gyro(float extra_angle)
   while (abs(temp_delta_angle) > 1.5 && counter < 4)
   {
     Serial.print("current angle: "), Serial.println(current_angle);
-    number_of_cycles+=1;
-    current_increment = prev_delta_angle-temp_delta_angle;
-    running_total+=current_increment;
-    current_average = running_total/number_of_cycles;
-    if(current_increment>(abs(current_average)+10)*2){
-      current_angle = prev_current_angle+current_average;
+    number_of_cycles += 1;
+    current_increment = prev_delta_angle - temp_delta_angle;
+    running_total += current_increment;
+    current_average = running_total / number_of_cycles;
+    if (current_increment > (abs(current_average) + 10) * 2)
+    {
+      current_angle = prev_current_angle + current_average;
     }
     prev_delta_angle = temp_delta_angle;
     prev_current_angle = current_angle;
@@ -549,12 +550,13 @@ void turn_angle_gyro(float target_angle)
   temp_delta_angle = current_angle - target_angle;
   while (abs(temp_delta_angle) > 1.5)
   {
-    number_of_cycles+=1;
-    current_increment = prev_delta_angle-temp_delta_angle;
-    running_total+=current_increment;
-    current_average = running_total/number_of_cycles;
-    if(current_increment>(abs(current_average)+10)*2){
-      current_angle = prev_current_angle+current_average;
+    number_of_cycles += 1;
+    current_increment = prev_delta_angle - temp_delta_angle;
+    running_total += current_increment;
+    current_average = running_total / number_of_cycles;
+    if (current_increment > (abs(current_average) + 10) * 2)
+    {
+      current_angle = prev_current_angle + current_average;
     }
     prev_delta_angle = temp_delta_angle;
     prev_current_angle = current_angle;
@@ -755,15 +757,15 @@ void Task1code(void *pvParameters)
     switch (i)
     {
     case 1:
-    Serial.println("-90");
-    turn_by_angle_gyro(-90);
-    brake_rover();
-     break;
-    //
-    //brake_rover();
-   // Serial.println(temp_gyro_angle);
-    //turn_angle_gyro(-60);
-   // brake_rover();
+      Serial.println("-90");
+      turn_by_angle_gyro(-90);
+      brake_rover();
+      break;
+      //
+      // brake_rover();
+      // Serial.println(temp_gyro_angle);
+      // turn_angle_gyro(-60);
+      // brake_rover();
     case 2:
       // rotate left for 3 sec
       Serial.println("90");
