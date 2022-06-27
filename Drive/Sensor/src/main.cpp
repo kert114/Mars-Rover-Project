@@ -1009,12 +1009,7 @@ void Task1code(void *pvParameters)
       // turn_angle_gyro(90);
       // brake_rover();
     }
-  //   case 6:
-
-
-  //   break;
-
-  // }
+  }
 }
 //////////////////////////////////// core 2 for sensor readings
 void Task2code(void *pvParameters)
@@ -1118,6 +1113,7 @@ void Task2code(void *pvParameters)
     prev_dy = md.dy / correction;
   }
 }
+
 void setup()
 {
   Serial.begin(115200);
