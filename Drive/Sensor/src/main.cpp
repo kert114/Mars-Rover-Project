@@ -463,7 +463,7 @@ void turn_angle_gyro(float target_angle)
   // facing_target = false;
   float temp_delta_angle = 0;
   float prev_delta_angle = 0;
-  int delay = 100;
+  int delay_time = 10;
   int m1 = 30;
   int m2 = 30;
   int counter = 0;
@@ -473,7 +473,7 @@ void turn_angle_gyro(float target_angle)
   // float current_average = 0;
   // float prev_current_angle = current_angle;
   temp_delta_angle = current_angle - target_angle;
-  while ((abs(temp_delta_angle < 359) || abs(temp_delta_angle) > 1) && counter < 10)
+  while ((abs(temp_delta_angle < 359.5) || abs(temp_delta_angle) > 0.5) && counter < 50)
   {
     Serial.print("delta angle: "), Serial.println(temp_delta_angle);
     // number_of_cycles += 1;
@@ -491,7 +491,7 @@ void turn_angle_gyro(float target_angle)
     // Serial.print(temp_delta_angle);
     if ((temp_delta_angle > 1.5 && temp_delta_angle < 180) || temp_delta_angle < -180)
     {
-      turn_R(delay, m1, m2);
+      turn_R(delay_time, m1, m2);
       if (abs(temp_delta_angle) < 10)
       {
         m1 = 22;
@@ -500,7 +500,7 @@ void turn_angle_gyro(float target_angle)
     }
     else if ((temp_delta_angle < -1.5 && temp_delta_angle > -180) || temp_delta_angle > 180)
     {
-      turn_L(delay, m1, m2);
+      turn_L(delay_time, m1, m2);
       if (abs(temp_delta_angle) < 10)
       {
         m1 = 22;
@@ -516,6 +516,7 @@ void turn_angle_gyro(float target_angle)
     temp_delta_angle = current_angle - target_angle;
   }
   brake_rover();
+  delay(1000);
   facing_target = true;
   turning = false;
 }
@@ -740,6 +741,7 @@ void go_forwards(float y)
   angle_error = 0;
   prev_angle_error = 0;
   brake_rover();
+  delay(1000);
   dest = true;
   new_dest = true;
 }
@@ -873,9 +875,20 @@ void Task1code(void *pvParameters)
       b.y = 10;
       c.x = 0;
       c.y = 0;
-      d.x = 0;
-      d.y = 0;
       Serial.println("at start");
+      current.x = total_x_overall;
+      current.y = total_y_overall;
+      Serial.print("current x"), Serial.println(current.x);
+      Serial.print("current y"), Serial.println(current.y);
+      Serial.print("current angle"), Serial.println(current_angle);
+      dist = distance_points(current, a);
+      Serial.println(dist);
+      angle = angle_between_points(a.x, a.y);
+      Serial.println(angle);
+      turn_by_angle_gyro(angle);
+      brake_rover();
+      go_forwards(dist);
+      brake_rover();
       current.x = total_x_overall;
       current.y = total_y_overall;
       Serial.print("current x"), Serial.println(current.x);
@@ -903,6 +916,19 @@ void Task1code(void *pvParameters)
       brake_rover();
       go_forwards(dist);
       brake_rover();
+      current.x = total_x_overall;
+      current.y = total_y_overall;
+      Serial.print("current x"), Serial.println(current.x);
+      Serial.print("current y"), Serial.println(current.y);
+      Serial.print("current angle"), Serial.println(current_angle);
+      dist = distance_points(current, b);
+      Serial.println(dist);
+      angle = angle_between_points(b.x, b.y);
+      Serial.println(angle);
+      turn_by_angle_gyro(angle);
+      brake_rover();
+      go_forwards(dist);
+      brake_rover();
       Serial.println("at b");
       current.x = total_x_overall;
       current.y = total_y_overall;
@@ -917,21 +943,20 @@ void Task1code(void *pvParameters)
       brake_rover();
       go_forwards(dist);
       brake_rover();
-      Serial.println("at c");
       current.x = total_x_overall;
       current.y = total_y_overall;
       Serial.print("current x"), Serial.println(current.x);
       Serial.print("current y"), Serial.println(current.y);
       Serial.print("current angle"), Serial.println(current_angle);
-      dist = distance_points(current, d);
+      dist = distance_points(current, c);
       Serial.println(dist);
-      angle = angle_between_points(d.x, d.y);
+      angle = angle_between_points(c.x, c.y);
       Serial.println(angle);
       turn_by_angle_gyro(angle);
       brake_rover();
       go_forwards(dist);
       brake_rover();
-      Serial.println("at d");
+      Serial.println("at c");
       current.x = total_x_overall;
       current.y = total_y_overall;
       Serial.print("current x"), Serial.println(current.x);
