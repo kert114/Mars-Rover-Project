@@ -175,7 +175,6 @@ bool dest = false;
 bool new_dest = true;
 bool facing_target = false;
 bool turning = false;
-int counter = 0;
 float total_x1 = 0;
 float total_y1 = 0;
 float total_x1_overall = 0;
@@ -186,7 +185,7 @@ int m1 = 36;
 int m2 = 34;
 float prev_dx;
 float prev_dy;
-float correction = 40;
+float correction = 42;
 float a = 0;
 float b = 0;
 float gyro_rotation = 0;
@@ -329,7 +328,7 @@ int mousecam_frame_capture(byte *pdata)
 int statusSensor = digitalRead(IRSensor);
 void IRSensorStop()
 {
-  if (statusSensor == 0)
+  if (statusSensor != 0)
   {
     robot.brake(1);
     robot.brake(2);
@@ -345,8 +344,8 @@ void brake_rover()
 
 void move_F(int x = 50, int m1 = 25, int m2 = 25)
 {
-  Serial.print("Sensor status: "), Serial.println(statusSensor);
-  if (statusSensor = 0)
+  // Serial.print("Sensor status: "), Serial.println(statusSensor);
+  if (statusSensor == 0)
   {
     robot.rotate(motor1, m1, CCW); // turn motor1 with 25% speed in CCW direction
     robot.rotate(motor2, m2, CW);  // turn motor2 with 25% speed in CW direction
@@ -379,12 +378,12 @@ void turn_R(int x = 10, int m1 = 25, int m2 = 25)
   // robot.brake(1);
   // robot.brake(2);
 }
-void brake_rover()
-{
-  robot.brake(1);
-  robot.brake(2);
-  // delay(1000);
-}
+// void brake_rover()
+// {
+//   robot.brake(1);
+//   robot.brake(2);
+//   // delay(1000);
+// }
 double distance_points(Point p1, Point p2)
 {
   return std::sqrt(std::pow((p1.x - p2.x), 2) + std::pow((p1.y - p2.y), 2));
@@ -409,80 +408,6 @@ float angle_between_points(float bx, float by)
 std::string point_to_s(Point p)
 {
   return "(" + std::to_string(p.x) + ", " + std::to_string(p.y) + ")";
-}
-void turn_by_angle_gyro(float extra_angle)
-{
-  // turning = true;
-  // facing_target = false;
-  if (facing_target = true)
-  {
-    target_angle = current_angle + extra_angle;
-    if (target_angle > 180)
-    {
-      target_angle -= 360;
-    }
-    else if (target_angle < -180)
-    {
-      target_angle += 360;
-    }
-    facing_target = false;
-  }
-  float temp_delta_angle = 0;
-  float prev_delta_angle = 0;
-  int delay = 10;
-  int m1 = 42;
-  int m2 = 42;
-  temp_delta_angle = current_angle - target_angle;
-  counter = 0;
-  float current_increment = 0;
-  float running_total = 0;
-  int number_of_cycles = 0;
-  float current_average = 0;
-  float prev_current_angle = current_angle;
-  temp_delta_angle = current_angle - target_angle;
-  while (abs(temp_delta_angle) > 1.5 && counter < 4)
-  {
-    Serial.print("current angle: "), Serial.println(current_angle);
-    number_of_cycles+=1;
-    current_increment = prev_delta_angle-temp_delta_angle;
-    running_total+=current_increment;
-    current_average = running_total/number_of_cycles;
-    if(current_increment>(abs(current_average)+10)*2){
-      current_angle = prev_current_angle+current_average;
-    }
-    prev_delta_angle = temp_delta_angle;
-    prev_current_angle = current_angle;
-    temp_delta_angle = current_angle - target_angle;
-    // temp_delta_angle = current_angle - target_angle;
-    // Serial.print(temp_delta_angle);
-    if ((temp_delta_angle > 0 && temp_delta_angle < 180) || temp_delta_angle < -180)
-    {
-      turn_R(delay, m1, m2);
-      if (abs(temp_delta_angle) < 10)
-      {
-        m1 = 22;
-        m2 = 20;
-      }
-    }
-    else if ((temp_delta_angle < 0 && temp_delta_angle > -180) || temp_delta_angle > 180)
-    {
-      turn_L(delay, m1, m2);
-      if (abs(temp_delta_angle) < 10)
-      {
-        m1 = 22;
-        m2 = 20;
-      }
-    }
-    else if (abs(temp_delta_angle) <= 1.5)
-    {
-      brake_rover();
-      counter += 1;
-    }
-    temp_delta_angle = current_angle - target_angle;
-  }
-  brake_rover();
-  facing_target = true;
-  turning = false;
 }
 float angle_facing(float total_x)
 {
@@ -538,56 +463,149 @@ void turn_angle_gyro(float target_angle)
   // facing_target = false;
   float temp_delta_angle = 0;
   float prev_delta_angle = 0;
-  int delay = 100;
-  int m1 = 42;
-  int m2 = 42;
-  float current_increment = 0;
-  float running_total = 0;
-  int number_of_cycles = 0;
-  float current_average = 0;
-  float prev_current_angle = current_angle;
+  int delay_time = 10;
+  int m1 = 30;
+  int m2 = 30;
+  int counter = 0;
+  // float current_increment = 0;
+  // float running_total = 0;
+  // int number_of_cycles = 0;
+  // float current_average = 0;
+  // float prev_current_angle = current_angle;
   temp_delta_angle = current_angle - target_angle;
-  while (abs(temp_delta_angle) > 1.5)
+  while ((abs(temp_delta_angle < 359.5) || abs(temp_delta_angle) > 0.5) && counter < 100)
   {
-    number_of_cycles+=1;
-    current_increment = prev_delta_angle-temp_delta_angle;
-    running_total+=current_increment;
-    current_average = running_total/number_of_cycles;
-    if(current_increment>(abs(current_average)+10)*2){
-      current_angle = prev_current_angle+current_average;
-    }
+    // Serial.print("delta angle: "), Serial.println(temp_delta_angle);
+    // number_of_cycles += 1;
+    // current_increment = prev_delta_angle - temp_delta_angle;
+    // running_total += current_increment;
+    // current_average = running_total / number_of_cycles;
+    // if (current_increment > (abs(current_average) + 10) * 2)
+    // {
+    //   current_angle = prev_current_angle + current_average;
+    // }
     prev_delta_angle = temp_delta_angle;
-    prev_current_angle = current_angle;
+    // prev_current_angle = current_angle;
     temp_delta_angle = current_angle - target_angle;
     // temp_delta_angle = current_angle - target_angle;
     // Serial.print(temp_delta_angle);
-    if ((temp_delta_angle > 0 && temp_delta_angle < 180) || temp_delta_angle < -180)
+    if ((temp_delta_angle > 1 && temp_delta_angle <= 180) || temp_delta_angle < -180)
     {
-      turn_L(delay, m1, m2);
+      turn_R(delay_time, m1, m2);
       if (abs(temp_delta_angle) < 10)
       {
-        m1 = 22;
+        m1 = 20;
         m2 = 20;
       }
+      if(abs(temp_delta_angle)<4){
+        m1 = 15;
+        m2 = 15;
+      }
     }
-    else if ((temp_delta_angle < 0 && temp_delta_angle > -180) || temp_delta_angle > 180)
+    else if ((temp_delta_angle < -1 && temp_delta_angle >= -180) || temp_delta_angle > 180)
     {
-      turn_R(delay, m1, m2);
+      turn_L(delay_time, m1, m2);
       if (abs(temp_delta_angle) < 10)
       {
-        m1 = 22;
+        m1 = 20;
         m2 = 20;
       }
+      if(abs(temp_delta_angle)<4){
+        m1 = 15;
+        m2 = 15;
+      }
     }
-    else if (abs(temp_delta_angle) <= 1.5)
+    if ((abs(temp_delta_angle) > 359) || (abs(temp_delta_angle) < 1))
     {
       brake_rover();
+      counter += 1;
+      // Serial.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
     }
+    temp_delta_angle = current_angle - target_angle;
   }
   brake_rover();
+  delay(1000);
   facing_target = true;
   turning = false;
+  Serial.print("current angle: ");
+  Serial.println(current_angle);
 }
+
+void turn_by_angle_gyro(float extra_angle)
+{
+  // turning = true;
+  // facing_target = false;
+  target_angle = current_angle + extra_angle;
+  if (target_angle > 180)
+  {
+    target_angle -= 360;
+  }
+  else if (target_angle < -180)
+  {
+    target_angle += 360;
+  }
+  Serial.print("target angle: ");
+  Serial.println(target_angle);
+  turn_angle_gyro(target_angle);
+  // float temp_delta_angle = 0;
+  // float prev_delta_angle = 0;
+  // int delay = 10;
+  // int m1 = 30;
+  // int m2 = 30;
+  // temp_delta_angle = current_angle - target_angle;
+  // counter = 0;
+  // float current_increment = 0;
+  // float running_total = 0;
+  // int number_of_cycles = 0;
+  // float current_average = 0;
+  // float prev_current_angle = current_angle;
+  // temp_delta_angle = current_angle - target_angle;
+  // while ((abs(temp_delta_angle > 359) || abs(temp_delta_angle) > 1) && counter < 1000)
+  // {
+  //   // Serial.print("current angle: "), Serial.println(current_angle);
+  //   number_of_cycles += 1;
+  //   current_increment = prev_delta_angle - temp_delta_angle;
+  //   running_total += current_increment;
+  //   current_average = running_total / number_of_cycles;
+  //   if (current_increment > (abs(current_average) + 10) * 2)
+  //   {
+  //     current_angle = prev_current_angle + current_average;
+  //   }
+  //   prev_delta_angle = temp_delta_angle;
+  //   prev_current_angle = current_angle;
+  //   temp_delta_angle = current_angle - target_angle;
+  //   // temp_delta_angle = current_angle - target_angle;
+  //   // Serial.print(temp_delta_angle);
+  //   if ((temp_delta_angle > 0 && temp_delta_angle < 180) || temp_delta_angle < -180)
+  //   {
+  //     turn_R(delay, m1, m2);
+  //     if (abs(temp_delta_angle) < 10)
+  //     {
+  //       m1 = 22;
+  //       m2 = 20;
+  //     }
+  //   }
+  //   else if ((temp_delta_angle < 0 && temp_delta_angle > -180) || temp_delta_angle > 180)
+  //   {
+  //     turn_L(delay, m1, m2);
+  //     if (abs(temp_delta_angle) < 10)
+  //     {
+  //       m1 = 22;
+  //       m2 = 20;
+  //     }
+  //   }
+  //   else if ((abs(temp_delta_angle > 358.5) || abs(temp_delta_angle) > 1.5))
+  //   {
+  //     brake_rover();
+  //     counter += 1;
+  //   }
+  //   temp_delta_angle = current_angle - target_angle;
+  // }
+  // brake_rover();
+  // facing_target = true;
+  // turning = false;
+}
+
 void go_forwards(float y)
 {
   if (new_dest == true)
@@ -610,8 +628,8 @@ void go_forwards(float y)
   Serial.print("Delta_y: ");
   Serial.println(delta_y, 3);
  */
-  counter = 0;
-  while (!(delta_y < 0.3 && delta_y > -0.3) && counter < 10)
+  int counter = 0;
+  while (!(delta_y < 0.1 && delta_y > -0.1) && counter < 100)
   {
     delta_y = dist - total_y;
     /*Serial.print("delta_y: ");
@@ -620,9 +638,11 @@ void go_forwards(float y)
     Serial.println(dist);
     Serial.print("total_y: ");
     Serial.println(total_y); */
+    // Serial.print("Current angle: "),Serial.println(current_angle);
+    // Serial.print("Delta_y: "),Serial.println(delta_y);
     angle_error = current_angle - target_angle;
     prev_angle_error = prev_angle - target_angle;
-    if (delta_y > 0.3)
+    if (delta_y > 0.1)
     {
       if (delta_y < 5)
       {
@@ -729,6 +749,7 @@ void go_forwards(float y)
   angle_error = 0;
   prev_angle_error = 0;
   brake_rover();
+  delay(1000);
   dest = true;
   new_dest = true;
 }
@@ -743,8 +764,10 @@ void Task1code(void *pvParameters)
     dest = true;
     /////////////////////////CONTROL THE ROVER USING 123456789
     int i = 0;
-    sensors_event_t a, g, temp;
-    mpu.getEvent(&a, &g, &temp);
+    sensors_event_t acc, g, temp;
+    mpu.getEvent(&acc, &g, &temp);
+    Point a, b, c, d, current;
+    float dist, angle;
     // while (Serial.available() == 0)
     // {
     // } // if it breaks, do >= 0 in conditions as per Hepple
@@ -755,15 +778,15 @@ void Task1code(void *pvParameters)
     switch (i)
     {
     case 1:
-    Serial.println("-90");
-    turn_by_angle_gyro(-90);
-    brake_rover();
-     break;
-    //
-    //brake_rover();
-   // Serial.println(temp_gyro_angle);
-    //turn_angle_gyro(-60);
-   // brake_rover();
+      Serial.println("-90");
+      turn_by_angle_gyro(-90);
+      brake_rover();
+      break;
+      //
+      // brake_rover();
+      // Serial.println(temp_gyro_angle);
+      // turn_angle_gyro(-60);
+      // brake_rover();
     case 2:
       // rotate left for 3 sec
       Serial.println("90");
@@ -772,12 +795,18 @@ void Task1code(void *pvParameters)
       break;
     case 3:
       // rotate right for 3 sec
-      Serial.println("170");
-      turn_angle_gyro(170);
+      Serial.println("180");
+      turn_by_angle_gyro(180);
+      brake_rover();
+      break;
+    case 7:
+      // rotate right for 3 sec
+      Serial.println("-180");
+      turn_by_angle_gyro(-180);
       brake_rover();
       break;
     case 4:
-      Point a, b, c, d, current;
+      // Point a, b, c, d, current;
       a.x = 30;
       a.y = 0;
       b.x = 30;
@@ -786,7 +815,233 @@ void Task1code(void *pvParameters)
       c.y = 30;
       d.x = 0;
       d.y = 0;
-      float dist, angle;
+      // float dist, angle;
+      Serial.println("at start");
+      current.x = total_x_overall;
+      current.y = total_y_overall;
+      Serial.print("current x"), Serial.println(current.x);
+      Serial.print("current y"), Serial.println(current.y);
+      Serial.print("current angle"), Serial.println(current_angle);
+      dist = distance_points(current, a);
+      Serial.println(dist);
+      angle = angle_between_points(a.x, a.y);
+      Serial.println(angle);
+      turn_by_angle_gyro(angle);
+      brake_rover();
+      go_forwards(dist);
+      brake_rover();
+      current.x = total_x_overall;
+      current.y = total_y_overall;
+      Serial.print("current x"), Serial.println(current.x);
+      Serial.print("current y"), Serial.println(current.y);
+      Serial.print("current angle"), Serial.println(current_angle);
+      dist = distance_points(current, a);
+      Serial.println(dist);
+      angle = angle_between_points(a.x, a.y);
+      Serial.println(angle);
+      turn_by_angle_gyro(angle);
+      brake_rover();
+      go_forwards(dist);
+      brake_rover();
+      Serial.println("at a");
+      current.x = total_x_overall;
+      current.y = total_y_overall;
+      Serial.print("current x"), Serial.println(current.x);
+      Serial.print("current y"), Serial.println(current.y);
+      Serial.print("current angle"), Serial.println(current_angle);
+      dist = distance_points(current, b);
+      Serial.println(dist);
+      angle = angle_between_points(b.x, b.y);
+      Serial.println(angle);
+      turn_by_angle_gyro(angle);
+      brake_rover();
+      go_forwards(dist);
+      brake_rover();
+      current.x = total_x_overall;
+      current.y = total_y_overall;
+      Serial.print("current x"), Serial.println(current.x);
+      Serial.print("current y"), Serial.println(current.y);
+      Serial.print("current angle"), Serial.println(current_angle);
+      dist = distance_points(current, b);
+      Serial.println(dist);
+      angle = angle_between_points(b.x, b.y);
+      Serial.println(angle);
+      turn_by_angle_gyro(angle);
+      brake_rover();
+      go_forwards(dist);
+      brake_rover();
+      Serial.println("at b");
+      current.x = total_x_overall;
+      current.y = total_y_overall;
+      Serial.print("current x"), Serial.println(current.x);
+      Serial.print("current y"), Serial.println(current.y);
+      Serial.print("current angle"), Serial.println(current_angle);
+      dist = distance_points(current, c);
+      Serial.println(dist);
+      angle = angle_between_points(c.x, c.y);
+      Serial.println(angle);
+      turn_by_angle_gyro(angle);
+      brake_rover();
+      go_forwards(dist);
+      brake_rover();
+      current.x = total_x_overall;
+      current.y = total_y_overall;
+      Serial.print("current x"), Serial.println(current.x);
+      Serial.print("current y"), Serial.println(current.y);
+      Serial.print("current angle"), Serial.println(current_angle);
+      dist = distance_points(current, c);
+      Serial.println(dist);
+      angle = angle_between_points(c.x, c.y);
+      Serial.println(angle);
+      turn_by_angle_gyro(angle);
+      brake_rover();
+      go_forwards(dist);
+      brake_rover();
+      Serial.println("at c");
+      current.x = total_x_overall;
+      current.y = total_y_overall;
+      Serial.print("current x"), Serial.println(current.x);
+      Serial.print("current y"), Serial.println(current.y);
+      Serial.print("current angle"), Serial.println(current_angle);
+      dist = distance_points(current, d);
+      Serial.println(dist);
+      angle = angle_between_points(d.x, d.y);
+      Serial.println(angle);
+      turn_by_angle_gyro(angle);
+      brake_rover();
+      go_forwards(dist);
+      brake_rover();
+      current.x = total_x_overall;
+      current.y = total_y_overall;
+      Serial.print("current x"), Serial.println(current.x);
+      Serial.print("current y"), Serial.println(current.y);
+      Serial.print("current angle"), Serial.println(current_angle);
+      dist = distance_points(current, d);
+      Serial.println(dist);
+      angle = angle_between_points(d.x, d.y);
+      Serial.println(angle);
+      turn_by_angle_gyro(angle);
+      brake_rover();
+      go_forwards(dist);
+      brake_rover();
+      Serial.println("at d");
+      current.x = total_x_overall;
+      current.y = total_y_overall;
+      Serial.print("current x"), Serial.println(current.x);
+      Serial.print("current y"), Serial.println(current.y);
+      Serial.print("current angle"), Serial.println(current_angle);
+      break;
+      // turn_angle_gyro(90);
+      // brake_rover();
+    case 6:
+      // Point a, b, c, d, current;
+      for(int i = 0; i<2; i++){
+        a.x = 0;
+        a.y = 0;
+        b.x = 10;
+        b.y = 10;
+        c.x = 0;
+        c.y = 0;
+        Serial.println("at start");
+        current.x = total_x_overall;
+        current.y = total_y_overall;
+        Serial.print("current x"), Serial.println(current.x);
+        Serial.print("current y"), Serial.println(current.y);
+        Serial.print("current angle"), Serial.println(current_angle);
+        dist = distance_points(current, a);
+        Serial.println(dist);
+        angle = angle_between_points(a.x, a.y);
+        Serial.println(angle);
+        turn_by_angle_gyro(angle);
+        brake_rover();
+        go_forwards(dist);
+        brake_rover();
+        current.x = total_x_overall;
+        current.y = total_y_overall;
+        Serial.print("current x"), Serial.println(current.x);
+        Serial.print("current y"), Serial.println(current.y);
+        Serial.print("current angle"), Serial.println(current_angle);
+        dist = distance_points(current, a);
+        Serial.println(dist);
+        angle = angle_between_points(a.x, a.y);
+        Serial.println(angle);
+        turn_by_angle_gyro(angle);
+        brake_rover();
+        go_forwards(dist);
+        brake_rover();
+        Serial.println("at a");
+        current.x = total_x_overall;
+        current.y = total_y_overall;
+        Serial.print("current x"), Serial.println(current.x);
+        Serial.print("current y"), Serial.println(current.y);
+        Serial.print("current angle"), Serial.println(current_angle);
+        dist = distance_points(current, b);
+        Serial.println(dist);
+        angle = angle_between_points(b.x, b.y);
+        Serial.println(angle);
+        turn_by_angle_gyro(angle);
+        brake_rover();
+        go_forwards(dist);
+        brake_rover();
+        current.x = total_x_overall;
+        current.y = total_y_overall;
+        Serial.print("current x"), Serial.println(current.x);
+        Serial.print("current y"), Serial.println(current.y);
+        Serial.print("current angle"), Serial.println(current_angle);
+        dist = distance_points(current, b);
+        Serial.println(dist);
+        angle = angle_between_points(b.x, b.y);
+        Serial.println(angle);
+        turn_by_angle_gyro(angle);
+        brake_rover();
+        go_forwards(dist);
+        brake_rover();
+        Serial.println("at b");
+        current.x = total_x_overall;
+        current.y = total_y_overall;
+        Serial.print("current x"), Serial.println(current.x);
+        Serial.print("current y"), Serial.println(current.y);
+        Serial.print("current angle"), Serial.println(current_angle);
+        dist = distance_points(current, c);
+        Serial.println(dist);
+        angle = angle_between_points(c.x, c.y);
+        Serial.println(angle);
+        turn_by_angle_gyro(angle);
+        brake_rover();
+        go_forwards(dist);
+        brake_rover();
+        current.x = total_x_overall;
+        current.y = total_y_overall;
+        Serial.print("current x"), Serial.println(current.x);
+        Serial.print("current y"), Serial.println(current.y);
+        Serial.print("current angle"), Serial.println(current_angle);
+        dist = distance_points(current, c);
+        Serial.println(dist);
+        angle = angle_between_points(c.x, c.y);
+        Serial.println(angle);
+        turn_by_angle_gyro(angle);
+        brake_rover();
+        go_forwards(dist);
+        brake_rover();
+        Serial.println("at c");
+        current.x = total_x_overall;
+        current.y = total_y_overall;
+        Serial.print("current x"), Serial.println(current.x);
+        Serial.print("current y"), Serial.println(current.y);
+        Serial.print("current angle"), Serial.println(current_angle);
+      }
+      break;
+
+    case 5:
+      // Point a, b, c, d, current;
+      a.x = 100;
+      a.y = 0;
+      b.x = 100;
+      b.y = 100;
+      c.x = 0;
+      c.y = 100;
+      d.x = 0;
+      d.y = 0;
       Serial.println("at start");
       current.x = total_x_overall;
       current.y = total_y_overall;
@@ -853,6 +1108,11 @@ void Task1code(void *pvParameters)
       // turn_angle_gyro(90);
       // brake_rover();
     }
+  //   case 6:
+
+
+  //   break;
+
   }
 }
 //////////////////////////////////// core 2 for sensor readings
@@ -863,7 +1123,7 @@ void Task2code(void *pvParameters)
   for (;;)
   {
     /////////IR sensor //////////
-    int statusSensor = digitalRead(IRSensor);
+    int statusSensor = 1; // digitalRead(IRSensor);
     if (statusSensor == 0)
     {
       Serial.println("Sensor = object");
@@ -907,8 +1167,10 @@ void Task2code(void *pvParameters)
     // Serial.println(md.max_pix);
     // delay(100);
     prev_angle = current_angle;
+
     current_angle = angle_facing(total_x); // still need to find the right conversion from md values to cm or mm
-    current_angle = -temp_gyro_angle;
+    // Serial.print("Current angle: "), Serial.println(current_angle);
+    // current_angle = -temp_gyro_angle;
     // normal values are relative to the rover, overall values are relative to the overall y axis
     distance_x = /*md.dx; //*/ convTwosComp(md.dx);
     distance_y = /*md.dy; //*/ convTwosComp(md.dy);
@@ -938,11 +1200,14 @@ void Task2code(void *pvParameters)
     }
     avgrateofgyro = temp_gyro_angle - temp_temp_gyro_angle;
 
-    // if(temp_gyro_angle>180){
-    //   temp_gyro_angle-=360;
-    // }else if(temp_gyro_angle<-180){
-    //   temp_gyro_angle+=360;
-    // }
+    if (temp_gyro_angle > 180)
+    {
+      temp_gyro_angle -= 360;
+    }
+    else if (temp_gyro_angle < -180)
+    {
+      temp_gyro_angle += 360;
+    }
     // Serial.print("gyroangle: "), Serial.println(temp_gyro_angle, 5);
     previoustimedelay = currenttimedelay;
     delay(100);
@@ -952,6 +1217,7 @@ void Task2code(void *pvParameters)
     prev_dy = md.dy / correction;
   }
 }
+
 void setup()
 {
   Serial.begin(115200);
