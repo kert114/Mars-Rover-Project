@@ -29,11 +29,11 @@ export default class Map extends Component {
 		const data = await Control();
 		console.log("data ", data);
 		console.log(data[0].xVal);
-		if(data[0].Object === "Fuchsia" ){
-				dps.push({x: parseFloat(data[0].xVal) ,y: parseFloat(data[0].yVal), markerColor: "purple" });
+		if(data[0].Object === "fuchsia" ){
+				dps.push({x: parseFloat(data[0].xVal) ,y: parseFloat(data[0].yVal), markerColor: "#ff00ff" });
 		}
-		else if(data[0].Object === "light"){
-			dps.push({x: parseFloat(data[0].xVal) ,y: parseFloat(data[0].yVal), markerColor: "#3CB371" });
+		else if(data[0].Object === "teal"){
+			dps.push({x: parseFloat(data[0].xVal) ,y: parseFloat(data[0].yVal), markerColor: "#008080" });
 
 		}
 		else if(data[0].Object === "pink"){
