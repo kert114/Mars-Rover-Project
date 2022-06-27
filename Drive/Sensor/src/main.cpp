@@ -379,12 +379,12 @@ void turn_R(int x = 10, int m1 = 25, int m2 = 25)
   // robot.brake(1);
   // robot.brake(2);
 }
-void brake_rover()
-{
-  robot.brake(1);
-  robot.brake(2);
-  // delay(1000);
-}
+// void brake_rover()
+// {
+//   robot.brake(1);
+//   robot.brake(2);
+//   // delay(1000);
+// }
 double distance_points(Point p1, Point p2)
 {
   return std::sqrt(std::pow((p1.x - p2.x), 2) + std::pow((p1.y - p2.y), 2));
@@ -938,11 +938,11 @@ void Task2code(void *pvParameters)
     }
     avgrateofgyro = temp_gyro_angle - temp_temp_gyro_angle;
 
-    // if(temp_gyro_angle>180){
-    //   temp_gyro_angle-=360;
-    // }else if(temp_gyro_angle<-180){
-    //   temp_gyro_angle+=360;
-    // }
+    if(temp_gyro_angle>180){
+      temp_gyro_angle-=360;
+    }else if(temp_gyro_angle<-180){
+      temp_gyro_angle+=360;
+    }
     // Serial.print("gyroangle: "), Serial.println(temp_gyro_angle, 5);
     previoustimedelay = currenttimedelay;
     delay(100);
