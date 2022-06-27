@@ -188,7 +188,6 @@ function Drive() {
         <div className='command-container'>
             <h1>Drive Commands</h1>
             <h4 className="automated header">Automated Driving</h4>
-            <h4 className="manual header">Manual Driving</h4>
             <h4 className="arrow header">Arrow Key Driving</h4>
             <div className='command-btns'>
                 <div className='automationMode'>
@@ -213,21 +212,7 @@ function Drive() {
                         </Button>
                     </Link>
                 </div>
-                <label for='angle' name='angle' className='angleLabel'><b> Angle (°): </b></label>
-                <input type='number' id='angle' name='angle' className='angleBox'/>
-                <label for='distance' name='distance' className='distanceLabel'> <b>Distance (cm): </b></label>
-                <input type='number' id='distance' name='distance' className='distanceBox'/>
-                <div className='sendAngle'>
-                    <Button name="button" className='btns' buttonStyle='btn-outline' buttonSize='btn--medium' onClick={sendAngle}>
-                        Send
-                    </Button>
-                </div>
-                <div className='sendDistance'>
-                    <Button name="button" className='btns' buttonStyle='btn-outline' buttonSize='btn--medium' onClick={sendDistance}>
-                        Send
-                    </Button>
-                </div>
-                
+               
                 <div className='leftarrow'>
                     <Button name="button" className='btns' buttonStyle='btn-outline' buttonSize='btn--medium' onClick={GetkeyPressLeft}>
                     ←
