@@ -467,29 +467,29 @@ void turn_angle_gyro(float target_angle)
   int m1 = 30;
   int m2 = 30;
   int counter = 0;
-  float current_increment = 0;
-  float running_total = 0;
-  int number_of_cycles = 0;
-  float current_average = 0;
-  float prev_current_angle = current_angle;
+  // float current_increment = 0;
+  // float running_total = 0;
+  // int number_of_cycles = 0;
+  // float current_average = 0;
+  // float prev_current_angle = current_angle;
   temp_delta_angle = current_angle - target_angle;
-  while ((abs(temp_delta_angle < 359) || abs(temp_delta_angle) > 1) && counter < 20)
+  while ((abs(temp_delta_angle < 359) || abs(temp_delta_angle) > 1) && counter < 10)
   {
-    // Serial.print("current angle: "), Serial.println(current_angle);
-    number_of_cycles += 1;
-    current_increment = prev_delta_angle - temp_delta_angle;
-    running_total += current_increment;
-    current_average = running_total / number_of_cycles;
-    if (current_increment > (abs(current_average) + 10) * 2)
-    {
-      current_angle = prev_current_angle + current_average;
-    }
+    Serial.print("delta angle: "), Serial.println(temp_delta_angle);
+    // number_of_cycles += 1;
+    // current_increment = prev_delta_angle - temp_delta_angle;
+    // running_total += current_increment;
+    // current_average = running_total / number_of_cycles;
+    // if (current_increment > (abs(current_average) + 10) * 2)
+    // {
+    //   current_angle = prev_current_angle + current_average;
+    // }
     prev_delta_angle = temp_delta_angle;
-    prev_current_angle = current_angle;
+    // prev_current_angle = current_angle;
     temp_delta_angle = current_angle - target_angle;
     // temp_delta_angle = current_angle - target_angle;
     // Serial.print(temp_delta_angle);
-    if ((temp_delta_angle > 0 && temp_delta_angle < 180) || temp_delta_angle < -180)
+    if ((temp_delta_angle > 1.5 && temp_delta_angle < 180) || temp_delta_angle < -180)
     {
       turn_R(delay, m1, m2);
       if (abs(temp_delta_angle) < 10)
@@ -498,7 +498,7 @@ void turn_angle_gyro(float target_angle)
         m2 = 20;
       }
     }
-    else if ((temp_delta_angle < 0 && temp_delta_angle > -180) || temp_delta_angle > 180)
+    else if ((temp_delta_angle < -1.5 && temp_delta_angle > -180) || temp_delta_angle > 180)
     {
       turn_L(delay, m1, m2);
       if (abs(temp_delta_angle) < 10)
@@ -507,10 +507,11 @@ void turn_angle_gyro(float target_angle)
         m2 = 20;
       }
     }
-    else if ((abs(temp_delta_angle > 358.5) || abs(temp_delta_angle) < 1.5))
+    if ((abs(temp_delta_angle) > 358.5) || (abs(temp_delta_angle) < 1.5))
     {
       brake_rover();
       counter += 1;
+      Serial.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
     }
     temp_delta_angle = current_angle - target_angle;
   }
