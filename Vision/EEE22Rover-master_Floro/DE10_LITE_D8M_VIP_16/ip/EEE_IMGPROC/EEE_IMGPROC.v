@@ -70,13 +70,14 @@ parameter MSG_INTERVAL = 6;
 parameter BB_COL_DEFAULT = 24'h00ff00;
 
 
-wire [7:0]   red, green, blue;
-wire signed [7:0] grey;
+wire [7:0]   red, green, blue, grey;
+//wire signed [7:0] grey;
 wire [7:0]   red_out, green_out, blue_out;
 
 wire         sop, eop, in_valid, out_ready;
 ////////////////////////////////////////////////////////////////////////
 
+// Conversion for HSV from RGB
 // Conversion for HSV from RGB
 wire [8:0] delta, max, min;
 wire [8:0] hue, saturation, value;
@@ -92,17 +93,40 @@ assign value = max[7:0];//range 0 to 255
 
 // Detect coloured areas
 wire red_detect;
-assign red_detect = ((hue>h_min && hue<h_max) && (saturation>sat) && (value>val));
+assign red_detect = ((hue>10 && hue<30) && (saturation>60 && saturation<100) && (value>50)) || ((hue>7 && hue<15) && (saturation>65) && (value>20));
 wire teal_detect;
-assign teal_detect = (hue>100 && hue<153 ) && (saturation>30) && (value>90);
+assign teal_detect = ((hue>115 && hue<125) && (saturation>25) && (value>15));
 wire fuchsia_detect;
-assign fuchsia_detect = ((hue>357 & hue<20) && (saturation<85) && (value>51));
+assign fuchsia_detect =  (hue>0 && hue<0 ) && (saturation>100) && (value>100);//((hue<5) && (saturation<70) && (value>40 && value<90));
 wire blue_detect;
-assign blue_detect = ((hue>140 && hue<250) && (saturation<70) && (value>20 && value<184));
+assign blue_detect = ((hue>0 && hue<0 ) && (saturation>100) && (value>100));
 wire green_detect;
-assign green_detect = ((hue>90 && hue<120) && (saturation>40 && saturation<77) && (value>33));
+assign green_detect = (hue>h_min && hue<h_max) && (saturation>sat) && (value>val);
 wire yellow_detect;
-assign yellow_detect = ((hue>50 && hue<77) && (saturation<90) && (value>179));
+assign yellow_detect = ((hue>53 && hue<69) && (saturation>50) && (value>55)) || ((hue>50 && hue<-1) && (saturation>57) && (value>90));//((hue>40 && hue<60) && (saturation>40) && (value>60)) || ((hue>55 && hue<65) && (saturation>20) && (value>60));
+wire black_detect;
+assign black_detect = (hue>0 && hue<0 ) && (saturation>100) && (value>100);
+wire white_detect;
+assign white_detect = (hue>0 && hue<0 ) && (saturation>100) && (value>100);
+
+
+//code for calbration : // (hue>h_min && hue<h_max) && (saturation>sat) && (value>val)
+/*wire red_detect;
+assign red_detect = (hue>h_min && hue<h_max) && (saturation>sat) && (value>val);//((hue>10 && hue<30) && (saturation>60 && saturation<100) && (value>50)) || ((hue>7 && hue<15) && (saturation>65) && (value>20));
+wire teal_detect;
+assign teal_detect = ((hue>115 && hue<125) && (saturation>25) && (value>15));
+wire fuchsia_detect;
+assign fuchsia_detect =  (hue>0 && hue<0 ) && (saturation>100) && (value>100);//((hue<5) && (saturation<70) && (value>40 && value<90));
+wire blue_detect;
+assign blue_detect = ((hue>0 && hue<0 ) && (saturation>100) && (value>100));
+wire green_detect;
+assign green_detect = (hue>0 && hue<0 ) && (saturation>100) && (value>100);
+wire yellow_detect;
+assign yellow_detect = ((hue>40 && hue<60) && (saturation>40) && (value>60)) || ((hue>55 && hue<65) && (saturation>20) && (value>60));
+wire black_detect;
+assign black_detect = (hue>0 && hue<0 ) && (saturation>100) && (value>100);
+wire white_detect;
+assign white_detect = (hue>0 && hue<0 ) && (saturation>100) && (value>100);*/
 
 // Find boundary of cursor box
 
@@ -113,6 +137,8 @@ reg t1, t2, t3, t4, t5, t6, t7, t8, t9, t10;
 reg b1, b2, b3, b4, b5, b6, b7, b8, b9, b10;
 reg g1, g2, g3, g4, g5, g6, g7, g8, g9, g10;
 reg y1, y2, y3, y4, y5, y6, y7, y8, y9, y10;
+reg bl1, bl2, bl3, bl4, bl5, bl6, bl7, bl8, bl9, bl10;
+reg w1, w2, w3, w4, w5, w6, w7, w8, w9, w10;
 
 
 //set initial values
@@ -123,6 +149,8 @@ initial begin
 	b1 <= 0;	b2 <= 0;	b3 <= 0;	b4 <= 0;	b5 <= 0;	b6 <= 0;	b7 <= 0;	b8 <= 0;
 	g1 <= 0;	g2 <= 0;	g3 <= 0;	g4 <= 0;	g5 <= 0;	g6 <= 0;	g7 <= 0;	g8 <= 0;
 	y1 <= 0;	y2 <= 0;	y3 <= 0;	y4 <= 0;	y5 <= 0;	y6 <= 0;	y7 <= 0;	y8 <= 0;
+	bl1 <= 0;	bl2 <= 0;	bl3 <= 0;	bl4 <= 0;	bl5 <= 0;	bl6 <= 0;	bl7 <= 0;	bl8 <= 0;
+	w1 <= 0;	w2 <= 0;	w3 <= 0;	w4 <= 0;	w5 <= 0;	w6 <= 0;	w7 <= 0;	w8 <= 0;
 end
 
 
@@ -133,7 +161,9 @@ always @(posedge clk && in_valid) begin
 	t8 <= t7;	t7 <= t6;	t6 <= t5;	t5 <= t4;	t4 <= t3;	t3 <= t2;	t2 <= t1;	t1 <= teal_detect;
 	b8 <= b7;	b7 <= b6;	b6 <= b5;	b5 <= b4;	b4 <= b3;	b3 <= b2;	b2 <= b1;	b1 <= blue_detect;
 	g8 <= g7;	g7 <= g6;	g6 <= g5;	g5 <= g4;	g4 <= g3;	g3 <= g2;	g2 <= g1;	g1 <= green_detect;
-	y8 <= y7;	y7 <= y6;	y6 <= y5;	y5 <= y4;	y4 <= y3;	y3 <= y2;	y2 <= y1;	y1 <= yellow_detect;	
+	y8 <= y7;	y7 <= y6;	y6 <= y5;	y5 <= y4;	y4 <= y3;	y3 <= y2;	y2 <= y1;	y1 <= yellow_detect;
+	bl8 <= bl7; bl7 <= bl6; bl6 <= bl5; bl5 <= bl4; bl4 <= bl3; bl3 <= bl2; bl2 <= bl1; bl1 <= black_detect;
+	w8 <= w7;	w7 <= w6;	w6 <= w5;	w5 <= w4;	w4 <= w3;	w3 <= w2;	w2 <= w1;	w1 <= white_detect;
 end
 
 
@@ -162,7 +192,7 @@ function median;
 
 endfunction
 
-wire red_median, fuchsia_median, teal_median, blue_median, green_median, yellow_median;
+wire red_median, fuchsia_median, teal_median, blue_median, green_median, yellow_median, black_median, white_median;
 
 assign red_median = median(red_detect, r1, r2, r3, r4, r5, r6, r7, r8);
 assign fuchsia_median = median(fuchsia_detect, f1, f2, f3, f4, f5, f6, f7, f8);
@@ -170,12 +200,14 @@ assign teal_median = median(teal_detect, t1, t2, t3, t4, t5, t6, t7, t8);
 assign blue_median = median(blue_detect, b1, b2, b3, b4, b5, b6, b7, b8);
 assign green_median = median(green_detect, g1, g2, g3, g4, g5, g6, g7, g8);
 assign yellow_median = median(yellow_detect, y1, y2, y3, y4, y5, y6, y7, y8);
+assign black_median = median(black_detect, bl1, bl2, bl3, bl4, bl5, bl6, bl7, bl8);
+assign white_median = median(white_detect, w1, w2, w3, w4, w5, w6, w7, w8);
 
 //Edge detection
 //store previous grey values
 //use signed values as these need to be mutiplied by -1
-reg signed [7:0] grey1, grey2, grey3, edge_val;
-
+/*reg signed [7:0] grey1, grey2, grey3;
+reg signed [9:0] edge_val;
 //set initial values
 initial begin
 	grey1 <= 0; grey2 <= 0; grey3 <= 0;
@@ -186,28 +218,30 @@ always @(posedge clk && in_valid) begin
 	grey3 <= grey2; grey2 <= grey1; grey1 <= grey;
 end
 
-always @(negedge clk && in_valid) begin
-	edge_val<=((-1)*grey3)+((-2)*grey2)+(2*grey1)+(1*grey);
-	if (edge_val[7]==1) begin
+//inspired by sobel operator, instead of 3x3 kernel use 4x1 instead
+always @(posedge clk && in_valid) begin
+	edge_val<=((-1)*grey3)+((-1)*grey2)+(grey1)+(grey);
+	if (edge_val[9]==1) begin
 		edge_val <= -edge_val;
 	end
 end
 
-//inspired by sobel operator, instead of 3x3 kernel use 4x1 instead
-wire signed edge_detect;
-assign edge_detect = (edge_val >= 700 && edge_val <= 1) ? 1'b1 : 1'b0;
+
+//wire signed edge_detect;
+//assign edge_detect = (edge_val > edge_max || edge_val < edge_min) ? 1'b1 : 1'b0;*/
 
 
 
 // Highlight detected areas
 wire [23:0] colour_high;
 assign grey = green[7:1] + red[7:2] + blue[7:2]; //Grey = green/2 + red/4 + blue/4
-assign colour_high  =  (red_detect  && red_median && r1 && r2 && r3 && in_valid) ? {8'hff, 8'h00, 8'h00} :  (fuchsia_detect && fuchsia_median && f1 && f2 && f3 && in_valid) ? {8'hff, 8'h00, 8'hff} : 
-(teal_detect  && teal_median && t1 && t2 && t3 && in_valid) ? {8'h00, 8'h80, 8'h80} : (blue_detect && blue_median && b1 && b2 && b3 && in_valid) ? {8'h00, 8'h00, 8'hff} : 
-(green_detect && green_median && g1 && g2 && g3 && in_valid) ? {8'h00, 8'hff, 8'h00} : (yellow_detect && yellow_median && y1 && y2 && y3 && in_valid) ? {8'hff, 8'hff, 8'h00} : {grey, grey, grey};
+assign colour_high  =  (red_detect  && red_median && r1 && r2 && r3) ? {8'hff, 8'h00, 8'h00} :  (fuchsia_detect && fuchsia_median && f1 && f2 && f3) ? {8'hff, 8'h00, 8'hff} : 
+(teal_detect  && teal_median && t1 && t2 && t3) ? {8'h00, 8'h80, 8'h80} : (blue_detect && blue_median && b1 && b2 && b3) ? {8'h00, 8'h00, 8'hff} : 
+(green_detect && green_median && g1 && g2 && g3) ? {8'h00, 8'hff, 8'h00} : (yellow_detect && yellow_median && y1 && y2 && y3) ? {8'hff, 8'hff, 8'h00} : 
+(black_detect && bl1 && bl2 && bl3) ? {8'h8f, 8'h00, 8'hff} : (white_detect && w1 && w2 && w3) ? {8'h7d, 8'hff, 8'hff} : {grey, grey, grey};
 
 
-// Show vertical bounding lines, for edge use violet bounding lines
+// Show vertical bounding lines
 wire [23:0] new_image;
 wire bb_active_red, bb_active_teal, bb_active_orange, bb_active_fuchsia, bb_active_blue, bb_active_green, bb_active_yellow, bb_active_edge;
 assign bb_active_red = (x == r_left) | (x == r_right);
@@ -216,9 +250,9 @@ assign bb_active_teal = (x == t_left) | (x == t_right);
 assign bb_active_blue = (x == b_left) | (x == b_right);
 assign bb_active_green = (x == g_left) | (x == g_right);
 assign bb_active_yellow = (x == y_left) | (x == y_right);
-assign bb_active_edge = (x == e_left) | (x == e_right);
+assign bb_active_edge = (x == e_left) | (x == e_right) | (w1 && w2 && w3 && w4 && bl5 && bl6 && bl7 && bl8 ) | (bl1 && bl2 && bl3 && bl4 && w5 && w6 && w7 && w8);
 assign new_image = bb_active_red ?{8'hff, 8'h00, 8'h00} : bb_active_teal ? {8'h00, 8'h80, 8'h80} : bb_active_fuchsia ? {8'hff, 8'h00, 8'hff} : 
-bb_active_blue ? {8'h00, 8'h00, 8'hff} : bb_active_green ? {8'h00, 8'hff, 8'h00} : bb_active_yellow ? {8'hff, 8'hff, 8'h00} : edge_detect ? {8'h8f, 8'h00, 8'hff} : 
+bb_active_blue ? {8'h00, 8'h00, 8'hff} : bb_active_green ? {8'h00, 8'hff, 8'h00} : bb_active_yellow ? {8'hff, 8'hff, 8'h00} : bb_active_edge ? {8'h8f, 8'h00, 8'hff} :
 colour_high;
 
 
@@ -288,9 +322,10 @@ always@(posedge clk ) begin
 	end
 
 	//Find first and last edge pixels
-	if (edge_detect && in_valid) begin	//Update bounds when the pixel is edge
+	if (((w1 && w2 && w3 && w4 && bl5 && bl6 && bl7 && bl8 ) || (bl1 && bl2 && bl3 && bl4 && w5 && w6 && w7 && w8)) && in_valid && (y>240)) begin	//Update bounds when the pixel is black
 		if (x < e_x_min) e_x_min <= x;
 		if (x > e_x_max) e_x_max <= x;
+
 	end
 
 	if (sop & in_valid) begin	//Reset bounds on start of packet
@@ -324,7 +359,6 @@ reg [10:0] y_left, y_right, y_mid, y_width;
 reg [10:0] e_left, e_right, e_mid, e_width;
 
 
-
 //distance calclulation, for now treat as linear relation to bound width
 reg [10:0] r_dist, f_dist, y_dist, b_dist, t_dist, g_dist, e_dist;
 always @(posedge clk && in_valid) begin
@@ -334,19 +368,17 @@ always @(posedge clk && in_valid) begin
 	b_dist <= 2650/b_width;
 	t_dist <= 2650/t_width;
 	g_dist <= 2650/g_width;
-	e_dist <= 2650/e_width;
 end
 
 //caluclate angle in relation to center pixel, note that the angle value is mutiplied by a factor of 640
 reg signed [10:0] r_angle, f_angle, y_angle, b_angle, t_angle, g_angle, e_angle;
 always @(posedge clk && in_valid) begin
-	r_angle <= (r_mid*70)-22400;
-	f_angle <= (f_mid*70)-22400;
-	y_angle <= (y_mid*70)-22400;
-	b_angle <= (b_mid*70)-22400;
-	t_angle <= (t_mid*70)-22400;
-	g_angle <= (g_mid*70)-22400;
-	e_angle <= (e_mid*70)-22400;
+	r_angle = ((r_mid*70)/640)-35;
+	f_angle = ((f_mid*70)/640)-35;
+	y_angle = ((y_mid*70)/640)-35;
+	b_angle = ((b_mid*70)/640)-35;
+	t_angle = ((t_mid*70)/640)-35;
+	g_angle = ((g_mid*70)/640)-35;
 end
 
 reg [7:0] frame_count;
@@ -389,6 +421,7 @@ always@(posedge clk) begin
 		e_right <= e_x_max;
 		e_width <= (e_x_max-e_x_min);
 		e_mid <= (e_x_max-(e_width>>1));
+
 		
 		//Start message writer FSM once every MSG_INTERVAL frames, if there is room in the FIFO
 		frame_count <= frame_count - 1;
@@ -426,7 +459,6 @@ wire msg_buf_empty;
 `define BLUE_BOX_MSG_ID "BBB"
 `define GREEN_BOX_MSG_ID "GBB"
 `define YELLOW_BOX_MSG_ID "YBB"
-`define EDGE_BOX_MSG_ID "EBB"
 
 always@(*) begin	//Write words to FIFO as state machine advances, pass only distance and angle
 	case(msg_state)
@@ -466,7 +498,7 @@ always@(*) begin	//Write words to FIFO as state machine advances, pass only dist
 		end
 		//edge
 		4'b0111: begin
-			msg_buf_in = {4'h0, 4'b0, edge_val, 4'h0, 1'b0, e_angle};
+			msg_buf_in = {4'h1, 12'b0, 4'h1, 12'b0};
 			msg_buf_wr = 1'b1;
 		end
 	endcase
@@ -545,9 +577,11 @@ begin
 		reg_status <= 8'b0;
 		bb_col <= BB_COL_DEFAULT;
 		h_min <= 0;
-		h_max <= 1;
-		sat <= 100;
-		val <= 100;
+		h_max <= 360;
+		sat <= 1;
+		val <= 1;
+		
+		
 	end
 	else begin
 		if(s_chipselect & s_write) begin
