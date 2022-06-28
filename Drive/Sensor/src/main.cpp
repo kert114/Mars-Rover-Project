@@ -14,6 +14,7 @@
 #include <HTTPClient.h>
 #include <WiFiUdp.h>
 #include <stdio.h>
+#include <stdlib.h> 
 #include <map>
 #include <cmath>
 #include <vector>
@@ -23,6 +24,10 @@ struct Point
   double x;
   double y;
 };
+//////////////UART PINS///////////
+#define RXD2 17
+#define TXD2 16
+
 ///////////////wifi pins//////////
 #define SCK 18
 #define MISO 19
@@ -36,8 +41,8 @@ struct Point
 #define IN1 26 // 22 // 18
 #define IN2 25 // 14 // 5
 // motor 2 settings
-#define IN3 17
-#define IN4 16
+#define IN3 14 // 17
+#define IN4 15 // 16
 #define ENB 27 // 4 // this pin must be PWM enabled pin if Arduino board is used
 #define CHB 1
 const int CCW = 2; // do not change
@@ -159,6 +164,7 @@ void initWiFi()
 }
 ///
 // float pi = 3.14159265359;
+Point a, b, c, d, current;
 float angle = 0;
 float current_angle = 0;
 float initial_angle = 0;
@@ -172,7 +178,10 @@ float total_x_overall = 0;
 float total_y_overall = 0;
 float initial_total_y = 0;
 bool dest = false;
-bool new_dest = true;
+float prev_vision_distance = 0;
+float vision_distance = 0;
+float vision_angle =0;
+bool vision_object = false;
 bool facing_target = false;
 bool turning = false;
 float total_x1 = 0;
@@ -185,9 +194,10 @@ int m1 = 36;
 int m2 = 34;
 float prev_dx;
 float prev_dy;
-float correction = 42;
-float a = 0;
-float b = 0;
+// float correction = 42;
+float correction = 40;
+// float a = 0;
+// float b = 0;
 float gyro_rotation = 0;
 float angle_gyro = 0;
 float angle_error = 0;
@@ -386,7 +396,11 @@ void turn_R(int x = 10, int m1 = 25, int m2 = 25)
 // }
 double distance_points(Point p1, Point p2)
 {
-  return std::sqrt(std::pow((p1.x - p2.x), 2) + std::pow((p1.y - p2.y), 2));
+  float temp_dist = std::sqrt(std::pow((p1.x - p2.x), 2) + std::pow((p1.y - p2.y), 2));
+  if(temp_dist<0.5){
+    temp_dist = 0;
+  }
+  return temp_dist;
 }
 float angle_between_points(float bx, float by)
 {
@@ -417,6 +431,44 @@ float angle_facing(float total_x)
   // Serial.println(delta_angle, 4);
   return delta_angle;
 }
+
+void update_vision(){
+  //reading from the UART
+  if (Serial1.available() >= 36){
+    char identifier;
+    String temp_vision_distance;
+    String temp_vision_angle;
+    String tostore;
+    for (int i = 0; i < 8; i++)
+    {
+      // Serial.print(buf[i], HEX);
+      // String tostore = String((buf[((4 * i) + 3)] << 24) + (buf[((4 * i) + 2)] << 16) + (buf[((4 * i) + 1)] << 8) + (buf[(4 * i)]), HEX);
+      tostore = "a019a004";
+      identifier = tostore[0];
+      temp_vision_distance = tostore.substring(1, 4);
+      temp_vision_angle = tostore.substring(5, 8);
+      Serial.println("string");
+      Serial.println(tostore);
+      Serial.println();
+      Serial.println("identifier");
+      Serial.println(identifier);
+      Serial.println("distance");
+      Serial.println(temp_vision_distance);
+      Serial.println("angle");
+      Serial.println(temp_vision_angle);
+
+      Serial.println();
+
+      // Serial.print(" ");
+    }
+    float vision_distance = strtol(temp_vision_distance.c_str(), NULL, 16);
+    float vision_angle = strtol(temp_vision_angle.c_str(), NULL, 16);
+    if(abs(vision_angle)<20 && vision_distance<50){
+      vision_object = true;
+    }
+  }
+} // need to write function
+
 void turn_to(float target_angle_temp)
 {
   turning = true;
@@ -467,31 +519,41 @@ void turn_angle_gyro(float target_angle)
   int m1 = 30;
   int m2 = 30;
   int counter = 0;
-  // float current_increment = 0;
-  // float running_total = 0;
-  // int number_of_cycles = 0;
-  // float current_average = 0;
-  // float prev_current_angle = current_angle;
+  float current_increment = 0;
+  float running_total = 0;
+  int number_of_cycles = 0;
+  float current_average = 0;
+  float prev_current_angle = current_angle;
+  bool turn_right = false;
+  bool prev_turn_right = false;
   temp_delta_angle = current_angle - target_angle;
   while ((abs(temp_delta_angle < 359.5) || abs(temp_delta_angle) > 0.5) && counter < 100)
   {
     // Serial.print("delta angle: "), Serial.println(temp_delta_angle);
-    // number_of_cycles += 1;
-    // current_increment = prev_delta_angle - temp_delta_angle;
-    // running_total += current_increment;
-    // current_average = running_total / number_of_cycles;
-    // if (current_increment > (abs(current_average) + 10) * 2)
-    // {
-    //   current_angle = prev_current_angle + current_average;
-    // }
+    if(turn_right==prev_turn_right){
+      number_of_cycles = 0;
+      current_increment = 0;
+      running_total = 0;
+      current_average = 0;
+    }
+    number_of_cycles += 1;
+    current_increment = prev_delta_angle - temp_delta_angle;
+    running_total += current_increment;
+    current_average = running_total / number_of_cycles;
+    if (current_increment > (abs(current_average) + 10) * 2)
+    {
+      current_angle = prev_current_angle + current_average;
+    }
     prev_delta_angle = temp_delta_angle;
     // prev_current_angle = current_angle;
     temp_delta_angle = current_angle - target_angle;
-    // temp_delta_angle = current_angle - target_angle;
+    temp_delta_angle = current_angle - target_angle;
     // Serial.print(temp_delta_angle);
-    if ((temp_delta_angle > 1 && temp_delta_angle <= 180) || temp_delta_angle < -180)
+    if ((temp_delta_angle > 1 && temp_delta_angle <= 180) || (temp_delta_angle < -180 &&temp_delta_angle>-359))
     {
       turn_R(delay_time, m1, m2);
+      prev_turn_right = turn_right;
+      turn_right = true;
       if (abs(temp_delta_angle) < 10)
       {
         m1 = 20;
@@ -502,9 +564,11 @@ void turn_angle_gyro(float target_angle)
         m2 = 15;
       }
     }
-    else if ((temp_delta_angle < -1 && temp_delta_angle >= -180) || temp_delta_angle > 180)
+    else if ((temp_delta_angle < -1 && temp_delta_angle >= -180) || (temp_delta_angle > 180 && temp_delta_angle<359))
     {
       turn_L(delay_time, m1, m2);
+      prev_turn_right = turn_right;
+      turn_right = false;
       if (abs(temp_delta_angle) < 10)
       {
         m1 = 20;
@@ -519,7 +583,7 @@ void turn_angle_gyro(float target_angle)
     {
       brake_rover();
       counter += 1;
-      // Serial.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+      Serial.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
     }
     temp_delta_angle = current_angle - target_angle;
   }
@@ -608,14 +672,11 @@ void turn_by_angle_gyro(float extra_angle)
 
 void go_forwards(float y)
 {
-  if (new_dest == true)
-  {
-    new_dest = false;
-    dest = false;
-    target_angle = current_angle;
-    initial_total_y = total_y;
-    dist = y + initial_total_y;
-  }
+  dest = false;
+  target_angle = current_angle;
+  initial_total_y = total_y;
+  dist = y + initial_total_y;
+
   float delta_y = dist - total_y; // difference in y left to be moved
   // aim of this section is to read current position, then find target position's relative distance and angle, then move to that location
   // angle to move is arctan(delta_x/delta_y) and distance is sqrt(x^2 + y^2)
@@ -745,14 +806,87 @@ void go_forwards(float y)
       counter += 1;
       brake_rover();
     }
+    update_vision();
+    if(vision_object){
+      delta_y = 0;
+      counter = 100;
+      brake_rover();
+      delay(100);
+      dest = true;
+    }
   }
   angle_error = 0;
   prev_angle_error = 0;
   brake_rover();
   delay(1000);
-  dest = true;
-  new_dest = true;
+  dest = !dest;
 }
+
+void travel_to(Point a, Point current){
+  dist = false;
+  Serial.println("at start");
+  current.x = total_x_overall;
+  current.y = total_y_overall;
+  Serial.print("current x"), Serial.println(current.x);
+  Serial.print("current y"), Serial.println(current.y);
+  Serial.print("current angle"), Serial.println(current_angle);
+  dist = distance_points(current, a);
+  Serial.println(dist);
+  angle = angle_between_points(a.x, a.y);
+  Serial.println(angle);
+  turn_by_angle_gyro(angle);
+  brake_rover();
+  go_forwards(dist);
+  brake_rover();
+  if(!dist){ // need to also check if the object has already been seen
+    delay(200);
+    update_vision();
+    delay(200);
+    turn_by_angle_gyro(vision_angle);
+    bool measured_object = false;
+    int vision_counter_overall = 0;
+    float vision_running_total_overall = 0;
+    float vision_distance_average_overall = 0;
+    int vision_counter = 0;
+    float vision_running_total = 0;
+    float vision_distance_average = 0;
+    update_vision();
+    while(!measured_object){
+      prev_vision_distance = vision_distance;
+      update_vision();
+      if(vision_distance > 30){
+        go_forwards(5);
+      }else{
+        vision_counter_overall += 1;
+        vision_running_total_overall += vision_distance;
+        vision_distance_average_overall = vision_running_total_overall/vision_counter_overall;
+        if(vision_distance<=(vision_distance_average_overall*1.1)){
+          vision_counter += 1;
+          vision_running_total += vision_distance;
+          vision_distance_average = vision_running_total/vision_counter;
+        }
+      }
+      if(vision_counter>=30){
+        measured_object = true;
+        float x_of_object = total_x_overall + (vision_distance+7.2)*sin(current_angle+vision_angle); // 7.2 is dist from centre of rover to camera
+        float y_of_object = total_y_overall + (vision_distance+7.2)*cos(current_angle+vision_angle); // 7.2 is dist from centre of rover to camera
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // send_object_information(); // need to make this function
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      }
+    }
+    vision_object = false;
+  }
+  Serial.println("at a or encountered an object");
+}
+
+// void scan_and_locate(){
+//     for(int i = 0; i<36;i++){
+//         turn_by_angle_gyro(10);
+//         if()
+//     }
+// }
+
 TaskHandle_t Task1;
 TaskHandle_t Task2;
 void Task1code(void *pvParameters)
@@ -766,7 +900,6 @@ void Task1code(void *pvParameters)
     int i = 0;
     sensors_event_t acc, g, temp;
     mpu.getEvent(&acc, &g, &temp);
-    Point a, b, c, d, current;
     float dist, angle;
     // while (Serial.available() == 0)
     // {
@@ -816,220 +949,25 @@ void Task1code(void *pvParameters)
       d.x = 0;
       d.y = 0;
       // float dist, angle;
-      Serial.println("at start");
-      current.x = total_x_overall;
-      current.y = total_y_overall;
-      Serial.print("current x"), Serial.println(current.x);
-      Serial.print("current y"), Serial.println(current.y);
-      Serial.print("current angle"), Serial.println(current_angle);
-      dist = distance_points(current, a);
-      Serial.println(dist);
-      angle = angle_between_points(a.x, a.y);
-      Serial.println(angle);
-      turn_by_angle_gyro(angle);
-      brake_rover();
-      go_forwards(dist);
-      brake_rover();
-      current.x = total_x_overall;
-      current.y = total_y_overall;
-      Serial.print("current x"), Serial.println(current.x);
-      Serial.print("current y"), Serial.println(current.y);
-      Serial.print("current angle"), Serial.println(current_angle);
-      dist = distance_points(current, a);
-      Serial.println(dist);
-      angle = angle_between_points(a.x, a.y);
-      Serial.println(angle);
-      turn_by_angle_gyro(angle);
-      brake_rover();
-      go_forwards(dist);
-      brake_rover();
-      Serial.println("at a");
-      current.x = total_x_overall;
-      current.y = total_y_overall;
-      Serial.print("current x"), Serial.println(current.x);
-      Serial.print("current y"), Serial.println(current.y);
-      Serial.print("current angle"), Serial.println(current_angle);
-      dist = distance_points(current, b);
-      Serial.println(dist);
-      angle = angle_between_points(b.x, b.y);
-      Serial.println(angle);
-      turn_by_angle_gyro(angle);
-      brake_rover();
-      go_forwards(dist);
-      brake_rover();
-      current.x = total_x_overall;
-      current.y = total_y_overall;
-      Serial.print("current x"), Serial.println(current.x);
-      Serial.print("current y"), Serial.println(current.y);
-      Serial.print("current angle"), Serial.println(current_angle);
-      dist = distance_points(current, b);
-      Serial.println(dist);
-      angle = angle_between_points(b.x, b.y);
-      Serial.println(angle);
-      turn_by_angle_gyro(angle);
-      brake_rover();
-      go_forwards(dist);
-      brake_rover();
-      Serial.println("at b");
-      current.x = total_x_overall;
-      current.y = total_y_overall;
-      Serial.print("current x"), Serial.println(current.x);
-      Serial.print("current y"), Serial.println(current.y);
-      Serial.print("current angle"), Serial.println(current_angle);
-      dist = distance_points(current, c);
-      Serial.println(dist);
-      angle = angle_between_points(c.x, c.y);
-      Serial.println(angle);
-      turn_by_angle_gyro(angle);
-      brake_rover();
-      go_forwards(dist);
-      brake_rover();
-      current.x = total_x_overall;
-      current.y = total_y_overall;
-      Serial.print("current x"), Serial.println(current.x);
-      Serial.print("current y"), Serial.println(current.y);
-      Serial.print("current angle"), Serial.println(current_angle);
-      dist = distance_points(current, c);
-      Serial.println(dist);
-      angle = angle_between_points(c.x, c.y);
-      Serial.println(angle);
-      turn_by_angle_gyro(angle);
-      brake_rover();
-      go_forwards(dist);
-      brake_rover();
-      Serial.println("at c");
-      current.x = total_x_overall;
-      current.y = total_y_overall;
-      Serial.print("current x"), Serial.println(current.x);
-      Serial.print("current y"), Serial.println(current.y);
-      Serial.print("current angle"), Serial.println(current_angle);
-      dist = distance_points(current, d);
-      Serial.println(dist);
-      angle = angle_between_points(d.x, d.y);
-      Serial.println(angle);
-      turn_by_angle_gyro(angle);
-      brake_rover();
-      go_forwards(dist);
-      brake_rover();
-      current.x = total_x_overall;
-      current.y = total_y_overall;
-      Serial.print("current x"), Serial.println(current.x);
-      Serial.print("current y"), Serial.println(current.y);
-      Serial.print("current angle"), Serial.println(current_angle);
-      dist = distance_points(current, d);
-      Serial.println(dist);
-      angle = angle_between_points(d.x, d.y);
-      Serial.println(angle);
-      turn_by_angle_gyro(angle);
-      brake_rover();
-      go_forwards(dist);
-      brake_rover();
-      Serial.println("at d");
-      current.x = total_x_overall;
-      current.y = total_y_overall;
-      Serial.print("current x"), Serial.println(current.x);
-      Serial.print("current y"), Serial.println(current.y);
-      Serial.print("current angle"), Serial.println(current_angle);
+      travel_to(a, current);
+      travel_to(b, current);
+      travel_to(c, current);
+      travel_to(d, current);
       break;
       // turn_angle_gyro(90);
       // brake_rover();
     case 6:
       // Point a, b, c, d, current;
-      for(int i = 0; i<2; i++){
-        a.x = 0;
-        a.y = 0;
-        b.x = 10;
-        b.y = 10;
-        c.x = 0;
-        c.y = 0;
-        Serial.println("at start");
-        current.x = total_x_overall;
-        current.y = total_y_overall;
-        Serial.print("current x"), Serial.println(current.x);
-        Serial.print("current y"), Serial.println(current.y);
-        Serial.print("current angle"), Serial.println(current_angle);
-        dist = distance_points(current, a);
-        Serial.println(dist);
-        angle = angle_between_points(a.x, a.y);
-        Serial.println(angle);
-        turn_by_angle_gyro(angle);
-        brake_rover();
-        go_forwards(dist);
-        brake_rover();
-        current.x = total_x_overall;
-        current.y = total_y_overall;
-        Serial.print("current x"), Serial.println(current.x);
-        Serial.print("current y"), Serial.println(current.y);
-        Serial.print("current angle"), Serial.println(current_angle);
-        dist = distance_points(current, a);
-        Serial.println(dist);
-        angle = angle_between_points(a.x, a.y);
-        Serial.println(angle);
-        turn_by_angle_gyro(angle);
-        brake_rover();
-        go_forwards(dist);
-        brake_rover();
-        Serial.println("at a");
-        current.x = total_x_overall;
-        current.y = total_y_overall;
-        Serial.print("current x"), Serial.println(current.x);
-        Serial.print("current y"), Serial.println(current.y);
-        Serial.print("current angle"), Serial.println(current_angle);
-        dist = distance_points(current, b);
-        Serial.println(dist);
-        angle = angle_between_points(b.x, b.y);
-        Serial.println(angle);
-        turn_by_angle_gyro(angle);
-        brake_rover();
-        go_forwards(dist);
-        brake_rover();
-        current.x = total_x_overall;
-        current.y = total_y_overall;
-        Serial.print("current x"), Serial.println(current.x);
-        Serial.print("current y"), Serial.println(current.y);
-        Serial.print("current angle"), Serial.println(current_angle);
-        dist = distance_points(current, b);
-        Serial.println(dist);
-        angle = angle_between_points(b.x, b.y);
-        Serial.println(angle);
-        turn_by_angle_gyro(angle);
-        brake_rover();
-        go_forwards(dist);
-        brake_rover();
-        Serial.println("at b");
-        current.x = total_x_overall;
-        current.y = total_y_overall;
-        Serial.print("current x"), Serial.println(current.x);
-        Serial.print("current y"), Serial.println(current.y);
-        Serial.print("current angle"), Serial.println(current_angle);
-        dist = distance_points(current, c);
-        Serial.println(dist);
-        angle = angle_between_points(c.x, c.y);
-        Serial.println(angle);
-        turn_by_angle_gyro(angle);
-        brake_rover();
-        go_forwards(dist);
-        brake_rover();
-        current.x = total_x_overall;
-        current.y = total_y_overall;
-        Serial.print("current x"), Serial.println(current.x);
-        Serial.print("current y"), Serial.println(current.y);
-        Serial.print("current angle"), Serial.println(current_angle);
-        dist = distance_points(current, c);
-        Serial.println(dist);
-        angle = angle_between_points(c.x, c.y);
-        Serial.println(angle);
-        turn_by_angle_gyro(angle);
-        brake_rover();
-        go_forwards(dist);
-        brake_rover();
-        Serial.println("at c");
-        current.x = total_x_overall;
-        current.y = total_y_overall;
-        Serial.print("current x"), Serial.println(current.x);
-        Serial.print("current y"), Serial.println(current.y);
-        Serial.print("current angle"), Serial.println(current_angle);
-      }
+      // for(int i = 0; i<2; i++){
+      a.x = 0;
+      a.y = 0;
+      b.x = 10;
+      b.y = 10;
+      c.x = 0;
+      c.y = 0;
+      travel_to(a, current);
+      travel_to(b, current);
+      travel_to(c, current);
       break;
 
     case 5:
@@ -1042,68 +980,10 @@ void Task1code(void *pvParameters)
       c.y = 100;
       d.x = 0;
       d.y = 0;
-      Serial.println("at start");
-      current.x = total_x_overall;
-      current.y = total_y_overall;
-      Serial.print("current x"), Serial.println(current.x);
-      Serial.print("current y"), Serial.println(current.y);
-      Serial.print("current angle"), Serial.println(current_angle);
-      dist = distance_points(current, a);
-      Serial.println(dist);
-      angle = angle_between_points(a.x, a.y);
-      Serial.println(angle);
-      turn_by_angle_gyro(angle);
-      brake_rover();
-      go_forwards(dist);
-      brake_rover();
-      Serial.println("at a");
-      current.x = total_x_overall;
-      current.y = total_y_overall;
-      Serial.print("current x"), Serial.println(current.x);
-      Serial.print("current y"), Serial.println(current.y);
-      Serial.print("current angle"), Serial.println(current_angle);
-      dist = distance_points(current, b);
-      Serial.println(dist);
-      angle = angle_between_points(b.x, b.y);
-      Serial.println(angle);
-      turn_by_angle_gyro(angle);
-      brake_rover();
-      go_forwards(dist);
-      brake_rover();
-      Serial.println("at b");
-      current.x = total_x_overall;
-      current.y = total_y_overall;
-      Serial.print("current x"), Serial.println(current.x);
-      Serial.print("current y"), Serial.println(current.y);
-      Serial.print("current angle"), Serial.println(current_angle);
-      dist = distance_points(current, c);
-      Serial.println(dist);
-      angle = angle_between_points(c.x, c.y);
-      Serial.println(angle);
-      turn_by_angle_gyro(angle);
-      brake_rover();
-      go_forwards(dist);
-      brake_rover();
-      Serial.println("at c");
-      current.x = total_x_overall;
-      current.y = total_y_overall;
-      Serial.print("current x"), Serial.println(current.x);
-      Serial.print("current y"), Serial.println(current.y);
-      Serial.print("current angle"), Serial.println(current_angle);
-      dist = distance_points(current, d);
-      Serial.println(dist);
-      angle = angle_between_points(d.x, d.y);
-      Serial.println(angle);
-      turn_by_angle_gyro(angle);
-      brake_rover();
-      go_forwards(dist);
-      brake_rover();
-      Serial.println("at d");
-      current.x = total_x_overall;
-      current.y = total_y_overall;
-      Serial.print("current x"), Serial.println(current.x);
-      Serial.print("current y"), Serial.println(current.y);
-      Serial.print("current angle"), Serial.println(current_angle);
+      travel_to(a, current);
+      travel_to(b, current);
+      travel_to(c, current);
+      travel_to(d, current);
       break;
       // turn_angle_gyro(90);
       // brake_rover();
@@ -1118,16 +998,16 @@ void Task1code(void *pvParameters)
 //////////////////////////////////// core 2 for sensor readings
 void Task2code(void *pvParameters)
 {
-  // Serial.print("Task2 running on core ");
-  // Serial.println(xPortGetCoreID());
+  Serial.print("Task2 running on core ");
+  Serial.println(xPortGetCoreID());
   for (;;)
   {
     /////////IR sensor //////////
-    int statusSensor = 1; // digitalRead(IRSensor);
-    if (statusSensor == 0)
-    {
-      Serial.println("Sensor = object");
-    }
+    // int statusSensor = 1; // digitalRead(IRSensor);
+    // if (statusSensor == 0)
+    // {
+    //   Serial.println("Sensor = object");
+    // }
     sensors_event_t a, g, temp;
     mpu.getEvent(&a, &g, &temp);
     float val = mousecam_read_reg(ADNS3080_PIXEL_SUM);
@@ -1148,8 +1028,9 @@ void Task2code(void *pvParameters)
     // }
     for (int i = 0; i < md.squal / 4; i++)
     {
-      //   Serial.print('*');
+        // Serial.print('*');
     }
+    // Serial.println("");
     /*
        Serial.print(md.squal);
        Serial.print(' ');
@@ -1169,8 +1050,8 @@ void Task2code(void *pvParameters)
     prev_angle = current_angle;
 
     current_angle = angle_facing(total_x); // still need to find the right conversion from md values to cm or mm
-    // Serial.print("Current angle: "), Serial.println(current_angle);
-    // current_angle = -temp_gyro_angle;
+    current_angle = -temp_gyro_angle;
+    Serial.print("Current angle: "), Serial.println(current_angle);
     // normal values are relative to the rover, overall values are relative to the overall y axis
     distance_x = /*md.dx; //*/ convTwosComp(md.dx);
     distance_y = /*md.dy; //*/ convTwosComp(md.dy);
@@ -1221,6 +1102,7 @@ void Task2code(void *pvParameters)
 void setup()
 {
   Serial.begin(115200);
+  Serial1.begin(115200, SERIAL_8N1, RXD2, TXD2);
   while (!Serial)
   {
     delay(10); // will pause Zero, Leonardo, etc until serial console opens
@@ -1250,7 +1132,7 @@ void setup()
   }
   Serial.println("INIT");
   ///////////////IR Sensor///////////////
-  pinMode(IRSensor, INPUT); // sensor pin INPUT
+  // pinMode(IRSensor, INPUT); // sensor pin INPUT
 
   /////////////WIFI STUFF IN SETUP///////////
 
@@ -1265,73 +1147,73 @@ void setup()
   if (!mpu.begin())
   {
     Serial.println("Failed to find MPU6050 chip");
-    while (1)
-    {
-      delay(10);
-    }
+    // while (1)
+    // {
+    //   delay(10);
+    // }
   }
   Serial.println("MPU6050 Found!");
   mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
-  Serial.print("Accelerometer range set to: ");
-  switch (mpu.getAccelerometerRange())
-  {
-  case MPU6050_RANGE_2_G:
-    Serial.println("+-2G");
-    break;
-  case MPU6050_RANGE_4_G:
-    Serial.println("+-4G");
-    break;
-  case MPU6050_RANGE_8_G:
-    Serial.println("+-8G");
-    break;
-  case MPU6050_RANGE_16_G:
-    Serial.println("+-16G");
-    break;
-  }
-  mpu.setGyroRange(MPU6050_RANGE_500_DEG);
-  Serial.print("Gyro range set to: ");
-  switch (mpu.getGyroRange())
-  {
-  case MPU6050_RANGE_250_DEG:
-    Serial.println("+- 250 deg/s");
-    break;
-  case MPU6050_RANGE_500_DEG:
-    Serial.println("+- 500 deg/s");
-    break;
-  case MPU6050_RANGE_1000_DEG:
-    Serial.println("+- 1000 deg/s");
-    break;
-  case MPU6050_RANGE_2000_DEG:
-    Serial.println("+- 2000 deg/s");
-    break;
-  }
-  mpu.setFilterBandwidth(MPU6050_BAND_21_HZ);
-  Serial.print("Filter bandwidth set to: ");
-  switch (mpu.getFilterBandwidth())
-  {
-  case MPU6050_BAND_260_HZ:
-    Serial.println("260 Hz");
-    break;
-  case MPU6050_BAND_184_HZ:
-    Serial.println("184 Hz");
-    break;
-  case MPU6050_BAND_94_HZ:
-    Serial.println("94 Hz");
-    break;
-  case MPU6050_BAND_44_HZ:
-    Serial.println("44 Hz");
-    break;
-  case MPU6050_BAND_21_HZ:
-    Serial.println("21 Hz");
-    break;
-  case MPU6050_BAND_10_HZ:
-    Serial.println("10 Hz");
-    break;
-  case MPU6050_BAND_5_HZ:
-    Serial.println("5 Hz");
-    break;
-  }
-  Serial.println("");
+//   Serial.print("Accelerometer range set to: ");
+//   switch (mpu.getAccelerometerRange())
+//   {
+//   case MPU6050_RANGE_2_G:
+//     Serial.println("+-2G");
+//     break;
+//   case MPU6050_RANGE_4_G:
+//     Serial.println("+-4G");
+//     break;
+//   case MPU6050_RANGE_8_G:
+//     Serial.println("+-8G");
+//     break;
+//   case MPU6050_RANGE_16_G:
+//     Serial.println("+-16G");
+//     break;
+//   }
+//   mpu.setGyroRange(MPU6050_RANGE_500_DEG);
+//   Serial.print("Gyro range set to: ");
+//   switch (mpu.getGyroRange())
+//   {
+//   case MPU6050_RANGE_250_DEG:
+//     Serial.println("+- 250 deg/s");
+//     break;
+//   case MPU6050_RANGE_500_DEG:
+//     Serial.println("+- 500 deg/s");
+//     break;
+//   case MPU6050_RANGE_1000_DEG:
+//     Serial.println("+- 1000 deg/s");
+//     break;
+//   case MPU6050_RANGE_2000_DEG:
+//     Serial.println("+- 2000 deg/s");
+//     break;
+//   }
+//   mpu.setFilterBandwidth(MPU6050_BAND_21_HZ);
+//   Serial.print("Filter bandwidth set to: ");
+//   switch (mpu.getFilterBandwidth())
+//   {
+//   case MPU6050_BAND_260_HZ:
+//     Serial.println("260 Hz");
+//     break;
+//   case MPU6050_BAND_184_HZ:
+//     Serial.println("184 Hz");
+//     break;
+//   case MPU6050_BAND_94_HZ:
+//     Serial.println("94 Hz");
+//     break;
+//   case MPU6050_BAND_44_HZ:
+//     Serial.println("44 Hz");
+//     break;
+//   case MPU6050_BAND_21_HZ:
+//     Serial.println("21 Hz");
+//     break;
+//   case MPU6050_BAND_10_HZ:
+//     Serial.println("10 Hz");
+//     break;
+//   case MPU6050_BAND_5_HZ:
+//     Serial.println("5 Hz");
+//     break;
+//   }
+  // Serial.println("");
   dest = false;
   /////////////////////////////// dual core stuff////////////////////////
   xTaskCreatePinnedToCore(

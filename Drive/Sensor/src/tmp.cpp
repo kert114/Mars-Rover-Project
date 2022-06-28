@@ -18,6 +18,7 @@
 // #include <cmath>
 // #include <vector>
 // #include <iostream>
+// #include <Arduino_JSON.h>
 // struct Point{
 //     double x;
 //     double y;
@@ -90,32 +91,29 @@
 // //  WIFI STUFF
 // WiFiClient client;
 // MFRC522 mfrc522(SS_PIN, RST_PIN); //// RANDOM IN2 AND IN3 FOR TESTING
-// const char *serverName = "http://192.168.158.188:80/post-map-data.php"; // replace middle with ipv4 of laptop "http:///post-esp-data.php"
+// const char *serverNameMap = "http://192.168.43.247:80/post-map-data.php"; // replace middle with ipv4 of laptop "http:///post-esp-data.php"
+// const char* serverNameDirection = "http://192.168.43.247/arrowkeyquery.php";
+// const char* serverNameMode="http://192.168.43.247/modequery.php";
 // String apiKeyValue = "tPmAT5Ab3j7F9";
-// //String object = "Rover";
+// // mahanoor ip 192.168.43.247
+// String directionarray[1] ;
+// String direction;
+// String modearray[1];
+// String mode;
 // Adafruit_MPU6050 mpu;
-// const char *ssid = "Kert12345";
-// const char *password = "1234567891";
+// //const char *ssid = "Kert12345";
+// //const char *password = "1234567891";
 // // const char *ssid = "AngusiPhone";
 // // const char *password = "AngusJames";
 // // const uint16_t port = 12000;
 // // const char *host = "192.168.158.30";
+// const char *ssid ="AndroidAP_5909";
+// const char *password = "a65e70efab37";
 // const int arenasizex =250; //actual 2337mm
 // const int arenasizey =250; //actual 3555mm
 // const int safetymargin=2;
 // int numberofnodes=5;
 // Point currentposition;
-// std::vector<Point> nodelist(int numberofnodes, const int arenasizex, const int arenasizey, const int safetymargin){
-//     Point temp;
-//     std::vector<Point> nodes;
-//     for(int i=0; i<numberofnodes;i++){
-//       //rand() % ((highestNumber - lowestNumber) + 1) + lowestNumber
-//         temp.x= rand() % ((arenasizex-safetymargin)-safetymargin+1)+safetymargin;
-//         temp.y= rand() % ((arenasizey-safetymargin)-safetymargin+1)+safetymargin;
-//         nodes.push_back(temp);
-//     }
-//     return nodes;
-// }
 // int search_v(const std::vector<Point>&vin,int x, int y){
 // for(int i=0;i<vin.size();i++){
 //   if(vin[i].x==x){
@@ -125,6 +123,18 @@
 //     }
 //   }
 //     return -1;
+// }
+// std::vector<Point> nodelist(int numberofnodes, const int arenasizex, const int arenasizey, const int safetymargin){
+//     Point temp;
+//     std::vector<Point> nodes;
+//     for(int i=0; i<numberofnodes;i++){
+//       //rand() % ((highestNumber - lowestNumber) + 1) + lowestNumber
+//         temp.x= rand() % ((arenasizex-safetymargin)-safetymargin+1)+safetymargin;
+//         temp.y= rand() % ((arenasizey-safetymargin)-safetymargin+1)+safetymargin;
+//         int unique=search_v(nodes,temp.x,temp.y);
+//         nodes.push_back(temp);
+//     }
+//     return nodes;
 // }
 // std::vector<Point> deletenode(std::vector<Point>&vin,int index){
 //   vin.erase(vin.begin() + index);
@@ -171,10 +181,10 @@
 // float x = 0;
 // float y = 0;
 // int m1 = 36;
-// int m2 = 34;
+// int m2 = 36;
 // float prev_dx;
 // float prev_dy;
-// float correction = 40;
+// float correction = 42;
 // float a = 0;
 // float b = 0;
 // float gyro_rotation = 0;
@@ -347,8 +357,10 @@
 //   robot.brake(2);
 //   // delay(1000);
 // }
-// double distance_points(Point p1, Point p2){
-//     return std::sqrt(std::pow((p1.x - p2.x), 2) + std::pow((p1.y - p2.y), 2));
+// double distance_points(float x, float y){
+//   float ax = total_x_overall;
+//   float ay = total_y_overall;
+//     return std::sqrt(std::pow((x - ax), 2) + std::pow((y - ay), 2));
 // }
 // float angle_between_points(float bx, float by){
 //   float ax = total_x_overall;
@@ -364,6 +376,10 @@
 //   }
 //   float angle_to_turn = angle_temp-current_angle;
 //   return angle_to_turn;
+// }
+// std::vector<Point> deletenode(std::vector<Point>&vin,int index){
+//   vin.erase(vin.begin() + index);
+//   return vin;
 // }
 // std::string point_to_s(Point p){
 //     return "(" + std::to_string(p.x) + ", " + std::to_string(p.y) + ")";
@@ -658,120 +674,215 @@
 //   Serial.println(xPortGetCoreID());
 //   for (;;)
 //   {
+//     bool manualmode,automaticmode;
 //     dest = true;
-//     /////////////////////////CONTROL THE ROVER USING 123456789
-//     int i = 0;
 //     sensors_event_t a, g, temp;
 //     mpu.getEvent(&a, &g, &temp);
-//     // while (Serial.available() == 0)
-//     // {
-//     // } // if it breaks, do >= 0 in conditions as per Hepple
-//     if (Serial.available())
-//     {
-//       i = Serial.parseInt();
+//     ///CONNECT TO WIFI/////////
+//     unsigned long previousMillis=0;
+//     unsigned long interval = 30000;
+//     unsigned long currentMillis = millis();
+//     //reconnect to wifi if disconnected,checking for connecting every 30 seconds
+//     if((WiFi.status() !=WL_CONNECTED)&& (currentMillis - previousMillis >=interval)){
+//       Serial.print(millis());
+//       Serial.println("Reconnecting to Wifi....");
+//       WiFi.disconnect();
+//       initWiFi();
+//       previousMillis=currentMillis;
 //     }
-//     switch (i)
-//     {
-//     case 1:
-//     Serial.println("0");
-//     turn_angle_gyro(0);
-//     brake_rover();
-//      break;
-//     //
-//     //brake_rover();
-//    // Serial.println(temp_gyro_angle);
-//     //turn_angle_gyro(-60);
-//    // brake_rover();
-//     case 2:
-//       // rotate left for 3 sec
-//       Serial.println("90");
-//       turn_angle_gyro(90);
-//       brake_rover();
-//       break;
-//     case 3:
-//       // rotate right for 3 sec
-//       Serial.println("170");
-//       turn_angle_gyro(170);
-//       brake_rover();
-//       break;
-//     case 4:
-//       Point a,b,c,d,current;
-//       a.x=30;
-//       a.y=0;
-//       b.x=30;
-//       b.y=30;
-//       c.x=0;
-//       c.y=30;
-//       d.x=0;
-//       d.y=0;
-//       float dist,angle;
-//       Serial.println("at start");
-//       current.x=total_x_overall;
-//       current.y=total_y_overall;
-//       Serial.print("current x"),Serial.println(current.x);
-//       Serial.print("current y"),Serial.println(current.y);
-//       Serial.print("current angle"),Serial.println(current_angle);
-//       dist=distance_points(current,a);
-//       Serial.println(dist);
-//       angle=angle_between_points(a.x,a.y);
-//       Serial.println(angle);
-//       turn_by_angle_gyro(angle);
-//       brake_rover();
-//       go_forwards(dist);
-//       brake_rover();
-//       Serial.println("at a");
-//       current.x=total_x_overall;
-//       current.y=total_y_overall;
-//       Serial.print("current x"),Serial.println(current.x);
-//       Serial.print("current y"),Serial.println(current.y);
-//       Serial.print("current angle"),Serial.println(current_angle);
-//       dist=distance_points(current,b);
-//       Serial.println(dist);
-//       angle=angle_between_points(b.x,b.y);
-//       Serial.println(angle);
-//       turn_by_angle_gyro(angle);
-//       brake_rover();
-//       go_forwards(dist);
-//       brake_rover();
-//       Serial.println("at b");
-//       current.x=total_x_overall;
-//       current.y=total_y_overall;
-//       Serial.print("current x"),Serial.println(current.x);
-//       Serial.print("current y"),Serial.println(current.y);
-//       Serial.print("current angle"),Serial.println(current_angle);
-//       dist=distance_points(current,c);
-//       Serial.println(dist);
-//       angle=angle_between_points(c.x,c.y);
-//       Serial.println(angle);
-//       turn_by_angle_gyro(angle);
-//       brake_rover();
-//       go_forwards(dist);
-//       brake_rover();
-//       Serial.println("at c");
-//       current.x=total_x_overall;
-//       current.y=total_y_overall;
-//       Serial.print("current x"),Serial.println(current.x);
-//       Serial.print("current y"),Serial.println(current.y);
-//       Serial.print("current angle"),Serial.println(current_angle);
-//       dist=distance_points(current,d);
-//       Serial.println(dist);
-//       angle=angle_between_points(d.x,d.y);
-//       Serial.println(angle);
-//       turn_by_angle_gyro(angle);
-//       brake_rover();
-//       go_forwards(dist);
-//       brake_rover();
-//       Serial.println("at d");
-//       current.x=total_x_overall;
-//       current.y=total_y_overall;
-//       Serial.print("current x"),Serial.println(current.x);
-//       Serial.print("current y"),Serial.println(current.y);
-//       Serial.print("current angle"),Serial.println(current_angle);
-//       break;
-//     // turn_angle_gyro(90);
-//     // brake_rover(); 
-//   }
-// }
+//     if(WiFi.status()== WL_CONNECTED){
+//         WiFiClient client;
+//         HTTPClient http;
+//         if (client.available()>0){
+//           Serial.println("DEBUG CLIENT IS AVAILABLE");
+//         }
+//     ////QUERY MODE/////
+//       http.begin(client,serverNameMode);
+//       int httpResponseCode= http.GET();
+//       if(httpResponseCode>0){
+//         String payload =http.getString();
+//         Serial.println(payload);
+//         Serial.print("HTTP Response code for MODE: ");
+//         Serial.println(httpResponseCode);
+//         JSONVar object=JSON.parse(payload);
+//           if (JSON.typeof(payload) == "undefined") {
+//             Serial.println("Parsing input failed to get mode");
+//             return;
+//           }
+//         Serial.print("JSON object for Mode");
+//         Serial.print("1");
+//         Serial.println(object);
+//         Serial.print("2");
+//         //testing to see if can access the JSON object
+//         Serial.print(object[0]["id"]);
+//         Serial.print(object[0]["mode"]);
+//         mode=object[0]["mode"];
+//         Serial.println(mode);
+//         if (httpResponseCode<0) {
+//           Serial.print("Error code: ");
+//           Serial.println(httpResponseCode);
+//          } 
+//         http.end();
+//       }
+//       //AUTOMATIC DRIVING
+//       if(mode=="automated"){
+//         manualmode=false;
+//         automaticmode=true;
+//         /////////Generate nodes///////// ->>>>>>>>> for now fixed node change to random in a bit
+//         //commented out random node generation would be
+//         // std::vector<Point> nodelist;
+//         //nodelist=nodelist(nodes,arenasizex,arenasizey,safetymargin) ->> actual arena size- safety margin used in calculation for rover arena
+//         // now not duplicate
+//         std::vector<Point> nodelist;
+//         ///list of set points for now
+//         Point a,b,c,d,e,f,current,target;
+//         a.x=10;
+//         a.y=10;
+//         b.x=50;
+//         b.y=10;
+//         c.x=60;
+//         c.y=90;
+//         d.x=100;
+//         d.y=200;
+//         e.x=45;
+//         e.y=175;
+//         f.x=20;
+//         f.y=30;
+//         nodelist.push_back(f);
+//         nodelist.push_back(e);
+//         nodelist.push_back(d);
+//         nodelist.push_back(c);
+//         nodelist.push_back(b);
+//         nodelist.push_back(a);
+//         int startnodelistsize = nodelist.size();
+//         ////////Send to database///////->>>>>>>>>>need to add
+//         //// while nodelist not empty should go to all nodes
+//         while(nodelist.size() !=0){
+//              ///////SELECT NODE/////////// ->>>>> should be random for now in order
+//             // commented out random selection would use
+//             // pick random number r from 0->size of nodelist
+//             // target.x=nodelist[r].x
+//             // target.y=nodelist[r].y
+//             current.x=total_x_overall;
+//             current.y=total_y_overall;
+//             target.x=nodelist[0].x;
+//             target.y=nodelist[0].y;
+//             float angle, anglecorrection;
+//             float dist, distcorrection;
+//             bool attarget=false;
+//             bool fovclear;
+//             //while not at target node
+//             while(attarget==false){
+//             //////while FOV CLEAR//// 
+//               while(fovclear){
+//                 //fov clear??/
+//                 ////Y////
+//                 ///////GO TO NODE/////////
+//                 angle = angle_between_points(target.x,target.y);
+//                 dist = distance_points(target.x,target.y);
+//                 turn_by_angle_gyro(angle);
+//                 brake_rover;
+//                 go_forwards(dist);
+//                 brake_rover;
+//                 anglecorrection = angle_between_points(target.x,target.y);
+//                 distcorrection = distance_points(target.x,target.y);
+//                 turn_by_angle_gyro(anglecorrection);
+//                 brake_rover;
+//                 go_forwards(distcorrection);
+//                 brake_rover;
+//                 /// need to check if at target, and if so set attarget=true and exit the first and second while loop,
+//               } ////end of whilst fov clear
+//               ////N/////
+//               ///find position of obstruction
+//               //if already seen ignore it and detour
+//               //// if object within radius of node, just pick new node to go to
+//               /// if not seen before, post it, store it locally and detour it
+//               //// if object within radius of node, just pick new node to go to ie set attarget to true and break 
+//             } ///end of whilst not at node
+//             ////DELETE NODE FROM LIST-> GO BACK TO SELECT NODE/////
+//             deletenode(nodelist,0); //// should be the index of the node you just visited, ie r, 0 for now as always visiting the first node in list then deleting that node nodelist size decreases
+//             ////repeat for all items in first list////
+//             ////if node list not empty//
+//             ///pick next node////
+//       }
+//       ///if node list empty
+//       ////check if all objects scanned,ie local dic size = some target value
+//       ////if all objects scanned return to base
+//       /// if all objects not scanned////
+//       ///check if manual override enabled//// ->>>>>>>>>>> maybe check if return to base button clicked aswell????
+//       //if over ride break and go manual////
+//       ///if manual overide not enabled go to regen nodes///// ->>>>>>>>> for now just stop after all nodes done
+//       }
+//       //MANUAL DRIVING
+//       else if(mode=="manual"){
+//         manualmode=true;
+//         automaticmode=false;
+//         Serial.println("manual mode");
+//         http.begin(client, serverNameDirection);
+//         int httpResponseCode = http.GET();
+//         if (httpResponseCode>0) {
+//             String payload =http.getString();
+//             Serial.println(payload);
+//             //print payload of the get request and also the succesful response code
+//             Serial.print("HTTP Response code of direction: ");
+//             Serial.println(httpResponseCode);
+//            //store payload in json variable to make it easier to parse
+//             JSONVar object=JSON.parse(payload);
+//             if (JSON.typeof(payload) == "undefined") {
+//               Serial.println("Parsing input failed to get direction");
+//               return;
+//             }
+//             Serial.print("JSON object");
+//             Serial.print("1");
+//             Serial.println(object);
+//             Serial.print("2");
+//             //testing to see if can access the JSON object
+//             Serial.print(object[0]["id"]);
+//             Serial.print(object[0]["direction"]);
+//             direction=object[0]["direction"];
+//             Serial.println(direction);
+//             if(direction == "left"){
+//               Serial.println("should turn left");
+//               //add turn left function
+//               turn_L(1000);
+//               brake_rover();
+//             }
+//             else if(direction == "right"){
+//               Serial.println("should turn right");
+//               //add turn right function
+//               turn_R(1000);
+//               brake_rover();
+//             }
+//             else if(direction == "forwards"){
+//               Serial.println("should drive forwards");
+//               //add turn drive forwards function
+//               move_F(1000);
+//               brake_rover();
+//             }
+//             else if(direction == "backwards"){
+//               Serial.println("should reverse");
+//               //add drive backwards function
+//               move_B(1000);
+//               brake_rover();
+//             }
+//             else if(direction =="stop"){
+//               Serial.println("should stop");
+//               brake_rover();
+//             }
+//             if (httpResponseCode<0) {
+//               Serial.print("Error code: ");
+//               Serial.println(httpResponseCode);
+//             } 
+//             // Free resources
+//             http.end();
+//             delay(1000);
+//             }
+//       }///END OF MANUAL DRIVING
+//       else {
+//         Serial.println("WiFi Disconnected");
+//       } 
+//     }///END OF WIFI CONNECTION BRACKET#
+//   }///END OF LOOP
 // }
 // //////////////////////////////////// core 2 for sensor readings
 // void Task2code(void *pvParameters)
@@ -856,10 +967,8 @@
 //     temp_y = total_y;
 //     prev_dx = md.dx / correction;
 //     prev_dy = md.dy / correction;
-//     // Serial.println("total x "),Serial.println(total_x_overall);
-//     //Serial.println("total y " ),Serial.println(total_y_overall);
 //     /////////ADD IN HTTP POST REQUEST FOR ROVER POSITION CONTINOUSLY///////////
-//   /*  String object = "Rover";
+//     String object = "Rover";
 //     unsigned long previousMillis=0;
 //     unsigned long interval = 30000;
 //     unsigned long currentMillis = millis();
@@ -880,7 +989,7 @@
 //  // Serial.println("DOOM");
 // }
 //     // Your Domain name with URL path or IP address with path
-//     http.begin(client, serverName);
+//     http.begin(client, serverNameMap);
 //     // Specify content-type header
 //     http.addHeader("Content-Type", "application/x-www-form-urlencoded");
 //     // Prepare your HTTP POST request data
@@ -905,11 +1014,10 @@
 //   //  Serial.println("WiFi Disconnected");
 //   }
 //   delay(300);
-//   */
 // // Serial.println(temp_gyro_angle);
 // //Serial.println(temp_gyro_angle);
 // //Serial.print("current x"),Serial.println(total_x_overall);
-//   //    Serial.print("current y"),Serial.println(total_y_overall);
+// //Serial.print("current y"),Serial.println(total_y_overall);
 //   }
 // }
 // void setup()
@@ -952,7 +1060,7 @@
 //   if (!mpu.begin())
 //   {
 //     Serial.println("Failed to find MPU6050 chip");
-//     while (1)
+//     while (!mpu.begin())
 //     {
 //       delay(10);
 //     }
