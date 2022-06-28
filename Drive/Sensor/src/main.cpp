@@ -868,24 +868,18 @@ void travel_to(Point a, Point current){
       }
       if(vision_counter>=30){
         measured_object = true;
-        float x_of_object = total_x_overall + (vision_distance+7.2)*sin(current_angle+vision_angle); // 7.2 is dist from centre of rover to camera
-        float y_of_object = total_y_overall + (vision_distance+7.2)*cos(current_angle+vision_angle); // 7.2 is dist from centre of rover to camera
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        // send_object_information(); // need to make this function
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
       }
     }
+    // 7.2 is dist from centre of rover to camera
+    float x_of_object = total_x_overall + (vision_distance+7.2)*sin(current_angle+vision_angle); 
+    float y_of_object = total_y_overall + (vision_distance+7.2)*cos(current_angle+vision_angle); 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // send_object_information(); // need to make this function
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     vision_object = false;
   }
   Serial.println("at a or encountered an object");
 }
-
-// void scan_and_locate(){
-//     for(int i = 0; i<36;i++){
-//         turn_by_angle_gyro(10);
-//         if()
-//     }
-// }
 
 TaskHandle_t Task1;
 TaskHandle_t Task2;
@@ -915,31 +909,22 @@ void Task1code(void *pvParameters)
       turn_by_angle_gyro(-90);
       brake_rover();
       break;
-      //
-      // brake_rover();
-      // Serial.println(temp_gyro_angle);
-      // turn_angle_gyro(-60);
-      // brake_rover();
     case 2:
-      // rotate left for 3 sec
       Serial.println("90");
       turn_by_angle_gyro(90);
       brake_rover();
       break;
     case 3:
-      // rotate right for 3 sec
       Serial.println("180");
       turn_by_angle_gyro(180);
       brake_rover();
       break;
     case 7:
-      // rotate right for 3 sec
       Serial.println("-180");
       turn_by_angle_gyro(-180);
       brake_rover();
       break;
     case 4:
-      // Point a, b, c, d, current;
       a.x = 30;
       a.y = 0;
       b.x = 30;
@@ -948,17 +933,12 @@ void Task1code(void *pvParameters)
       c.y = 30;
       d.x = 0;
       d.y = 0;
-      // float dist, angle;
       travel_to(a, current);
       travel_to(b, current);
       travel_to(c, current);
       travel_to(d, current);
       break;
-      // turn_angle_gyro(90);
-      // brake_rover();
     case 6:
-      // Point a, b, c, d, current;
-      // for(int i = 0; i<2; i++){
       a.x = 0;
       a.y = 0;
       b.x = 10;
@@ -969,9 +949,7 @@ void Task1code(void *pvParameters)
       travel_to(b, current);
       travel_to(c, current);
       break;
-
     case 5:
-      // Point a, b, c, d, current;
       a.x = 100;
       a.y = 0;
       b.x = 100;
@@ -985,14 +963,7 @@ void Task1code(void *pvParameters)
       travel_to(c, current);
       travel_to(d, current);
       break;
-      // turn_angle_gyro(90);
-      // brake_rover();
     }
-  //   case 6:
-
-
-  //   break;
-
   }
 }
 //////////////////////////////////// core 2 for sensor readings
