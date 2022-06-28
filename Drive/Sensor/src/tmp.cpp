@@ -181,10 +181,10 @@
 // float x = 0;
 // float y = 0;
 // int m1 = 36;
-// int m2 = 36;
+// int m2 = 34;
 // float prev_dx;
 // float prev_dy;
-// float correction = 42;
+// float correction = 40;
 // float a = 0;
 // float b = 0;
 // float gyro_rotation = 0;
@@ -754,7 +754,7 @@
 //         nodelist.push_back(c);
 //         nodelist.push_back(b);
 //         nodelist.push_back(a);
-//         int startnodelistsize = nodelist.size();
+//         int startnodelistsize= nodelist.size();
 //         ////////Send to database///////->>>>>>>>>>need to add
 //         //// while nodelist not empty should go to all nodes
 //         while(nodelist.size() !=0){
@@ -1060,7 +1060,7 @@
 //   if (!mpu.begin())
 //   {
 //     Serial.println("Failed to find MPU6050 chip");
-//     while (!mpu.begin())
+//     while (1)
 //     {
 //       delay(10);
 //     }

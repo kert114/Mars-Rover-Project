@@ -19,6 +19,7 @@
 #include <cmath>
 #include <vector>
 #include <iostream>
+#include <Arduino_JSON.h>
 struct Point
 {
   double x;
@@ -97,12 +98,20 @@ int IRSensor = 32; // connect ir sensor to arduino pin 2
 #define ADNS3080_MOTION_BURST 0x50
 #define ADNS3080_SROM_LOAD 0x60
 #define ADNS3080_PRODUCT_ID_VAL 0x17
+
+
 //  WIFI STUFF
 WiFiClient client;
-MFRC522 mfrc522(SS_PIN, RST_PIN);                                       //// RANDOM IN2 AND IN3 FOR TESTING
-const char *serverName = "http://192.168.158.188:80/post-map-data.php"; // replace middle with ipv4 of laptop "http:///post-esp-data.php"
+MFRC522 mfrc522(SS_PIN, RST_PIN); //// RANDOM IN2 AND IN3 FOR TESTING
+const char *serverNameMap = "http://192.168.43.247:80/post-map-data.php"; // replace middle with ipv4 of laptop "http:///post-esp-data.php"
+const char* serverNameDirection = "http://192.168.43.247/arrowkeyquery.php";
+const char* serverNameMode="http://192.168.43.247/modequery.php";
 String apiKeyValue = "tPmAT5Ab3j7F9";
-// String object = "Rover";
+// mahanoor ip 192.168.43.247
+String directionarray[1] ;
+String direction;
+String modearray[1];
+String mode;
 Adafruit_MPU6050 mpu;
 const char *ssid = "Kert12345";
 const char *password = "1234567891";
@@ -889,82 +898,184 @@ void Task1code(void *pvParameters)
   Serial.println(xPortGetCoreID());
   for (;;)
   {
+    bool manualmode,automaticmode;
     dest = true;
-    /////////////////////////CONTROL THE ROVER USING 123456789
-    int i = 0;
-    sensors_event_t acc, g, temp;
-    mpu.getEvent(&acc, &g, &temp);
-    float dist, angle;
-    // while (Serial.available() == 0)
-    // {
-    // } // if it breaks, do >= 0 in conditions as per Hepple
-    if (Serial.available())
-    {
-      i = Serial.parseInt();
+    sensors_event_t a, g, temp;
+    mpu.getEvent(&a, &g, &temp);
+    ///CONNECT TO WIFI/////////
+    unsigned long previousMillis=0;
+    unsigned long interval = 30000;
+    unsigned long currentMillis = millis();
+    //reconnect to wifi if disconnected,checking for connecting every 30 seconds
+    if((WiFi.status() !=WL_CONNECTED)&& (currentMillis - previousMillis >=interval)){
+      Serial.print(millis());
+      Serial.println("Reconnecting to Wifi....");
+      WiFi.disconnect();
+      initWiFi();
+      previousMillis=currentMillis;
     }
-    switch (i)
-    {
-    case 1:
-      Serial.println("-90");
-      turn_by_angle_gyro(-90);
-      brake_rover();
-      break;
-    case 2:
-      Serial.println("90");
-      turn_by_angle_gyro(90);
-      brake_rover();
-      break;
-    case 3:
-      Serial.println("180");
-      turn_by_angle_gyro(180);
-      brake_rover();
-      break;
-    case 7:
-      Serial.println("-180");
-      turn_by_angle_gyro(-180);
-      brake_rover();
-      break;
-    case 4:
-      a.x = 30;
-      a.y = 0;
-      b.x = 30;
-      b.y = 30;
-      c.x = 0;
-      c.y = 30;
-      d.x = 0;
-      d.y = 0;
-      travel_to(a, current);
-      travel_to(b, current);
-      travel_to(c, current);
-      travel_to(d, current);
-      break;
-    case 6:
-      a.x = 0;
-      a.y = 0;
-      b.x = 10;
-      b.y = 10;
-      c.x = 0;
-      c.y = 0;
-      travel_to(a, current);
-      travel_to(b, current);
-      travel_to(c, current);
-      break;
-    case 5:
-      a.x = 100;
-      a.y = 0;
-      b.x = 100;
-      b.y = 100;
-      c.x = 0;
-      c.y = 100;
-      d.x = 0;
-      d.y = 0;
-      travel_to(a, current);
-      travel_to(b, current);
-      travel_to(c, current);
-      travel_to(d, current);
-      break;
-    }
-  }
+    if(WiFi.status()== WL_CONNECTED){
+        WiFiClient client;
+        HTTPClient http;
+        if (client.available()>0){
+          Serial.println("DEBUG CLIENT IS AVAILABLE");
+        }
+    ////QUERY MODE/////
+      http.begin(client,serverNameMode);
+      int httpResponseCode= http.GET();
+      if(httpResponseCode>0){
+        String payload =http.getString();
+        Serial.println(payload);
+        Serial.print("HTTP Response code for MODE: ");
+        Serial.println(httpResponseCode);
+        JSONVar object=JSON.parse(payload);
+          if (JSON.typeof(payload) == "undefined") {
+            Serial.println("Parsing input failed to get mode");
+            return;
+          }
+        Serial.print("JSON object for Mode");
+        Serial.print("1");
+        Serial.println(object);
+        Serial.print("2");
+        //testing to see if can access the JSON object
+        Serial.print(object[0]["id"]);
+        Serial.print(object[0]["mode"]);
+        mode=object[0]["mode"];
+        Serial.println(mode);
+        if (httpResponseCode<0) {
+          Serial.print("Error code: ");
+          Serial.println(httpResponseCode);
+         } 
+        http.end();
+      }
+      //AUTOMATIC DRIVING
+      if(mode=="automated"){
+        manualmode=false;
+        automaticmode=true;
+        /////////Generate nodes///////// ->>>>>>>>> for now fixed node change to random in a bit
+        //commented out random node generation would be
+        // std::vector<Point> nodelist;
+        //nodelist=nodelist(nodes,arenasizex,arenasizey,safetymargin) ->> actual arena size- safety margin used in calculation for rover arena
+        // now not duplicate
+        std::vector<Point> nodelist;
+        ///list of set points for now
+        Point a,b,c,d,e,f,current,target;
+        a.x=10;
+        a.y=10;
+        b.x=50;
+        b.y=10;
+        c.x=60;
+        c.y=90;
+        d.x=100;
+        d.y=200;
+        e.x=45;
+        e.y=175;
+        f.x=20;
+        f.y=30;
+        nodelist.push_back(f);
+        nodelist.push_back(e);
+        nodelist.push_back(d);
+        nodelist.push_back(c);
+        nodelist.push_back(b);
+        nodelist.push_back(a);
+        int startnodelistsize= nodelist.size();
+        ////////Send to database///////->>>>>>>>>>need to add
+        //// while nodelist not empty should go to all nodes
+        while(nodelist.size() !=0){
+            ///////SELECT NODE/////////// ->>>>> should be random for now in order
+            // commented out random selection would use
+            // pick random number r from 0->size of nodelist
+            // target.x=nodelist[r].x
+            // target.y=nodelist[r].y
+          current.x=total_x_overall;
+          current.y=total_y_overall;
+          target.x=nodelist[0].x;
+          target.y=nodelist[0].y;
+          travel_to(target, current);
+        } ///end of whilst not at node
+            ////DELETE NODE FROM LIST-> GO BACK TO SELECT NODE/////
+        deletenode(nodelist,0); //// should be the index of the node you just visited, ie r, 0 for now as always visiting the first node in list then deleting that node nodelist size decreases
+            ////repeat for all items in first list////
+            ////if node list not empty//
+            ///pick next node////
+      ///if node list empty
+      ////check if all objects scanned,ie local dic size = some target value
+      ////if all objects scanned return to base
+      /// if all objects not scanned////
+      ///check if manual override enabled//// ->>>>>>>>>>> maybe check if return to base button clicked aswell????
+      //if over ride break and go manual////
+      ///if manual overide not enabled go to regen nodes///// ->>>>>>>>> for now just stop after all nodes done
+      }
+      //MANUAL DRIVING
+      else if(mode=="manual"){
+        manualmode=true;
+        automaticmode=false;
+        Serial.println("manual mode");
+        http.begin(client, serverNameDirection);
+        int httpResponseCode = http.GET();
+        if (httpResponseCode>0) {
+            String payload =http.getString();
+            Serial.println(payload);
+            //print payload of the get request and also the succesful response code
+            Serial.print("HTTP Response code of direction: ");
+            Serial.println(httpResponseCode);
+           //store payload in json variable to make it easier to parse
+            JSONVar object=JSON.parse(payload);
+            if (JSON.typeof(payload) == "undefined") {
+              Serial.println("Parsing input failed to get direction");
+              return;
+            }
+            Serial.print("JSON object");
+            Serial.print("1");
+            Serial.println(object);
+            Serial.print("2");
+            //testing to see if can access the JSON object
+            Serial.print(object[0]["id"]);
+            Serial.print(object[0]["direction"]);
+            direction=object[0]["direction"];
+            Serial.println(direction);
+            if(direction == "left"){
+              Serial.println("should turn left");
+              //add turn left function
+              turn_L(1000);
+              brake_rover();
+            }
+            else if(direction == "right"){
+              Serial.println("should turn right");
+              //add turn right function
+              turn_R(1000);
+              brake_rover();
+            }
+            else if(direction == "forwards"){
+              Serial.println("should drive forwards");
+              //add turn drive forwards function
+              move_F(1000);
+              brake_rover();
+            }
+            else if(direction == "backwards"){
+              Serial.println("should reverse");
+              //add drive backwards function
+              move_B(1000);
+              brake_rover();
+            }
+            else if(direction =="stop"){
+              Serial.println("should stop");
+              brake_rover();
+            }
+            if (httpResponseCode<0) {
+              Serial.print("Error code: ");
+              Serial.println(httpResponseCode);
+            } 
+            // Free resources
+            http.end();
+            delay(1000);
+            }
+      }///END OF MANUAL DRIVING
+      else {
+        Serial.println("WiFi Disconnected");
+      }
+    }///END OF WIFI CONNECTION BRACKET#
+  }///END OF LOOP
 }
 //////////////////////////////////// core 2 for sensor readings
 void Task2code(void *pvParameters)
