@@ -10,8 +10,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <sys/alt_stdio.h>
-//#include "altera_avalon_uart_regs.h"
-//#include "altera_avalon_uart.h"
+#include "altera_avalon_uart_regs.h"
+#include "altera_avalon_uart.h"
 
 //EEE_IMGPROC defines
 #define EEE_IMGPROC_MSG_START ('R'<<16 | 'B'<<8 | 'B')
@@ -177,11 +177,12 @@ int main() {
 	alt_u16 current_focus = 300;
 	int boundingBoxColour = 0;
 	alt_u32 exposureTime = EXPOSURE_INIT;
-	alt_u16 gain = 0x600;
+	alt_u16 gain = 0x500;
 	alt_u32 min_hue = 0;
 	alt_u32 max_hue = 1;
-	alt_u32 sat = 100;
-	alt_u32 val = 100;
+	alt_u32 sat = 1;
+	alt_u32 val = 1;
+
 
 	OV8865SetExposure(exposureTime);
 	OV8865SetGain(gain);
@@ -261,7 +262,7 @@ int main() {
 
 		//Update the bounding box colour
        //printf(boundingBoxColour);
-		boundingBoxColour = ((boundingBoxColour + 1) & 0xff);
+		//boundingBoxColour = ((boundingBoxColour + 1) & 0xff);
        //printf(boundingBoxColour);
 		//printf("\n");
 		//IOWR(0x42000, EEE_IMGPROC_BBCOL, (boundingBoxColour << 8) | (0xff - boundingBoxColour));
@@ -269,74 +270,67 @@ int main() {
 		//Process input commands
 		int in = getchar();
 		switch (in) {
-		case 'e': {
-			min_hue += HUE_STEP;
-			IOWR(0x42000, 3, min_hue);
-			printf("\nmin Hue = %d ", min_hue);
-			break;
-			/*exposureTime += EXPOSURE_STEP;
-			OV8865SetExposure(exposureTime);
-			printf("\nExposure = %x ", exposureTime);
-			break;*/
-		}
-		case 'd': {
-			min_hue -= HUE_STEP;
-			IOWR(0x42000, 3, min_hue);
-			printf("\nmin Hue = %d ", min_hue);
-			break;
-			/*exposureTime -= EXPOSURE_STEP;
-			OV8865SetExposure(exposureTime);
-			printf("\nExposure = %x ", exposureTime);
-			break;*/
-		}
-		case 't': {
+		case 'q': {
 			gain += GAIN_STEP;
 			OV8865SetGain(gain);
 			printf("\nGain = %x ", gain);
 			break;
 		}
-		case 'g': {
+		case 'a': {
 			gain -= GAIN_STEP;
 			OV8865SetGain(gain);
 			printf("\nGain = %x ", gain);
 			break;
 		}
-		case 'r': {
-			max_hue-= HUE_STEP;
-			IOWR(0x42000, 4, max_hue);
-			printf("\nmax Hue = %d", max_hue);
+		case 'w': {
+			min_hue += HUE_STEP;
+			IOWR(0x42000, 3, min_hue);
+			printf("\nmin Hue = %d ", min_hue);
+			break;
+		}
+		case 's': {
+			min_hue -= HUE_STEP;
+			IOWR(0x42000, 3, min_hue);
+			printf("\nmin Hue = %d ", min_hue);
 			break;
 			
 		}
-		case 'f': {
+		case 'e': {
 			max_hue += HUE_STEP;
 			IOWR(0x42000, 4, max_hue);
 			printf("\nmax Hue = %d", max_hue);
 			break;
+		}
+		case 'd': {
+			max_hue -= HUE_STEP;
+			IOWR(0x42000, 4, max_hue);
+			printf("\nmax Hue = %d", max_hue);
+			break;
 			
 		}
-		case 'w': {
-			sat-= SAT_STEP;
-			IOWR(0x42000, 5, sat);
-			printf("\nsat= %d", sat);
-			break;
-		}
-		case 's': {
+		case 'r': {
 			sat += SAT_STEP;
 			IOWR(0x42000, 5, sat);
-			printf("\nsat = %d", sat);
+			printf("\nSat= %d", sat);
+			break;
+			
+		}
+		case 'f': {
+			sat -= SAT_STEP;
+			IOWR(0x42000, 5, sat);
+			printf("\nSat = %d", sat);
 			break;
 		}
-		case 'q': {
-			val-= VAL_STEP;
+		case 't': {
+			val += SAT_STEP;
 			IOWR(0x42000, 6, val);
-			printf("\nval = %d", val);
+			printf("\nVal = %d", val);
 			break;
 		}
-		case 'a': {
-			val += VAL_STEP;
+		case 'g': {
+			val -= SAT_STEP;
 			IOWR(0x42000, 6, val);
-			printf("\nval = %d", val);
+			printf("\nVal = %d", val);
 			break;
 		}
 		}
