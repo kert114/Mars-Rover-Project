@@ -177,8 +177,12 @@ String temp_vision_distance;
 String object = "";
 String xvalue = "";
 String yvalue = "";
-char identifier;
+int identifier;
+int vision_angle;
+int vision_distance;
+// String object;
 float angle = 0;
+uint8_t buf[36];
 float current_angle = 0;
 float initial_angle = 0;
 float prev_angle = 0;
@@ -192,8 +196,8 @@ float total_y_overall = 0;
 float initial_total_y = 0;
 bool dest = false;
 float prev_vision_distance = 0;
-float vision_distance = 0;
-float vision_angle =0;
+// float vision_distance = 0;
+// float vision_angle =0;
 bool vision_object = false;
 bool facing_target = false;
 bool turning = false;
@@ -435,30 +439,24 @@ float angle_facing(float total_x)
 
 void update_vision(){
   //reading from the UART
-  if (Serial1.available() >= 36){
+  if (Serial2.available() > 0){
     String temp_vision_angle;
     String tostore;
+    int len = (Serial2.read(buf, 36)); 
     for (int i = 0; i < 8; i++)
     {
-      // Serial.print(buf[i], HEX);
-      // String tostore = String((buf[((4 * i) + 3)] << 24) + (buf[((4 * i) + 2)] << 16) + (buf[((4 * i) + 1)] << 8) + (buf[(4 * i)]), HEX);
-      tostore = "a019a004";
-      identifier = tostore[0];
-      temp_vision_distance = tostore.substring(1, 4);
-      temp_vision_angle = tostore.substring(5, 8);
-      Serial.println("string");
-      Serial.println(tostore);
+      
+      //Serial.print(buf[i], HEX);
+      int tostore = (buf[((4*i) + 3)] <<24) +(buf[((4*i) + 2)] << 16)+(buf[((4*i) + 1)] << 8) +(buf[(4*i)]);
       Serial.println();
-      Serial.println("identifier");
-      Serial.println(identifier);
-      Serial.println("distance");
-      Serial.println(temp_vision_distance);
-      Serial.println("angle");
-      Serial.println(temp_vision_angle);
-
-      Serial.println();
-
+      Serial.println(tostore, HEX);
       // Serial.print(" ");
+      identifier = (tostore >>28) & 0x0000000F;
+      angle = (tostore) & 0x00000FFF;
+      vision_distance = (tostore >> 16) & 0x00000FFF;
+      Serial.println(identifier , HEX);
+      Serial.println(angle , HEX);
+      Serial.println(vision_distance , HEX);
     }
     vision_distance = strtol(temp_vision_distance.c_str(), NULL, 16);
     vision_angle = strtol(temp_vision_angle.c_str(), NULL, 16);
@@ -783,43 +781,43 @@ void go_forwards(float y)
 }
 
 void send_object_information(float x, float y, char identifier){
-  if (String(identifier) == String("a")  && (temp[0] != "sent")){
+  if (identifier == 10  && (temp[0] != "sent")){
     object = "red";
     temp[0] = "sent";
     xvalue = String(x, 3);
     yvalue = String(y, 3);
   }
-  if (String(identifier) == String("b")  && (temp[1] != "sent")){
+  if (identifier == 11  && (temp[1] != "sent")){
     object = "teal";
     temp[1] = "sent";
     xvalue = String(x, 3);
     yvalue = String(y, 3);
   }
-  if (String(identifier) == String("c")  && (temp[2] != "sent")){
+  if (identifier == 12  && (temp[2] != "sent")){
     object = "fuschia";
     temp[2] = "sent";
     xvalue = String(x, 3);
     yvalue = String(y, 3);
   }
-  if (String(identifier) == String("d")  && (temp[3] != "sent")){
+  if (identifier == 13  && (temp[3] != "sent")){
     object = "blue";
     temp[3] = "sent";
     xvalue = String(x, 3);
     yvalue = String(y, 3);
   }
-  if (String(identifier) == String("e")  && (temp[4] != "sent")){
+  if (identifier == 14  && (temp[4] != "sent")){
     object = "green";
     temp[4] = "sent";
     xvalue = String(x, 3);
     yvalue = String(y, 3);
   }
-  if (String(identifier) == String("f")  && (temp[5] != "sent")){
+  if (identifier == 15  && (temp[5] != "sent")){
     object = "yellow";
     temp[5] = "sent";
     xvalue = String(x, 3);
     yvalue = String(y, 3);
   }
-  if (String(identifier) == String("1")  && (temp[6] != "sent")){
+  if (identifier == 1  && (temp[6] != "sent")){
     object = "building";
     temp[6] = "sent";
     xvalue = String(x, 3);
@@ -977,7 +975,7 @@ void Task1code(void *pvParameters)
         manualmode=false;
         automaticmode=true;
 
-        while(temp[0]=="sent" && temp[1]=="sent" && temp[2]=="sent" && temp[3]=="sent" && temp[4]=="sent" && temp[5]=="sent"){
+        while(temp[0]!="sent" || temp[1]!="sent" || temp[2]!="sent" || temp[3]!="sent" || temp[4]!="sent" || temp[5]!="sent"){
           
           /////////Generate nodes///////// ->>>>>>>>> for now fixed node change to random in a bit
           //commented out random node generation would be
@@ -1206,7 +1204,7 @@ void Task2code(void *pvParameters)
 
     current_angle = angle_facing(total_x); // still need to find the right conversion from md values to cm or mm
     current_angle = -temp_gyro_angle;
-    Serial.print("Current angle: "), Serial.println(current_angle);
+    // Serial.print("Current angle: "), Serial.println(current_angle);
     // normal values are relative to the rover, overall values are relative to the overall y axis
     distance_x = /*md.dx; //*/ convTwosComp(md.dx);
     distance_y = /*md.dy; //*/ convTwosComp(md.dy);
