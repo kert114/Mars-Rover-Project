@@ -1303,7 +1303,7 @@ void Task2code(void *pvParameters)
 void setup()
 {
   Serial.begin(115200);
-  Serial1.begin(115200, SERIAL_8N1, RXD2, TXD2);
+  Serial2.begin(115200, SERIAL_8N1, RXD2, TXD2);
   while (!Serial)
   {
     delay(10); // will pause Zero, Leonardo, etc until serial console opens
