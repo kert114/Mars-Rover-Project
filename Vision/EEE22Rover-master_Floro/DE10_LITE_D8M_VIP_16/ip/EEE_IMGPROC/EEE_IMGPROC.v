@@ -93,17 +93,17 @@ assign value = max[7:0];//range 0 to 255
 
 // Detect coloured areas
 wire red_detect;
-assign red_detect = ((hue>10 && hue<30) && (saturation>60 && saturation<100) && (value>50)) || ((hue>7 && hue<15) && (saturation>65) && (value>20));
+assign red_detect = ((hue>15 && hue<30) && (saturation>70) && (value>30))||(hue>7 && hue<16) && (saturation>70) && (value>30 && value<90);//((hue>10 && hue<30) && (saturation>60 && saturation<100) && (value>50));
 wire teal_detect;
 assign teal_detect = ((hue>115 && hue<125) && (saturation>25) && (value>15));
 wire fuchsia_detect;
-assign fuchsia_detect =  (hue>0 && hue<0 ) && (saturation>100) && (value>100);//((hue<5) && (saturation<70) && (value>40 && value<90));
+assign fuchsia_detect =  (hue>0 && hue<15) && (saturation<65) && (value>90);//((hue<5) && (saturation<70) && (value>40 && value<90));
 wire blue_detect;
-assign blue_detect = ((hue>0 && hue<0 ) && (saturation>100) && (value>100));
+assign blue_detect = ((hue>160 && hue<280 ) && (saturation<40) && (value>20 && value<80));
 wire green_detect;
-assign green_detect = (hue>h_min && hue<h_max) && (saturation>sat) && (value>val);
+assign green_detect = (hue>80 && hue<-1) && (saturation>50 && saturation<65) && (value>50);//(hue>170 && hue<500 ) && (saturation>45 && saturation<60) && (value>50 && value<90);
 wire yellow_detect;
-assign yellow_detect = ((hue>53 && hue<69) && (saturation>50) && (value>55)) || ((hue>50 && hue<-1) && (saturation>57) && (value>90));//((hue>40 && hue<60) && (saturation>40) && (value>60)) || ((hue>55 && hue<65) && (saturation>20) && (value>60));
+assign yellow_detect = ((hue>53 && hue<60) && (saturation>50) && (value>60)) || ((hue>50 && hue<-1) && (saturation>57) && (value>90));//((hue>40 && hue<60) && (saturation>40) && (value>60)) || ((hue>55 && hue<65) && (saturation>20) && (value>60));
 wire black_detect;
 assign black_detect = (hue>0 && hue<0 ) && (saturation>100) && (value>100);
 wire white_detect;
