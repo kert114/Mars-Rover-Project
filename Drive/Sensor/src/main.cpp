@@ -977,7 +977,7 @@ void Task1code(void *pvParameters)
         manualmode=false;
         automaticmode=true;
 
-        while(temp[0]=="sent" && temp[1]=="sent" && temp[2]=="sent" && temp[3]=="sent" && temp[4]=="sent" && temp[5]=="sent" && temp[6]=="sent"){
+        while(temp[0]=="sent" && temp[1]=="sent" && temp[2]=="sent" && temp[3]=="sent" && temp[4]=="sent" && temp[5]=="sent"){
           
           /////////Generate nodes///////// ->>>>>>>>> for now fixed node change to random in a bit
           //commented out random node generation would be
