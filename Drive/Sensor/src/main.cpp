@@ -789,39 +789,39 @@ void send_object_information(float x, float y, char identifier){
     xvalue = String(x, 3);
     yvalue = String(y, 3);
   }
-  if (String(identifier) == String("b")  && (temp[0] != "sent")){
+  if (String(identifier) == String("b")  && (temp[1] != "sent")){
     object = "teal";
-    temp[0] = "sent";
+    temp[1] = "sent";
     xvalue = String(x, 3);
     yvalue = String(y, 3);
   }
-  if (String(identifier) == String("c")  && (temp[0] != "sent")){
+  if (String(identifier) == String("c")  && (temp[2] != "sent")){
     object = "fuschia";
-    temp[0] = "sent";
+    temp[2] = "sent";
     xvalue = String(x, 3);
     yvalue = String(y, 3);
   }
-  if (String(identifier) == String("d")  && (temp[0] != "sent")){
+  if (String(identifier) == String("d")  && (temp[3] != "sent")){
     object = "blue";
-    temp[0] = "sent";
+    temp[3] = "sent";
     xvalue = String(x, 3);
     yvalue = String(y, 3);
   }
-  if (String(identifier) == String("e")  && (temp[0] != "sent")){
+  if (String(identifier) == String("e")  && (temp[4] != "sent")){
     object = "green";
-    temp[0] = "sent";
+    temp[4] = "sent";
     xvalue = String(x, 3);
     yvalue = String(y, 3);
   }
-  if (String(identifier) == String("f")  && (temp[0] != "sent")){
+  if (String(identifier) == String("f")  && (temp[5] != "sent")){
     object = "yellow";
-    temp[0] = "sent";
+    temp[5] = "sent";
     xvalue = String(x, 3);
     yvalue = String(y, 3);
   }
-  if (String(identifier) == String("1")  && (temp[0] != "sent")){
+  if (String(identifier) == String("1")  && (temp[6] != "sent")){
     object = "building";
-    temp[0] = "sent";
+    temp[6] = "sent";
     xvalue = String(x, 3);
     yvalue = String(y, 3);
   }
@@ -924,7 +924,7 @@ void Task1code(void *pvParameters)
   {
     bool manualmode,automaticmode;
     dest = true;
-    sensors_event_t a, g, temp;
+    sensors_event_t a, g, temp_sensor;
     mpu.getEvent(&a, &g, &temp);
     ///CONNECT TO WIFI/////////
     unsigned long previousMillis=0;
@@ -976,88 +976,92 @@ void Task1code(void *pvParameters)
       if(mode=="automated"){
         manualmode=false;
         automaticmode=true;
-        /////////Generate nodes///////// ->>>>>>>>> for now fixed node change to random in a bit
-        //commented out random node generation would be
-        // std::vector<Point> nodelist;
-        //nodelist=nodelist(nodes,arenasizex,arenasizey,safetymargin) // ->> actual arena size- safety margin used in calculation for rover arena
-        // now not duplicate
-        std::vector<Point> nodelist;
-        ///list of set points for now
-        Point a,b,c,d,e,f,current,target;
-        a.x=10;
-        a.y=10;
-        b.x=50;
-        b.y=10;
-        c.x=60;
-        c.y=90;
-        d.x=100;
-        d.y=200;
-        e.x=45;
-        e.y=175;
-        f.x=20;
-        f.y=30;
-        nodelist.push_back(f);
-        nodelist.push_back(e);
-        nodelist.push_back(d);
-        nodelist.push_back(c);
-        nodelist.push_back(b);
-        nodelist.push_back(a);
-        int startnodelistsize= nodelist.size();
-        ////////Send to database///////->>>>>>>>>>need to add
-        //// while nodelist not empty should go to all nodes
-        while(nodelist.size() !=0){
-          HTTPClient http;
-          http.begin(client,serverNameMode);
-          int httpResponseCode= http.GET();
-          if(httpResponseCode>0){
-            String payload =http.getString();
-            Serial.println(payload);
-            Serial.print("HTTP Response code for MODE: ");
-            Serial.println(httpResponseCode);
-            JSONVar object=JSON.parse(payload);
-              if (JSON.typeof(payload) == "undefined") {
-                Serial.println("Parsing input failed to get mode");
-                return;
-              }
-            Serial.print("JSON object for Mode");
-            Serial.print("1");
-            Serial.println(object);
-            Serial.print("2");
-            //testing to see if can access the JSON object
-            Serial.print(object[0]["id"]);
-            Serial.print(object[0]["mode"]);
-            mode=object[0]["mode"];
-            Serial.println(mode);
-            if (httpResponseCode<0) {
-              Serial.print("Error code: ");
+
+        while(temp[0]=="sent" && temp[1]=="sent" && temp[2]=="sent" && temp[3]=="sent" && temp[4]=="sent" && temp[5]=="sent" && temp[6]=="sent"){
+          
+          /////////Generate nodes///////// ->>>>>>>>> for now fixed node change to random in a bit
+          //commented out random node generation would be
+          // std::vector<Point> nodelist;
+          //nodelist=nodelist(nodes,arenasizex,arenasizey,safetymargin) // ->> actual arena size- safety margin used in calculation for rover arena
+          // now not duplicate
+          std::vector<Point> nodelist;
+          ///list of set points for now
+          Point a,b,c,d,e,f,current,target;
+          a.x=10;
+          a.y=10;
+          b.x=50;
+          b.y=10;
+          c.x=60;
+          c.y=90;
+          d.x=100;
+          d.y=200;
+          e.x=45;
+          e.y=175;
+          f.x=20;
+          f.y=30;
+          nodelist.push_back(f);
+          nodelist.push_back(e);
+          nodelist.push_back(d);
+          nodelist.push_back(c);
+          nodelist.push_back(b);
+          nodelist.push_back(a);
+          int startnodelistsize= nodelist.size();
+          ////////Send to database///////->>>>>>>>>>need to add
+          //// while nodelist not empty should go to all nodes
+          while(nodelist.size() !=0){
+            HTTPClient http;
+            http.begin(client,serverNameMode);
+            int httpResponseCode= http.GET();
+            if(httpResponseCode>0){
+              String payload =http.getString();
+              Serial.println(payload);
+              Serial.print("HTTP Response code for MODE: ");
               Serial.println(httpResponseCode);
-             }
-            http.end();
-          }
-            ///////SELECT NODE/////////// ->>>>> should be random for now in order
-            // commented out random selection would use
-            // pick random number r from 0->size of nodelist
-            // target.x=nodelist[r].x
-            // target.y=nodelist[r].y
-          current.x=total_x_overall;
-          current.y=total_y_overall;
-          target.x=nodelist[0].x;
-          target.y=nodelist[0].y;
-          travel_to(target, current);
-          deletenode(nodelist,0); 
-        } ///end of whilst not at node
+              JSONVar object=JSON.parse(payload);
+                if (JSON.typeof(payload) == "undefined") {
+                  Serial.println("Parsing input failed to get mode");
+                  return;
+                }
+              Serial.print("JSON object for Mode");
+              Serial.print("1");
+              Serial.println(object);
+              Serial.print("2");
+              //testing to see if can access the JSON object
+              Serial.print(object[0]["id"]);
+              Serial.print(object[0]["mode"]);
+              mode=object[0]["mode"];
+              Serial.println(mode);
+              if (httpResponseCode<0) {
+                Serial.print("Error code: ");
+                Serial.println(httpResponseCode);
+               }
+              http.end();
+            }
+              ///////SELECT NODE/////////// ->>>>> should be random for now in order
+              // commented out random selection would use
+              // pick random number r from 0->size of nodelist
+              // target.x=nodelist[r].x
+              // target.y=nodelist[r].y
+            current.x=total_x_overall;
+            current.y=total_y_overall;
+            target.x=nodelist[0].x;
+            target.y=nodelist[0].y;
+            travel_to(target, current);
+            deletenode(nodelist,0); 
+          } ///end of whilst not at node
             ////DELETE NODE FROM LIST-> GO BACK TO SELECT NODE/////
-        //// should be the index of the node you just visited, ie r, 0 for now as always visiting the first node in list then deleting that node nodelist size decreases
+            //// should be the index of the node you just visited, ie r, 0 for now as always visiting the first node in list then deleting that node nodelist size decreases
             ////repeat for all items in first list////
             ////if node list not empty//
             ///pick next node////
-      ///if node list empty
-      ////check if all objects scanned,ie local dic size = some target value
-      ////if all objects scanned return to base
-      /// if all objects not scanned////
-      ///check if manual override enabled//// ->>>>>>>>>>> maybe check if return to base button clicked aswell????
-      //if over ride break and go manual////
-      ///if manual overide not enabled go to regen nodes///// ->>>>>>>>> for now just stop after all nodes done
+            ///if node list empty
+            ////check if all objects scanned,ie local dic size = some target value
+            ////if all objects scanned return to base
+            /// if all objects not scanned////
+            ///check if manual override enabled//// ->>>>>>>>>>> maybe check if return to base button clicked aswell????
+            //if over ride break and go manual////
+            ///if manual overide not enabled go to regen nodes///// ->>>>>>>>> for now just stop after all nodes done
+        }
       }
       //MANUAL DRIVING
       else if(mode=="manual"){
@@ -1111,6 +1115,18 @@ void Task1code(void *pvParameters)
               //add drive backwards function
               move_B(1000);
               brake_rover();
+            }
+            else if(direction == "scan"){
+              Serial.println("should scan vision");
+              delay(200);
+              update_vision();
+              delay(200);
+              // 7.2 is dist from centre of rover to camera
+              float x_of_object = total_x_overall + (vision_distance+7.2)*sin(current_angle+vision_angle); 
+              float y_of_object = total_y_overall + (vision_distance+7.2)*cos(current_angle+vision_angle); 
+              send_object_information(x_of_object, y_of_object, identifier); // need to make this function
+              vision_object = false;
+            
             }
             else if(direction =="stop"){
               Serial.println("should stop");
