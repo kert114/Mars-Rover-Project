@@ -925,7 +925,7 @@ void Task1code(void *pvParameters)
     bool manualmode,automaticmode;
     dest = true;
     sensors_event_t a, g, temp_sensor;
-    mpu.getEvent(&a, &g, &temp);
+    mpu.getEvent(&a, &g, &temp_sensor);
     ///CONNECT TO WIFI/////////
     unsigned long previousMillis=0;
     unsigned long interval = 30000;
@@ -1037,11 +1037,14 @@ void Task1code(void *pvParameters)
                }
               http.end();
             }
-              ///////SELECT NODE/////////// ->>>>> should be random for now in order
-              // commented out random selection would use
-              // pick random number r from 0->size of nodelist
-              // target.x=nodelist[r].x
-              // target.y=nodelist[r].y
+            ///////SELECT NODE/////////// ->>>>> should be random for now in order
+            // commented out random selection would use
+            // pick random number r from 0->size of nodelist
+            // target.x=nodelist[r].x
+            // target.y=nodelist[r].y
+            
+            
+
             current.x=total_x_overall;
             current.y=total_y_overall;
             target.x=nodelist[0].x;
