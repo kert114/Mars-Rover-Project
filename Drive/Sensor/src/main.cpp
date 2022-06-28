@@ -207,8 +207,8 @@ int m1 = 36;
 int m2 = 34;
 float prev_dx;
 float prev_dy;
-// float correction = 42;
-float correction = 40;
+float correction = 42;
+// float correction = 40;
 // float a = 0;
 // float b = 0;
 float gyro_rotation = 0;
@@ -1251,6 +1251,54 @@ void Task2code(void *pvParameters)
     temp_y = total_y;
     prev_dx = md.dx / correction;
     prev_dy = md.dy / correction;
+
+    /////////ADD IN HTTP POST REQUEST FOR ROVER POSITION CONTINOUSLY///////////
+    String object = "Rover";
+    unsigned long previousMillis=0;
+    unsigned long interval = 30000;
+    unsigned long currentMillis = millis();
+    if((WiFi.status() !=WL_CONNECTED)&& (currentMillis - previousMillis >=interval)){
+      Serial.print(millis());
+      // Serial.println("Reconnecting to Wifi....");
+      WiFi.disconnect();
+      initWiFi();
+      previousMillis=currentMillis;
+    }
+    if(WiFi.status()== WL_CONNECTED){
+      WiFiClient client;
+      HTTPClient http;
+      if (client.available()>0){
+        //  Serial.println("DEBUG CLIENT IS AVAILABLE");
+      }
+      else{
+      // Serial.println("DOOM");
+      }
+      // Your Domain name with URL path or IP address with path
+      http.begin(client, serverNameMap);
+      // Specify content-type header
+      http.addHeader("Content-Type", "application/x-www-form-urlencoded");
+      // Prepare your HTTP POST request data
+      String httpRequestData = "api_key=" + apiKeyValue + "&object=" + object
+                          + "&xvalue=" + String(total_x_overall) + "&yvalue=" + String(total_y_overall)
+                          ;
+      //   Serial.print("httpRequestData: ");
+      // Serial.println(httpRequestData);
+      int httpResponseCode = http.POST(httpRequestData);
+      if (httpResponseCode>0) {
+        //     Serial.print("HTTP Response code: ");
+        //    Serial.println(httpResponseCode);
+      }
+      if (httpResponseCode<0) {
+        //  Serial.print("Error code: ");
+        // Serial.println(httpResponseCode);
+      } 
+      // Free resources
+      http.end();
+    }
+    else {
+      //  Serial.println("WiFi Disconnected");
+    }
+    delay(300);
   }
 }
 
