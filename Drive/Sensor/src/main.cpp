@@ -124,32 +124,30 @@ const int arenasizey = 250; // actual 3555mm
 const int safetymargin = 2;
 int numberofnodes = 5;
 Point currentposition;
-std::vector<Point> nodelist(int numberofnodes, const int arenasizex, const int arenasizey, const int safetymargin)
-{
-  Point temp;
-  std::vector<Point> nodes;
-  for (int i = 0; i < numberofnodes; i++)
-  {
-    // rand() % ((highestNumber - lowestNumber) + 1) + lowestNumber
-    temp.x = rand() % ((arenasizex - safetymargin) - safetymargin + 1) + safetymargin;
-    temp.y = rand() % ((arenasizey - safetymargin) - safetymargin + 1) + safetymargin;
-    nodes.push_back(temp);
-  }
-  return nodes;
-}
-int search_v(const std::vector<Point> &vin, int x, int y)
-{
-  for (int i = 0; i < vin.size(); i++)
-  {
-    if (vin[i].x == x)
-    {
-      if (vin[i].y == y)
-      {
-        return i;
+int search_v(const std::vector<Point>&vin,int x, int y){
+for(int i=0;i<vin.size();i++){
+  if(vin[i].x==x){
+    if(vin[i].y==y){
+    return i;
       }
     }
   }
-  return -1;
+    return -1;
+}
+std::vector<Point> nodelist(int numberofnodes, const int arenasizex, const int arenasizey, const int safetymargin){
+    Point temp;
+    std::vector<Point> nodes;
+    for(int i=0; i<numberofnodes;i++){
+      //rand() % ((highestNumber - lowestNumber) + 1) + lowestNumber
+        temp.x= rand() % ((arenasizex-safetymargin)-safetymargin+1)+safetymargin;
+        temp.y= rand() % ((arenasizey-safetymargin)-safetymargin+1)+safetymargin;
+        int unique=search_v(nodes,temp.x,temp.y);
+        if(unique == -1){
+          nodes.push_back(temp);
+          i--;
+        }
+    }
+    return nodes;
 }
 std::vector<Point> deletenode(std::vector<Point> &vin, int index)
 {
@@ -174,6 +172,12 @@ void initWiFi()
 ///
 // float pi = 3.14159265359;
 Point a, b, c, d, current;
+String temp[7] = {"a", "b", "c", "d", "e", "f", "1"};
+String temp_vision_distance;
+String object = "";
+String xvalue = "";
+String yvalue = "";
+char identifier;
 float angle = 0;
 float current_angle = 0;
 float initial_angle = 0;
@@ -233,6 +237,8 @@ int convTwosComp(int b)
   return b;
 }
 int tdistance = 0;
+
+
 void mousecam_reset()
 {
   digitalWrite(PIN_MOUSECAM_RESET, HIGH);
@@ -430,8 +436,6 @@ float angle_facing(float total_x)
 void update_vision(){
   //reading from the UART
   if (Serial1.available() >= 36){
-    char identifier;
-    String temp_vision_distance;
     String temp_vision_angle;
     String tostore;
     for (int i = 0; i < 8; i++)
@@ -456,8 +460,8 @@ void update_vision(){
 
       // Serial.print(" ");
     }
-    float vision_distance = strtol(temp_vision_distance.c_str(), NULL, 16);
-    float vision_angle = strtol(temp_vision_angle.c_str(), NULL, 16);
+    vision_distance = strtol(temp_vision_distance.c_str(), NULL, 16);
+    vision_angle = strtol(temp_vision_angle.c_str(), NULL, 16);
     if(abs(vision_angle)<20 && vision_distance<50){
       vision_object = true;
     }
@@ -538,7 +542,8 @@ void turn_angle_gyro(float target_angle)
     {
       brake_rover();
       counter += 1;
-      Serial.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+      delay(20);
+      // Serial.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
     }
     temp_delta_angle = current_angle - target_angle;
   }
@@ -777,6 +782,76 @@ void go_forwards(float y)
   dest = !dest;
 }
 
+void send_object_information(float x, float y, char identifier){
+  if (String(identifier) == String("a")  && (temp[0] != "sent")){
+    object = "red";
+    temp[0] = "sent";
+    xvalue = String(x, 3);
+    yvalue = String(y, 3);
+  }
+  if (String(identifier) == String("b")  && (temp[0] != "sent")){
+    object = "teal";
+    temp[0] = "sent";
+    xvalue = String(x, 3);
+    yvalue = String(y, 3);
+  }
+  if (String(identifier) == String("c")  && (temp[0] != "sent")){
+    object = "fuschia";
+    temp[0] = "sent";
+    xvalue = String(x, 3);
+    yvalue = String(y, 3);
+  }
+  if (String(identifier) == String("d")  && (temp[0] != "sent")){
+    object = "blue";
+    temp[0] = "sent";
+    xvalue = String(x, 3);
+    yvalue = String(y, 3);
+  }
+  if (String(identifier) == String("e")  && (temp[0] != "sent")){
+    object = "green";
+    temp[0] = "sent";
+    xvalue = String(x, 3);
+    yvalue = String(y, 3);
+  }
+  if (String(identifier) == String("f")  && (temp[0] != "sent")){
+    object = "yellow";
+    temp[0] = "sent";
+    xvalue = String(x, 3);
+    yvalue = String(y, 3);
+  }
+  if (String(identifier) == String("1")  && (temp[0] != "sent")){
+    object = "building";
+    temp[0] = "sent";
+    xvalue = String(x, 3);
+    yvalue = String(y, 3);
+  }
+
+  HTTPClient http;
+  http.begin(client, serverNameMap);
+  // Specify content-type header
+  http.addHeader("Content-Type", "application/x-www-form-urlencoded");
+  // Prepare your HTTP POST request data
+  String httpRequestData = "api_key=" + apiKeyValue + "&object=" + object
+                        + "&xvalue=" + String(xvalue) + "&yvalue=" + String(yvalue)
+                        ;
+  Serial.print("httpRequestData: ");
+  Serial.println(httpRequestData);
+  // You can comment the httpRequestData variable above
+  // then, use the httpRequestData variable below (for testing purposes without the BME280 sensor)
+  //String httpRequestData = "api_key=tPmAT5Ab3j7F9&sensor=BME280&location=Office&value1=24.75&value2=49.54&value3=1005.14";
+  // Send HTTP POST request
+  int httpResponseCode = http.POST(httpRequestData);
+  if(httpResponseCode>0) {
+    Serial.print("HTTP Response code: ");
+    Serial.println(httpResponseCode);
+  }
+  if(httpResponseCode<0) {
+    Serial.print("Error code: ");
+    Serial.println(httpResponseCode);
+  } 
+  http.end();
+}
+
 void travel_to(Point a, Point current){
   dist = false;
   Serial.println("at start");
@@ -825,11 +900,14 @@ void travel_to(Point a, Point current){
         measured_object = true;
       }
     }
+
     // 7.2 is dist from centre of rover to camera
     float x_of_object = total_x_overall + (vision_distance+7.2)*sin(current_angle+vision_angle); 
     float y_of_object = total_y_overall + (vision_distance+7.2)*cos(current_angle+vision_angle); 
+
+    // Free resources
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // send_object_information(); // need to make this function
+    send_object_information(x_of_object, y_of_object, identifier); // need to make this function
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     vision_object = false;
   }
@@ -901,7 +979,7 @@ void Task1code(void *pvParameters)
         /////////Generate nodes///////// ->>>>>>>>> for now fixed node change to random in a bit
         //commented out random node generation would be
         // std::vector<Point> nodelist;
-        //nodelist=nodelist(nodes,arenasizex,arenasizey,safetymargin) ->> actual arena size- safety margin used in calculation for rover arena
+        //nodelist=nodelist(nodes,arenasizex,arenasizey,safetymargin) // ->> actual arena size- safety margin used in calculation for rover arena
         // now not duplicate
         std::vector<Point> nodelist;
         ///list of set points for now
@@ -928,6 +1006,34 @@ void Task1code(void *pvParameters)
         ////////Send to database///////->>>>>>>>>>need to add
         //// while nodelist not empty should go to all nodes
         while(nodelist.size() !=0){
+          HTTPClient http;
+          http.begin(client,serverNameMode);
+          int httpResponseCode= http.GET();
+          if(httpResponseCode>0){
+            String payload =http.getString();
+            Serial.println(payload);
+            Serial.print("HTTP Response code for MODE: ");
+            Serial.println(httpResponseCode);
+            JSONVar object=JSON.parse(payload);
+              if (JSON.typeof(payload) == "undefined") {
+                Serial.println("Parsing input failed to get mode");
+                return;
+              }
+            Serial.print("JSON object for Mode");
+            Serial.print("1");
+            Serial.println(object);
+            Serial.print("2");
+            //testing to see if can access the JSON object
+            Serial.print(object[0]["id"]);
+            Serial.print(object[0]["mode"]);
+            mode=object[0]["mode"];
+            Serial.println(mode);
+            if (httpResponseCode<0) {
+              Serial.print("Error code: ");
+              Serial.println(httpResponseCode);
+             }
+            http.end();
+          }
             ///////SELECT NODE/////////// ->>>>> should be random for now in order
             // commented out random selection would use
             // pick random number r from 0->size of nodelist
@@ -938,9 +1044,10 @@ void Task1code(void *pvParameters)
           target.x=nodelist[0].x;
           target.y=nodelist[0].y;
           travel_to(target, current);
+          deletenode(nodelist,0); 
         } ///end of whilst not at node
             ////DELETE NODE FROM LIST-> GO BACK TO SELECT NODE/////
-        deletenode(nodelist,0); //// should be the index of the node you just visited, ie r, 0 for now as always visiting the first node in list then deleting that node nodelist size decreases
+        //// should be the index of the node you just visited, ie r, 0 for now as always visiting the first node in list then deleting that node nodelist size decreases
             ////repeat for all items in first list////
             ////if node list not empty//
             ///pick next node////
