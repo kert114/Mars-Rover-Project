@@ -329,15 +329,7 @@ int mousecam_frame_capture(byte *pdata)
   delayMicroseconds(14);
   return ret;
 }
-// float find_angle(int x, int y)
-// {
-//   int r = 70;
-//   float angle;
-//   float d = x ^ 2 + y ^ 2;
-//   angle = abs(((2 * (r ^ 2)) - d) / (2 * (r ^ 2)));
-//   angle = acos(angle);
-//   return angle;
-// }
+
 /////////////////////////////// ROVER MOVE FUNCTIONS///////////////////////////////
 // aim is to get moving forwards working in a straight line with an autocorrection function so we can move in a straight line fine.
 // Once this works, moving backwards short distances in a straight line should be fine as well - will be more variance as the
@@ -386,23 +378,14 @@ void turn_L(int x = 10, int m1 = 25, int m2 = 25)
   robot.rotate(motor1, m1, CW); // turn motor1 with 25% speed in CCW direction
   robot.rotate(motor2, m2, CW); // turn motor2 with 25% speed in CW direction
   delay(x);
-  // robot.brake(1);
-  // robot.brake(2);
 }
 void turn_R(int x = 10, int m1 = 25, int m2 = 25)
 {
   robot.rotate(motor1, m1, CCW); // turn motor1 with 25% speed in CCW direction
   robot.rotate(motor2, m2, CCW); // turn motor2 with 25% speed in CW direction
   delay(x);
-  // robot.brake(1);
-  // robot.brake(2);
 }
-// void brake_rover()
-// {
-//   robot.brake(1);
-//   robot.brake(2);
-//   // delay(1000);
-// }
+
 double distance_points(Point p1, Point p2)
 {
   float temp_dist = std::sqrt(std::pow((p1.x - p2.x), 2) + std::pow((p1.y - p2.y), 2));
@@ -411,6 +394,7 @@ double distance_points(Point p1, Point p2)
   }
   return temp_dist;
 }
+
 float angle_between_points(float bx, float by)
 {
   float ax = total_x_overall;
@@ -428,10 +412,12 @@ float angle_between_points(float bx, float by)
   float angle_to_turn = angle_temp - current_angle;
   return angle_to_turn;
 }
+
 std::string point_to_s(Point p)
 {
   return "(" + std::to_string(p.x) + ", " + std::to_string(p.y) + ")";
 }
+
 float angle_facing(float total_x)
 {
   float delta_angle = (-total_x / r);
@@ -476,48 +462,8 @@ void update_vision(){
       vision_object = true;
     }
   }
-} // need to write function
-
-void turn_to(float target_angle_temp)
-{
-  turning = true;
-  facing_target = false;
-  float temp_delta_angle = 0;
-  int delay = 10;
-  int m1, m2 = 40;
-  temp_delta_angle = current_angle - target_angle_temp;
-  // Serial.println('\n');
-  // Serial.print("temp_delta_angle = ");
-  // Serial.println(temp_delta_angle);
-  // Serial.println('\n');
-  if (abs(temp_delta_angle) < 10)
-  {
-    // delay = 4;
-    m1 = m2 = 30;
-  }
-  if (abs(temp_delta_angle) < 5)
-  {
-    m1 = m2 = 25;
-  }
-  m1 += 2;
-  if (!(abs(temp_delta_angle) < 2)) // && facing_target))
-  {
-    if ((temp_delta_angle > 0 && temp_delta_angle < 180) || temp_delta_angle < -180)
-    {
-      turn_L(delay, m1, m2);
-    }
-    else if ((temp_delta_angle < 0 && temp_delta_angle > -180) || temp_delta_angle > 180)
-    {
-      turn_R(delay, m1, m2);
-    }
-  }
-  else
-  {
-    brake_rover();
-    facing_target = true;
-    turning = false;
-  }
 }
+
 void turn_angle_gyro(float target_angle)
 {
   // turning = true;
@@ -1008,6 +954,7 @@ void Task1code(void *pvParameters)
       }
       //MANUAL DRIVING
       else if(mode=="manual"){
+        update_vision();
         manualmode=true;
         automaticmode=false;
         Serial.println("manual mode");
